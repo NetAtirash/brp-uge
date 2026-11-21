@@ -11,6 +11,7 @@ import { BRPRolls } from "../rolls/brp-rolls.mjs";
 import { resolveWealthItem, wealthDisplayFromItem } from "../wealth-utils.mjs";
 import { agePenalties } from "../status-effects.mjs";
 import { uniqueSkills, sameSkill, planMissingBaseSkills } from "../skill-foundation.mjs";
+import { configuredStartingSkills } from "../skill-selection.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -893,12 +894,16 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       // Reopening the Wizard must never duplicate or reset existing skills.
       const skillUpdates = [];
       const skillsToCreate = [];
+      const selectedFoundation=new Set(configuredStartingSkills(this.skillCatalog));
       this.skillCatalog.forEach((tpl, idx) => {
         const occupationBonus = Number(this.wizardData.occRanks[idx] ?? 0);
         const personalBonus = Number(this.wizardData.persRanks[idx] ?? 0);
         const personalityKey=tpl.system.referenceKey||tpl.system.nameEn||tpl.name;
         const personalityBonus=this.wizardData.personalitySkillKeys.includes(personalityKey)?20:0;
         const rank = occupationBonus + personalBonus + personalityBonus;
+        // Keep occupation-linked or allocated Skills even if the GM excluded
+        // them from the automatic baseline selection.
+        if(!selectedFoundation.has(tpl) && rank===0 && !this.#isOccupationalSkill(tpl,prof))return;
         const existing = actorDoc.items.find(i=>i.type==='skill'&&sameSkill(i,tpl));
         if (existing) {
           // Reopening an already completed character must not wipe skills just

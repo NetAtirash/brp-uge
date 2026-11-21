@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {filterStartingSkills,decodeStartingSkillKeys,configuredStartingSkills} from '../module/skill-selection.mjs';
+import {settingsGroupFor,settingPresentation} from '../module/apps/settings-organization.mjs';
+const read=(p)=>readFileSync(new URL('../'+p, import.meta.url),'utf8');
+const manifest=JSON.parse(read('system.json'));
+assert.equal(manifest.version,'1.21.6');
+assert.equal(manifest.styles.at(-1),'styles/brp-v1216-usability.css');
+assert.match(manifest.manifest,/releases\/latest\/download\/system\.json/);
+assert.match(manifest.download,/v1\.21\.6\/brp-uge\.zip/);
+const skills=[{type:'skill',name:'A',system:{nameEn:'Spot',referenceKey:'Spot'}}, {type:'skill',name:'B',system:{nameEn:'Dodge',referenceKey:'Dodge'}},{type:'skill',name:'C',system:{nameEn:'Spot',referenceKey:'Spot'}}];
+assert.equal(filterStartingSkills(skills,{mode:'all'}).length,2);
+assert.deepEqual(filterStartingSkills(skills,{mode:'selected',keys:JSON.stringify(['spot|'])}).map(x=>x.name),['A']);
+assert.equal(filterStartingSkills(skills,{mode:'selected',keys:'broken'}).length,0);
+assert.equal(decodeStartingSkillKeys('null').size,0);
+assert.equal(configuredStartingSkills(skills,{get:(_id,key)=>key==='startingSkillsMode'?'selected':'["dodge|"]'}).length,1);
+assert.equal(configuredStartingSkills(skills,{get:(_id,key)=>key==='startingSkillsMode'?'selected':'[]'}).length,2);
+assert.equal(settingsGroupFor('startingSkillsMode'),'creation');
+assert.equal(settingPresentation('startingSkillsMode','th').name,'การเลือกทักษะเริ่มต้น');
+assert.equal(settingPresentation('startingSkillsMode','en').name,'Starting skill selection');
+const engine=read('brp-uge.mjs');
+assert.match(engine,/game\.settings\.register\('brp-uge','startingSkillsKeys'/);
+assert.match(engine,/installBRPSettingsUI\(\)/);
+assert.match(read('templates/actor/character-sheet.hbs'),/data-action="configureStartingSkills"/);
+for(const file of ['templates/actor/character-sheet.hbs','templates/actor/npc-sheet.hbs']){
+ const template=read(file);
+ assert.doesNotMatch(template,/\{\{skill\.englishName\}\}<\/small>/);
+ assert.match(template,/title="\{\{#if skill\.showEnglishName\}\}\{\{skill\.englishName\}\}/);
+}
+const css=read('styles/brp-v1216-usability.css');
+assert.match(css,/background-image:/);
+assert.match(css,/\.brp-banner::before \{display:none/);
+assert.match(css,/\.brp-header-icon i/);
+console.log('PASS v1.21.6 settings groups, selected baseline Skills, tooltips, and notebook presentation');
