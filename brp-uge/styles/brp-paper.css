@@ -1,0 +1,717 @@
+/* BRP UGE v1.21 — The Character Notebook / Field Notes.
+ * Core owns exactly two schemes. Custom appearance modules can override CSS
+ * custom properties and --brp-header-art without patching engine files.
+ * This file MUST be last in the system's stylesheet list.
+ */
+html[data-brp-theme="light"], html[data-brp-theme="light"] .application.brp-uge,
+html[data-brp-theme="light"] .brp-uge, html[data-brp-theme="light"] .brp-chat-card,
+html[data-brp-theme="light"] .brp-roll-confirm, html[data-brp-theme="light"] .brp-tooltip {
+  color-scheme:light;
+  --brp-bg:#e9dfcf;
+  --brp-panel:#f8efe0;
+  --brp-surface:#efe2cd;
+  --brp-deep:#d8c6ab;
+  --brp-paper:#f5ead9;
+  --brp-ink:#261d19;
+  --brp-border:#bba78a;
+  --brp-border-strong:#7e6048;
+  --brp-text:#28201c;
+  --brp-muted:#49372f;
+  --brp-accent:#902127;
+  --brp-accent-quiet:#b65a54;
+  --brp-tertiary:#7f5b44;
+  --brp-tertiary-glow:#7f5b4428;
+  --brp-focus:#365f8b;
+  --brp-success:#496a4a;
+  --brp-danger:#9b2d2f;
+  --brp-glaze:#7b604322;
+  --brp-highlight:#ebdcc5;
+  --brp-rule:#80674a2e;
+  --brp-margin-rule:#b12f343d;
+  --brp-paper-texture:url('../assets/ui/paper-light.webp');
+  --brp-corner:5px;
+  --brp-radius-ornament:4px;
+  --brp-edge:1px solid var(--brp-border);
+  --brp-header-art:none;
+  --brp-heading-font:'Noto Serif Thai','Sarabun',Georgia,serif;
+  --brp-body-font:'Noto Sans Thai Looped','Sarabun',Tahoma,system-ui,sans-serif;
+  --brp-numeric-font:'JetBrains Mono',ui-monospace,monospace;
+  --background:var(--brp-paper);
+  --color-text-primary:var(--brp-text);
+  --color-text-secondary:var(--brp-muted);
+  --color-text-emphatic:var(--brp-ink);
+  --input-background-color:#fffaf0;
+  --input-text-color:var(--brp-ink);
+  --input-border-color:#6a564f;
+}
+html[data-brp-theme="dark"], html[data-brp-theme="dark"] .application.brp-uge,
+html[data-brp-theme="dark"] .brp-uge, html[data-brp-theme="dark"] .brp-chat-card,
+html[data-brp-theme="dark"] .brp-roll-confirm, html[data-brp-theme="dark"] .brp-tooltip {
+  color-scheme:dark;
+  --brp-bg:#0f0b0a;
+  --brp-panel:#211816;
+  --brp-surface:#2b211e;
+  --brp-deep:#0b0807;
+  --brp-paper:#181311;
+  --brp-ink:#fbf3e5;
+  --brp-border:#594a44;
+  --brp-border-strong:#bb9874;
+  --brp-text:#f8efe4;
+  --brp-muted:#e4d7c8;
+  --brp-accent:#ef8982;
+  --brp-accent-quiet:#c58b84;
+  --brp-tertiary:#d7b186;
+  --brp-tertiary-glow:#d7b1862a;
+  --brp-focus:#a9c9df;
+  --brp-success:#a8c1a6;
+  --brp-danger:#ec9b96;
+  --brp-glaze:#f0d7b315;
+  --brp-highlight:#342826;
+  --brp-rule:#f7ecd81f;
+  --brp-margin-rule:#d8666444;
+  --brp-paper-texture:url('../assets/ui/paper-dark.webp');
+  --brp-corner:5px;
+  --brp-radius-ornament:4px;
+  --brp-edge:1px solid var(--brp-border);
+  --brp-header-art:none;
+  --brp-heading-font:'Noto Serif Thai','Sarabun',Georgia,serif;
+  --brp-body-font:'Noto Sans Thai Looped','Sarabun',Tahoma,system-ui,sans-serif;
+  --brp-numeric-font:'JetBrains Mono',ui-monospace,monospace;
+  --background:var(--brp-paper);
+  --color-text-primary:var(--brp-text);
+  --color-text-secondary:var(--brp-muted);
+  --color-text-emphatic:var(--brp-ink);
+  --input-background-color:#241b19;
+  --input-text-color:var(--brp-ink);
+  --input-border-color:#6a564f;
+}
+/* Protect core Foundry from the theme; only BRP windows and BRP chat content. */
+html[data-brp-theme] .application.brp-uge,
+html[data-brp-theme] .application.brp-uge .window-content,
+html[data-brp-theme] .application.brp-uge .brp-uge {
+  color:var(--brp-text)!important;
+  background-color:var(--brp-paper)!important;
+  font-family:var(--brp-body-font)!important;
+}
+html[data-brp-theme] .application.brp-uge .window-content {
+  background-image:
+    linear-gradient(90deg, transparent 0 29px, var(--brp-margin-rule) 29px 30px, transparent 30px 100%),
+    repeating-linear-gradient(180deg,transparent 0 34px,var(--brp-rule) 35px,transparent 36px),
+    linear-gradient(180deg,var(--brp-glaze),transparent 110px),
+    var(--brp-paper-texture)!important;
+  color:var(--brp-text)!important;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat!important;
+  background-position:left top,left top,left top,center center!important;
+  background-size:auto,auto,100% 180px,cover!important;
+  background-blend-mode:normal,normal,multiply,normal!important;
+  scrollbar-color:var(--brp-border-strong) var(--brp-panel)!important;
+}
+html[data-brp-theme] .application.brp-uge :is(h1,h2,h3,.panel-header h3,.cat-header h3,.comp-top h2) {
+  color:var(--brp-accent)!important;
+  font-family:var(--brp-heading-font)!important;
+  text-shadow:none!important;
+  letter-spacing:.02em!important;
+  text-transform:uppercase!important;
+}
+html[data-brp-theme] .application.brp-uge :is(.brp-brand-overline,.brp-brand-footnote,.brp-personal-label,.field-label,.pool-label,.cat-header h3) {
+  color:var(--brp-muted)!important;
+}
+/* Index-card header: a plain ledger, not a game-genre painting. */
+html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell {
+  grid-template-rows:156px minmax(0,1fr)!important;
+  gap:10px 13px!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner {
+  border:1px solid var(--brp-border-strong)!important;
+  border-radius:var(--brp-corner)!important;
+  background-color:var(--brp-panel)!important;
+  background-image:
+    linear-gradient(90deg,transparent 0 28px,var(--brp-margin-rule) 28px 29px,transparent 29px),
+    repeating-linear-gradient(0deg,transparent 0 35px,var(--brp-rule) 35px 36px),
+    linear-gradient(180deg,var(--brp-glaze),transparent 120px),
+    var(--brp-paper-texture)!important;
+  background-size:auto!important;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat!important;
+  background-position:left top,left top,left top,center center!important;
+  background-size:auto,auto,100% 180px,cover!important;
+  background-blend-mode:normal,normal,multiply,normal!important;
+  box-shadow:0 3px 8px #00000015,inset 0 0 0 4px var(--brp-glaze)!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner::after {
+  background:var(--brp-border)!important;
+  opacity:.8!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner-atmosphere {background:none!important;}
+html[data-brp-theme] .brp-uge .brp-banner-copy {padding-left:40px!important;flex-basis:245px;}
+html[data-brp-theme] .brp-uge .brp-brand-title {
+  color:var(--brp-accent)!important;
+  text-shadow:none!important;
+  letter-spacing:.03em!important;
+  font-size:22px!important;
+  letter-spacing:.06em!important;
+  text-transform:uppercase!important;
+}
+html[data-brp-theme] .brp-uge .brp-brand-footnote {color:var(--brp-muted)!important;letter-spacing:.10em!important;}
+html[data-brp-theme] .brp-uge .brp-brand-star {color:var(--brp-tertiary)!important;}
+html[data-brp-theme] .brp-uge .brp-banner .sidebar-identity {
+  margin:10px 60px 10px 0!important;
+  background:var(--brp-glaze)!important;
+  border-left:1px solid var(--brp-border)!important;
+  gap:7px!important;
+  padding:10px 16px 9px 16px!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner .profile-img.compact-img {
+  border:2px solid var(--brp-border-strong)!important;
+  box-shadow:0 2px 5px #00000026!important;
+  height:70px!important;width:70px!important;flex-basis:70px!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner .char-name-input.compact-name {
+  color:var(--brp-ink)!important;
+  font-family:var(--brp-heading-font)!important;
+  text-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner :is(.brp-occupation-name,.brp-readonly-value),
+html[data-brp-theme] .brp-uge .brp-banner .field-box.mini :is(input,span) {
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .brp-uge :is(.panel-card,.skill-category-block,.inventory-panel,.brp-status-panel,.wiz-section,.comp-filter-panel,.brp-reference-panel,.brp-item-rulebook,.sidebar-identity,.pool-card,.char-mini-card) {
+  background:linear-gradient(180deg,var(--brp-glaze),transparent 80px),var(--brp-panel)!important;
+  color:var(--brp-text)!important;
+  border:1px solid var(--brp-border)!important;
+  border-radius:var(--brp-corner)!important;
+  box-shadow:0 1px 3px #00000014,inset 0 0 0 1px #ffffff12!important;
+}
+html[data-brp-theme] .brp-uge :is(.panel-header,.cat-header,.item-header,.comp-top,.wiz-stepper) {
+  background:linear-gradient(180deg,#ffffff0f,transparent),var(--brp-surface)!important;
+  color:var(--brp-text)!important;
+  border-color:var(--brp-border)!important;
+  border-radius:var(--brp-corner)!important;
+  box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge :is(.item-row,.skill-play-row,.skill-edit-row,.wound-row,.brp-status-row,.comp-row) {
+  color:var(--brp-text)!important;
+  border-color:var(--brp-border)!important;
+  background:transparent!important;
+}
+html[data-brp-theme] .brp-uge :is(.item-row,.skill-play-row,.skill-edit-row,.wound-row,.brp-status-row,.comp-row):hover {
+  background:var(--brp-highlight)!important;
+}
+html[data-brp-theme] .brp-uge :is(.sheet-body,.sheet-sidebar,.sheet-main,.wiz-body,.brp-item-sheet,.brp-compendium) {
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .brp-uge :is(.brp-roll-value,.brp-attack-cta,.brp-power-use) {
+  background:var(--brp-highlight)!important;
+  color:var(--brp-accent)!important;
+  border-color:var(--brp-border-strong)!important;
+  box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge :is(.brp-btn,.tab-btn,.step-btn,.mini-rec-btn,.icon-btn,.brp-header-icon,.brp-edit-switch,.wiz-step-btn,.wiz-prof-card),
+html[data-brp-theme] .brp-chat-card :is(button,.dmg-btn) {
+  color:var(--brp-text)!important;
+  border-color:var(--brp-border)!important;
+  text-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge :is(.brp-btn,.tab-btn,.step-btn,.mini-rec-btn,.icon-btn,.brp-header-icon,.brp-edit-switch):hover {
+  color:var(--brp-accent)!important;
+  border-color:var(--brp-border-strong)!important;
+  background-color:var(--brp-highlight)!important;
+}
+html[data-brp-theme] .brp-uge :is(.brp-btn,.tab-btn,.step-btn,.mini-rec-btn,.icon-btn,.brp-header-icon,.brp-edit-switch,.wiz-step-btn).active,
+html[data-brp-theme] .brp-uge :is(.tab-btn,.wiz-step-btn)[aria-selected="true"],
+html[data-brp-theme] .brp-chat-card :is(button,.dmg-btn).active {
+  background:linear-gradient(180deg,#ffffff10,transparent),var(--brp-highlight)!important;
+  color:var(--brp-accent)!important;
+  border-color:var(--brp-accent)!important;
+  box-shadow:inset 0 -2px 0 var(--brp-accent-quiet)!important;
+}
+html[data-brp-theme] .brp-uge :is(.panel-header,.cat-header,.item-header,.comp-top,.wiz-stepper) :is(h1,h2,h3),
+html[data-brp-theme] .brp-uge .cat-header h3 {color:var(--brp-accent)!important;}
+html[data-brp-theme] .brp-uge :is(input:not([type="checkbox"]):not([type="radio"]),select,textarea),
+html[data-brp-theme] .brp-roll-confirm :is(input,select,textarea) {
+  background:var(--input-background-color)!important;
+  color:var(--input-text-color)!important;
+  border:1px solid var(--input-border-color)!important;
+  border-radius:3px!important;
+  box-shadow:none!important;
+  opacity:1!important;
+}
+html[data-brp-theme] .brp-uge input:read-only:not([type="checkbox"]):not([type="radio"]) {
+  background:linear-gradient(180deg,#ffffff0f,transparent),var(--brp-surface)!important;
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .brp-uge :is(button,input,select,textarea):focus-visible {
+  outline:2px solid var(--brp-focus)!important;
+  outline-offset:2px;
+}
+html[data-brp-theme] .brp-uge :is(.brp-tooltip,.brp-hint,.item-type-tag,.skill-category-tag,.brp-chip),
+html[data-brp-theme] .brp-roll-confirm {
+  background:var(--brp-panel)!important;
+  color:var(--brp-text)!important;
+  border-color:var(--brp-border)!important;
+}
+html[data-brp-theme] .brp-uge :is(.brp-stat-effective-value,.pool-val,.skill-total,.char-mini-card .char-key) {
+  color:var(--brp-ink)!important;
+}
+/* Chat is rendered outside the app root, so give it local paper variables. */
+html[data-brp-theme] .brp-chat-card {
+  color:var(--brp-text)!important;
+  background:var(--brp-panel)!important;
+  border:1px solid var(--brp-border-strong)!important;
+  border-radius:var(--brp-corner)!important;
+  box-shadow:0 2px 6px #00000020!important;
+}
+html[data-brp-theme] .brp-chat-card :is(.card-title,.card-actor,.dice-total,.verdict-badge,.brp-chat-metric) {
+  color:var(--brp-accent)!important;
+  text-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge :is(.brp-resource-meter,.brp-resource-meter::-webkit-progress-bar) {
+  background:var(--brp-deep)!important;
+}
+html[data-brp-theme] .brp-uge .brp-resource-meter::-webkit-progress-value {background:var(--brp-accent)!important;}
+html[data-brp-theme] .brp-uge .brp-resource-meter::-moz-progress-bar {background:var(--brp-accent)!important;}
+/* De-emphasize notebook artifacts on narrow widths. */
+@media(max-width:820px){
+ html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell {grid-template-rows:160px auto minmax(340px,1fr)!important;}
+ html[data-brp-theme] .brp-uge .brp-banner .sidebar-identity {margin-right:10px!important;}
+}
+@media(max-width:520px){
+ html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell {grid-template-rows:auto auto minmax(320px,1fr)!important;}
+ html[data-brp-theme] .brp-uge .brp-banner-copy {padding-left:18px!important;}
+}
+@media(prefers-reduced-motion:reduce){
+ html[data-brp-theme] .application.brp-uge * {transition:none!important;}
+}
+
+/* Tertiary accent is defined directly on this older layout; override it here. */
+html[data-brp-theme="light"] .brp-uge.brp-sheet-v1173,
+html[data-brp-theme="light"] .brp-uge .brp-sheet-v1173 {
+  --brp-tertiary:#80583f; --brp-tertiary-glow:#80583f2a;
+}
+html[data-brp-theme="dark"] .brp-uge.brp-sheet-v1173,
+html[data-brp-theme="dark"] .brp-uge .brp-sheet-v1173 {
+  --brp-tertiary:#d8ae7c; --brp-tertiary-glow:#d8ae7c2a;
+}
+html[data-brp-theme] .brp-uge .brp-paper-toggle {border-style:solid!important;}
+html[data-brp-theme] .brp-uge .brp-paper-toggle:focus-visible {outline:2px solid var(--brp-focus)!important;}
+
+/* Final paper details: ring-binder holes, ruled personal details and ink labels. */
+html[data-brp-theme] .brp-uge .brp-banner::before {
+  content:''; position:absolute; top:13px; bottom:13px; left:10px;
+  width:9px; pointer-events:none; z-index:2; opacity:.76;
+  background:radial-gradient(circle at 4px 4px,var(--brp-border-strong) 0 2px,var(--brp-deep) 2.5px 3.5px,transparent 4px) repeat-y;
+  background-size:9px 37px;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details {
+  background:var(--brp-surface)!important;
+  border-left:1px solid var(--brp-border)!important;
+  border-radius:var(--brp-corner)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-value,
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-link {
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-input {
+  color:var(--brp-text)!important;
+  background:var(--input-background-color)!important;
+  border-color:var(--input-border-color)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity {
+  color:var(--brp-ink)!important;
+  background:var(--brp-glaze)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-label {color:var(--brp-muted)!important;}
+
+/* Combat tracker, planner and scene timeline live outside Actor applications. */
+html[data-brp-theme] :is(.brp-combat-phase-bar,.brp-combat-planner,.brp-combatant-extra,#brp-scene-phase-hud) {
+  background:var(--brp-panel)!important;
+  color:var(--brp-text)!important;
+  border:1px solid var(--brp-border)!important;
+  border-radius:var(--brp-corner)!important;
+  box-shadow:0 2px 8px #00000025!important;
+  font-family:var(--brp-body-font)!important;
+}
+html[data-brp-theme] :is(.brp-combat-phase-bar,.brp-combat-planner,.brp-combatant-extra,#brp-scene-phase-hud) :is(.brp-phase-title,.brp-phase-legend,.brp-phase-meta,.brp-phase-meta-simple,.brp-hud-round,.brp-hud-current,.brp-hud-turn,.brp-hud-progress,.brp-planner-heading,.brp-planner-summary,.brp-queue-label,.brp-c-rank,.brp-c-status,.brp-c-note-readonly) {
+  color:var(--brp-text)!important;
+  text-shadow:none!important;
+}
+html[data-brp-theme] :is(.brp-combat-phase-bar,.brp-combat-planner,.brp-combatant-extra,#brp-scene-phase-hud) :is(button,.brp-phase-pill,.brp-hud-step,.brp-queue-chip) {
+  background:linear-gradient(180deg,#ffffff0f,transparent),var(--brp-surface)!important;
+  color:var(--brp-text)!important;
+  border-color:var(--brp-border)!important;
+}
+html[data-brp-theme] :is(.brp-combat-phase-bar,.brp-combat-planner,.brp-combatant-extra,#brp-scene-phase-hud) :is(.brp-phase-pill.active,.brp-hud-step.active,.brp-phase-nav.primary) {
+  background:var(--brp-highlight)!important;
+  color:var(--brp-accent)!important;
+  border-color:var(--brp-border-strong)!important;
+  box-shadow:inset 0 0 0 1px var(--brp-glaze)!important;
+}
+html[data-brp-theme] :is(.brp-combat-planner,.brp-combatant-extra) :is(input,select,textarea) {
+  background:var(--input-background-color)!important;
+  color:var(--input-text-color)!important;
+  border-color:var(--input-border-color)!important;
+}
+html[data-brp-theme] :is(.brp-combat-tracker-tools,.brp-combat-planner,.brp-combatant-extra,#brp-scene-phase-hud) :is(button,input,select,textarea):focus-visible {
+  outline:2px solid var(--brp-focus)!important;outline-offset:2px;
+}
+
+
+html[data-brp-theme] .brp-uge :is(.brp-brand-overline,.brp-brand-footnote,.brp-personal-label,.field-label,.pool-label,.cat-header h3,.item-type-tag,.skill-category-tag,.brp-chip) {
+  color:color-mix(in srgb, var(--brp-text) 78%, var(--brp-accent) 22%)!important;
+}
+html[data-brp-theme] .brp-uge :is(.brp-readonly-value,.field-box span,.field-box input,.char-name-input,.brp-occupation-name,.brp-personal-value,.brp-personal-link,.skill-name,.item-name,.comp-name) {
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .brp-uge :is(.tab-btn,.brp-btn,.step-btn,.mini-rec-btn,.icon-btn,.brp-header-icon,.brp-edit-switch,.wiz-step-btn) {
+  background:linear-gradient(180deg,#ffffff08,transparent),var(--brp-panel)!important;
+}
+html[data-brp-theme="dark"] .application.brp-uge .window-content,
+html[data-brp-theme="dark"] .brp-chat-card {
+  box-shadow:inset 0 0 0 1px #ffffff08!important;
+}
+html[data-brp-theme="dark"] .brp-uge :is(.panel-card,.skill-category-block,.inventory-panel,.brp-status-panel,.wiz-section,.comp-filter-panel,.brp-reference-panel,.brp-item-rulebook,.sidebar-identity,.pool-card,.char-mini-card) {
+  box-shadow:0 1px 4px #00000040,inset 0 0 0 1px #ffffff08!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner,
+html[data-brp-theme] .application.brp-uge .window-content {
+  image-rendering:auto!important;
+}
+
+
+/* BRP UGE v1.21.3 — Real generated paper material and readable ink.
+ * Texture source is a generated natural paper image, not a procedural paint script.
+ * Applied in the final core stylesheet so legacy hard-coded labels cannot undo contrast.
+ */
+html[data-brp-theme="light"],
+html[data-brp-theme="light"] :is(.application.brp-uge,.brp-uge,.brp-chat-card,.brp-roll-confirm,.brp-tooltip) {
+  --brp-primary-text:#28201c;
+  --brp-secondary-text:#44332b;
+  --brp-help-text:#49372f;
+  --brp-caption-text:#43312b;
+  --brp-placeholder-text:#5a493e;
+  --brp-paper-wash:rgba(250,243,233,.32);
+}
+html[data-brp-theme="dark"],
+html[data-brp-theme="dark"] :is(.application.brp-uge,.brp-uge,.brp-chat-card,.brp-roll-confirm,.brp-tooltip) {
+  --brp-primary-text:#f8efe4;
+  --brp-secondary-text:#e8dccc;
+  --brp-help-text:#dfd2c1;
+  --brp-caption-text:#f1e5d6;
+  --brp-placeholder-text:#d4c2b1;
+  --brp-paper-wash:rgba(17,13,12,.40);
+}
+/* One scene-width material, never tiled. Faint ruled lines are CSS controls, not texture. */
+html[data-brp-theme] .application.brp-uge .window-content {
+  background-image:
+    linear-gradient(90deg,transparent 0 29px,var(--brp-margin-rule) 29px 30px,transparent 30px),
+    repeating-linear-gradient(180deg,transparent 0 40px,var(--brp-rule) 40px 41px,transparent 41px 42px),
+    linear-gradient(var(--brp-paper-wash),var(--brp-paper-wash)),
+    var(--brp-paper-texture)!important;
+  background-repeat:no-repeat,no-repeat,no-repeat,no-repeat!important;
+  background-position:left top,left top,center center,center center!important;
+  background-size:auto,auto,cover,cover!important;
+  background-attachment:local,local,local,local!important;
+  background-blend-mode:normal,normal,normal,normal!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner {
+  background-image:
+    linear-gradient(90deg,transparent 0 28px,var(--brp-margin-rule) 28px 29px,transparent 29px),
+    linear-gradient(var(--brp-paper-wash),var(--brp-paper-wash)),
+    var(--brp-paper-texture)!important;
+  background-repeat:no-repeat,no-repeat,no-repeat!important;
+  background-position:left top,center center,center center!important;
+  background-size:auto,cover,cover!important;
+  background-blend-mode:normal,normal,normal!important;
+}
+/* Captions, subtitles and helper text: prefer WCAG AA values over legacy pale colors. */
+html[data-brp-theme] .application.brp-uge :is(
+  .brp-brand-overline,.brp-brand-footnote,.brp-personal-label,.brp-display-label,
+  .field-label,.pool-label,.pool-max-hint,.pool-sep,.field-hint,.brp-hint,.brp-tooltip,
+  .empty-hint,.hint,.help-text,.helper-text,.form-hint,.form-description,
+  .wiz-drop-hint,.wiz-intro,.wiz-hint,.wiz-subtitle,.wiz-note,.wiz-rule-note,
+  .brp-description,.brp-muted,.brp-help,.brp-note,.brp-footnote,
+  .comp-era-tag,.comp-folder-tag,.comp-ref-tag,.comp-hint,.comp-meta,
+  .item-description,.item-hint,.rule-reference,.rule-hint,
+  .skill-source-label,.brp-personal-subtitle,.brp-occupation-name
+) {color:var(--brp-secondary-text)!important;opacity:1!important;text-shadow:none!important;}
+html[data-brp-theme] .application.brp-uge :is(
+  .brp-brand-overline,.brp-brand-footnote,.brp-personal-label,.field-label,
+  .pool-max-hint,.pool-sep,.brp-personal-subtitle,.brp-display-label
+) {color:var(--brp-caption-text)!important;opacity:1!important;}
+html[data-brp-theme] .application.brp-uge .brp-brand-footnote {
+  font-size:10.5px!important;font-weight:700!important;line-height:1.45!important;
+  letter-spacing:.06em!important;opacity:1!important;
+}
+html[data-brp-theme] .application.brp-uge :is(.brp-brand-overline,.brp-personal-label,.field-label) {
+  font-weight:650!important;
+}
+/* Explanation content in Items, Wizard, Journal-like references and library. */
+html[data-brp-theme] .application.brp-uge :is(
+  .brp-rulebook-content,.brp-item-rulebook,.brp-reference-panel,.brp-reference-text,
+  .comp-rulebook-text,.comp-description,.brp-wealth-description,.wiz-rule-text,
+  .wiz-rule-copy,.sheet-notes,.item-notes,.prosemirror,.editor-content
+) {color:var(--brp-primary-text)!important;opacity:1!important;}
+html[data-brp-theme] .application.brp-uge :is(.brp-description,.brp-hint,.brp-brand-footnote,.wiz-drop-hint) * {
+  text-shadow:none!important;
+}
+/* Inputs and placeholders should remain readable even when disabled/edit mode is off. */
+html[data-brp-theme] .application.brp-uge :is(input,textarea,select)::placeholder {
+  color:var(--brp-placeholder-text)!important;opacity:1!important;
+}
+html[data-brp-theme] .application.brp-uge :is(input,textarea,select) {
+  color:var(--brp-primary-text)!important;
+}
+html[data-brp-theme] .application.brp-uge :is(input,textarea,select):read-only {
+  color:var(--brp-primary-text)!important;opacity:1!important;
+}
+html[data-brp-theme] .brp-uge .sidebar-combat-strip :is(span,strong),
+html[data-brp-theme] .brp-uge .strip-metric :is(span,strong),
+html[data-brp-theme] .brp-uge .brp-stat-effective-value,
+html[data-brp-theme] .brp-uge .brp-personal-value,
+html[data-brp-theme] .brp-uge .brp-readonly-value {
+  color:var(--brp-primary-text)!important;opacity:1!important;
+}
+html[data-brp-theme] .brp-uge .sidebar-combat-strip .accent {color:var(--brp-accent)!important;}
+/* Preserve the red ink hierarchy with acceptable contrast in both schemes. */
+html[data-brp-theme] .application.brp-uge :is(h1,h2,h3,.brp-brand-title,.panel-header h3,.cat-header h3,.comp-top h2) {
+  color:var(--brp-accent)!important;
+}
+html[data-brp-theme] .brp-uge :is(.tab-btn,.brp-btn,.brp-header-icon,.wiz-step-btn,.mini-rec-btn) {
+  color:var(--brp-primary-text)!important;
+}
+html[data-brp-theme] .brp-chat-card :is(.card-body,.card-meta,.roll-hint,.brp-roll-description) {
+  color:var(--brp-primary-text)!important;
+}
+/* No inherited low-opacity rule may erase UI content. Explicitly preserve true disabled state. */
+html[data-brp-theme] .brp-uge :is(.disabled-text,.text-muted,.muted):not([aria-disabled="true"]) {
+  color:var(--brp-secondary-text)!important;
+}
+html[data-brp-theme] .brp-uge :is(button,input,select,textarea):disabled {
+  opacity:.65!important;
+}
+
+/* v1.21.4 — True charcoal night notebook. Red is an accent, NOT a base hue.
+ * Override legacy warm-brown values at the end of the core stylesheet.
+ * This stays inside BRP application surfaces; Foundry's own UI is unchanged.
+ */
+html[data-brp-theme="dark"],
+html[data-brp-theme="dark"] :is(.application.brp-uge,.brp-uge,.brp-chat-card,.brp-roll-confirm,.brp-tooltip) {
+  --brp-bg:#090b0d;
+  --brp-panel:#16191c;
+  --brp-surface:#202428;
+  --brp-deep:#0b0d0f;
+  --brp-paper:#101316;
+  --brp-ink:#f6f3ed;
+  --brp-text:#f2f0eb;
+  --brp-muted:#d4d1cb;
+  --brp-border:#41474d;
+  --brp-border-strong:#848e97;
+  --brp-tertiary:#afbac5;
+  --brp-tertiary-glow:#aab3bf20;
+  --brp-accent:#d96c72;
+  --brp-accent-quiet:#c78b90;
+  --brp-danger:#e18a90;
+  --brp-glaze:#ffffff0a;
+  --brp-highlight:#292e33;
+  --brp-rule:#e7edf01c;
+  --brp-margin-rule:#d96c7236;
+  --brp-primary-text:#f2f0eb;
+  --brp-secondary-text:#dad8d2;
+  --brp-help-text:#d2d2ce;
+  --brp-caption-text:#e4e1dc;
+  --brp-placeholder-text:#c4c9c9;
+  --brp-paper-wash:rgba(8,11,14,.88);
+  --input-background-color:#191d21;
+  --input-text-color:#f2f0eb;
+  --input-border-color:#626a71;
+  --background:#101316;
+  --color-text-primary:#f2f0eb;
+  --color-text-secondary:#dad8d2;
+  --color-text-emphatic:#ffffff;
+}
+html[data-brp-theme="dark"] .application.brp-uge :is(
+  h1,h2,h3,.panel-header h3,.cat-header h3,.comp-top h2,.brp-brand-title
+) {color:var(--brp-ink)!important;}
+/* Restrict the red-ink visual language to active navigation, special values
+ * and tiny notebook details rather than coloring every heading in red. */
+html[data-brp-theme="dark"] .brp-uge :is(
+  .tab-btn.active,.wiz-step-btn.active,.brp-btn.primary,.brp-attack-cta,
+  .brp-resource-meter::-webkit-progress-value
+) {border-color:var(--brp-accent)!important;}
+html[data-brp-theme="dark"] .brp-uge :is(.tab-btn.active,.wiz-step-btn.active,.brp-btn.primary) {
+  color:var(--brp-accent)!important;
+  background:var(--brp-highlight)!important;
+}
+html[data-brp-theme="dark"] .brp-uge .brp-brand-title {
+  border-left:3px solid var(--brp-accent);
+  padding-left:6px;
+}
+html[data-brp-theme="dark"] .brp-uge :is(
+  .brp-banner,.wiz-section,.panel-card,.skill-category-block,.inventory-panel,
+  .sidebar-identity,.brp-personal-details,.pool-card,.char-mini-card
+) {box-shadow:0 1px 3px #0009,inset 0 0 0 1px #fff1!important;}
+html[data-brp-theme="dark"] .brp-uge :is(
+  .brp-banner .sidebar-identity,.brp-banner .brp-personal-details
+) {background:#1c2024ee!important;}
+html[data-brp-theme="dark"] .brp-uge .brp-banner {
+  background-color:#15181b!important;
+}
+html[data-brp-theme="dark"] .brp-uge :is(.brp-stat-effective-value,.pool-val,.skill-total) {
+  color:var(--brp-ink)!important;
+}
+
+/* Compact, accessible status note on Step 4 of Character Creation Wizard. */
+html[data-brp-theme] .brp-uge .wiz-linked-skills-note {
+  margin:7px 0 12px;
+  padding:9px 12px;
+  color:var(--brp-primary-text)!important;
+  background:var(--brp-panel)!important;
+  border-left:3px solid var(--brp-accent);
+  border-radius:2px;
+  font-size:12px;
+  line-height:1.65;
+  opacity:1!important;
+}
+html[data-brp-theme] .brp-uge .wiz-link-warning {
+  color:var(--brp-danger)!important;
+  display:block;
+  font-weight:750;
+}
+
+/* v1.21.5: unified readable controls; old genre-era selectors contain fixed
+   dark colors, so the final notebook palette must win for both appearances. */
+html[data-brp-theme] .application.brp-uge .brp-uge :is(
+  .meta-text,.wiz-rules-summary,.wiz-linked-skills-note,.wiz-drop-hint,
+  .wiz-summary-head,.empty-hint,.brp-hint,.brp-item-rulebook-note,
+  .brp-item-rulebook-copy,.brp-item-rulebook-english,.brp-item-rulebook-source,
+  .brp-item-rulebook-warning,.comp-result-summary,.comp-filter-field,.comp-filter-field span,
+  .note-description,.wiz-review-progress span,.wiz-review-progress small
+) {
+  color:var(--brp-secondary-text,var(--brp-text))!important;
+  opacity:1!important;
+  text-shadow:none!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-uge :is(
+  .wiz-rules-summary,.wiz-budget-bar,.wiz-budget-pill,.wiz-review-progress>div,
+  .wiz-personality-config,.wiz-power-board,.wiz-gear-box,.wiz-skill-header,
+  .wiz-skill-row,.comp-filter-panel,.comp-filter-field,.wiz-picked-row,
+  .wiz-rule-preview,.wiz-skill-name,.wiz-top-skills,.wiz-alloc-grp
+) {
+  background-color:var(--brp-panel)!important;
+  border-color:var(--brp-border)!important;
+  color:var(--brp-text)!important;
+  opacity:1!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-uge :is(
+  .wiz-skill-header,.wiz-budget-pill,.wiz-review-progress>div,.wiz-alloc-grp
+) :is(span,strong,small) {color:var(--brp-text)!important;opacity:1!important;}
+html[data-brp-theme] .application.brp-uge .brp-uge .wiz-budget-pill strong {
+  color:var(--brp-accent)!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-uge :is(
+  .wiz-alloc-grp .step-btn,.wiz-power-allocation .step-btn,.wiz-picked-heading button,
+  .wiz-power-filters select,.wiz-power-filters button,
+  .wiz-personality-config select,.wiz-personality-config .brp-btn
+) {
+  color:var(--brp-text)!important;
+  background:var(--brp-surface)!important;
+  border-color:var(--brp-border-strong)!important;
+  opacity:1!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-uge :is(
+  .wiz-skill-row,.wiz-picked-row,.wiz-rule-preview
+) :is(strong,b,small,span,summary,button) {text-shadow:none!important;}
+html[data-brp-theme] .brp-uge :is(input::placeholder,textarea::placeholder) {
+  color:var(--brp-placeholder-text,var(--brp-muted))!important;
+  opacity:1!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-uge .wiz-rule-preview {
+  border-left:3px solid var(--brp-accent)!important;
+  padding:10px 12px!important;
+  margin:9px 0 13px;
+}
+html[data-brp-theme] .brp-uge .wiz-rule-copy {
+  color:var(--brp-text)!important;
+  background:transparent!important;
+  white-space:pre-line;
+  overflow-wrap:anywhere;
+  line-height:1.7;
+  font-size:13px;
+  max-height:220px;
+  overflow:auto;
+  margin-top:7px;
+}
+html[data-brp-theme] .brp-uge .wiz-power-filters {
+  display:grid;
+  grid-template-columns:minmax(130px,1fr) minmax(220px,2fr) auto;
+  gap:9px;
+  align-items:end;
+}
+html[data-brp-theme] .brp-uge .wiz-power-filters .field-box {min-width:0;margin:0;}
+html[data-brp-theme] .brp-uge .wiz-power-filters .brp-btn {min-height:34px;}
+html[data-brp-theme] .brp-uge .wiz-selected-power-card,
+html[data-brp-theme] .brp-uge .wiz-picked-row {
+  display:block;
+  border:1px solid var(--brp-border)!important;
+  background:var(--brp-surface)!important;
+  border-radius:5px;
+  padding:8px 10px;
+  margin:6px 0;
+  min-width:0;
+}
+html[data-brp-theme] .brp-uge .wiz-picked-heading {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+html[data-brp-theme] .brp-uge .wiz-power-open {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  text-align:left;
+  min-width:0;
+  border:0!important;
+  background:transparent!important;
+  color:var(--brp-text)!important;
+  padding:3px 4px;
+  cursor:pointer;
+}
+html[data-brp-theme] .brp-uge .wiz-power-open:hover strong {text-decoration:underline;}
+html[data-brp-theme] .brp-uge .wiz-picked-heading small,
+html[data-brp-theme] .brp-uge .wiz-rule-preview small,
+html[data-brp-theme] .brp-uge .wiz-english-ref {
+  color:var(--brp-secondary-text,var(--brp-muted))!important;
+  font-size:11px;
+  font-weight:500;
+  line-height:1.45;
+  opacity:1!important;
+}
+html[data-brp-theme] .brp-uge .wiz-english-ref {display:block;}
+html[data-brp-theme] .brp-uge .wiz-picked-details {margin:6px 0 0;padding-top:5px;border-top:1px solid var(--brp-border);}
+html[data-brp-theme] .brp-uge .wiz-picked-details>summary {
+  cursor:pointer;
+  color:var(--brp-accent)!important;
+  font-weight:650;
+}
+html[data-brp-theme] .brp-uge .wiz-power-allocation {
+  display:flex;align-items:center;flex-wrap:wrap;gap:5px 8px;margin-top:5px;
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .brp-uge .wiz-power-allocation strong {margin-right:8px;min-width:24px;text-align:center;}
+html[data-brp-theme] .brp-uge .wiz-power-allocation>.step-btn {min-width:32px;}
+html[data-brp-theme] .brp-uge .wiz-error-notice {border-left:3px solid var(--brp-danger);padding:12px;}
+html[data-brp-theme] .application.brp-uge .brp-uge .wiz-section :is(button,select,input):disabled {
+  opacity:.65!important;
+  cursor:not-allowed;
+}
+html[data-brp-theme] .application.brp-uge .brp-uge .wiz-section input:read-only {
+  background:var(--brp-surface)!important;
+  color:var(--brp-text)!important;
+  cursor:default;
+}
+@media(max-width:720px){
+ html[data-brp-theme] .brp-uge .wiz-power-filters {grid-template-columns:1fr;}
+}
+html[data-brp-theme] .brp-uge .brp-bilingual-display {display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;max-width:100%;text-align:left;white-space:normal;line-height:1.3;}
+html[data-brp-theme] .brp-uge .brp-bilingual-display small {font-family:var(--brp-body-font);font-size:10px;font-weight:500;color:var(--brp-secondary-text,var(--brp-muted))!important;line-height:1.3;opacity:1!important;}

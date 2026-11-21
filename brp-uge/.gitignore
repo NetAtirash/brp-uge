@@ -1,0 +1,15 @@
+# Local tooling and operating-system files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+node_modules/
+.env
+.env.*
+*.log
+coverage/
+.nyc_output/
+
+# Build archives and temporary exports
+*.zip
+*.tmp

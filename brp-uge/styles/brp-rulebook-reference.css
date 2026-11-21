@@ -1,0 +1,35 @@
+/* v1.19.0: searchable, in-app rulebook references without a separate rulebook window. */
+.brp-compendium-window .comp-row{position:relative;flex-wrap:wrap}
+.brp-compendium-window .comp-actions{flex-wrap:wrap;align-items:center}
+.brp-compendium-window .comp-rulebook-inline{display:inline-block;position:static;margin:0}
+.brp-compendium-window .comp-rulebook-inline>summary{cursor:pointer;display:inline-flex;gap:.4rem;align-items:center;padding:.35rem .52rem;border:1px solid var(--brp-border, #697078);border-radius:3px;font-size:.875rem;list-style:none;color:var(--brp-accent, #e9c47a)}
+.brp-compendium-window .comp-rulebook-inline>summary::-webkit-details-marker{display:none}
+.brp-compendium-window .comp-rulebook-inline[open]{flex-basis:100%;width:100%}
+.brp-compendium-window .comp-rulebook-inline[open]>.comp-rulebook-panel{position:relative;margin-top:.5rem;max-height:340px;overflow:auto;padding:.7rem .8rem;border-top:1px solid var(--brp-border,#697078);background:rgba(0,0,0,.12);color:var(--brp-text,#eef0ee);line-height:1.65}
+.brp-compendium-window .comp-rulebook-provenance{font-size:.82rem;font-weight:600;color:var(--brp-accent,#e9c47a);margin-bottom:.45rem}
+.brp-compendium-window .comp-rulebook-text{font-family:var(--brp-font-body, 'Noto Sans Thai Looped',Tahoma,sans-serif);white-space:pre-line;overflow-wrap:anywhere;font-size:.92rem;line-height:1.7}
+.brp-compendium-window .comp-rulebook-original{margin-top:.85rem;padding-top:.5rem;border-top:1px solid var(--brp-border,#697078)}
+.brp-compendium-window .comp-rulebook-original>summary{cursor:pointer;list-style:revert;font-size:.82rem;margin-bottom:.3rem}
+
+.brp-chat-card .brp-rule-reference-chat-text{white-space:pre-line;line-height:1.6;overflow-wrap:anywhere}
+
+/* v1.19.1: make source material readable on standard Item sheets, not just in the catalog browser. */
+.brp-item-sheet .brp-item-rulebook{margin:.45rem 0 .65rem;border:1px solid var(--brp-border,#697078);border-radius:5px;overflow:hidden}
+.brp-item-sheet .brp-item-rulebook-summary{display:flex;gap:.55rem;align-items:center;cursor:pointer;background:rgba(125,125,125,.14);padding:.6rem .8rem;font-size:.95rem;font-weight:700;list-style:inside}
+.brp-item-sheet .brp-item-rulebook-pages{font-size:.8rem;font-weight:500;margin-left:auto;white-space:nowrap;color:var(--brp-accent,#e9c47a)}
+.brp-item-sheet .brp-item-rulebook-body{padding:.8rem .9rem;max-height:420px;overflow:auto;overscroll-behavior:contain}
+.brp-item-sheet .brp-item-rulebook-source{display:flex;flex-wrap:wrap;gap:.25rem .6rem;align-items:center;font-size:.82rem;margin-bottom:.5rem;color:var(--brp-accent,#e9c47a)}
+.brp-item-sheet .brp-item-rulebook-source span{color:var(--brp-text,#eef0ee);opacity:.78}
+.brp-item-sheet .brp-item-rulebook-example strong{color:#b3c6d5}
+.brp-item-sheet .brp-item-rulebook-copy,.brp-item-sheet .brp-item-rulebook-english{font-size:.91rem;line-height:1.8;white-space:pre-line;overflow-wrap:anywhere;user-select:text}
+.brp-item-sheet .brp-item-rulebook-warning{padding:.55rem .6rem;margin:.45rem 0;border:1px solid #b88a45;border-radius:4px;color:#f5d69b;line-height:1.6;font-size:.86rem}
+.brp-item-sheet .brp-item-rulebook-original{margin-top:.7rem;border-top:1px solid var(--brp-border,#697078);padding-top:.5rem}
+.brp-item-sheet .brp-item-rulebook-original>summary,.brp-item-sheet .brp-item-rulebook-edit>summary{cursor:pointer;font-size:.84rem;line-height:1.5}
+.brp-item-sheet .brp-item-rulebook-english{margin:.6rem 0;max-height:260px;overflow:auto}
+.brp-item-sheet .brp-item-rulebook-note{display:block;opacity:.72;margin-top:.6rem;line-height:1.55}
+.brp-item-sheet .brp-item-rulebook-edit{border-top:1px solid var(--brp-border,#697078);padding-top:.7rem;margin-top:.4rem}
+.brp-item-sheet .brp-item-rulebook-edit-inner{display:grid;grid-template-columns:inherit;gap:inherit;margin-top:.6rem}
+.brp-item-sheet .brp-item-rulebook-edit-inner>label,.brp-item-sheet .brp-item-rulebook-edit-inner>textarea{grid-column:1/-1}
+.brp-item-sheet .brp-item-rulebook-edit-inner>textarea{min-height:8rem}
+
+.brp-compendium-window .comp-rulebook-warning{border:1px solid #b88a45;color:#f5d69b;padding:.5rem .65rem;border-radius:3px;line-height:1.55;margin:.35rem 0 .75rem}

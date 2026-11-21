@@ -1,0 +1,297 @@
+<div class="brp-item-sheet">
+  <header class="item-header">
+    <img class="profile-img small" src="{{displayIcon}}" data-action="editImage" data-edit="img" title="{{item.name}}" />
+    <div class="item-header-meta">
+      <span class="item-type-tag">{{typeLabel}}</span>
+      <input type="hidden" name="name" value="{{item.name}}" />
+      <div class="brp-primary-local-name">
+        {{#if isTh}}
+          <label>ชื่อภาษาไทย <input class="char-name-input" name="system.nameTh" type="text" value="{{nameTh}}" placeholder="ชื่อภาษาไทย" /></label>
+        {{else}}
+          <label>English name <input class="char-name-input" name="system.nameEn" type="text" value="{{nameEn}}" placeholder="English name" /></label>
+        {{/if}}
+      </div>
+      <button type="button" class="brp-btn brp-language-toggle" data-action="toggleLanguageFields" aria-expanded="false"><i class="fa-solid fa-language"></i> {{#if isTh}}แสดงช่องข้อมูลทั้งสองภาษา{{else}}Show both languages{{/if}}</button>
+      <div class="brp-language-secondary brp-secondary-name">
+        {{#if isTh}}
+          <label>English name <input name="system.nameEn" type="text" value="{{nameEn}}" placeholder="English name" /></label>
+        {{else}}
+          <label>ชื่อภาษาไทย <input name="system.nameTh" type="text" value="{{nameTh}}" placeholder="ชื่อภาษาไทย" /></label>
+        {{/if}}
+      </div>
+    </div>
+  </header>
+
+  {{#if rulebookView}}
+    <details class="brp-item-rulebook" open>
+      <summary class="brp-item-rulebook-summary"><i class="fa-solid fa-book-open-reader" aria-hidden="true"></i>
+        {{#if isTh}}คู่มือกฎในไอเทม{{else}}Item rule reference{{/if}}
+        <span class="brp-item-rulebook-pages">{{#if isTh}}น.{{else}}pp.{{/if}} {{rulebookView.pages}}</span>
+      </summary>
+      <div class="brp-item-rulebook-body">
+        <div class="brp-item-rulebook-source {{#unless rulebookView.direct}}brp-item-rulebook-example{{/unless}}">
+          <strong>{{rulebookView.sourceLabel}}</strong>
+          <span>{{rulebookView.book}} · {{rulebookView.heading}}</span>
+        </div>
+        {{#if rulebookView.baseWarning}}
+          <p class="brp-item-rulebook-warning"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{rulebookView.baseWarning}}</p>
+        {{/if}}
+        <div class="brp-item-rulebook-copy" dir="auto">{{rulebookView.overview}}</div>
+        {{#if rulebookView.hasEnglishRule}}
+          <details class="brp-item-rulebook-original" {{#unless isTh}}open{{/unless}}>
+            <summary>{{#if isTh}}รายละเอียดเฉพาะจากหนังสือ (English source){{else}}Source rule details{{/if}}</summary>
+            <div class="brp-item-rulebook-english" lang="en">{{rulebookView.englishRule}}</div>
+          </details>
+        {{/if}}
+        <small class="brp-item-rulebook-note">{{#if isTh}}รายการตัวอย่างของโมดูลและค่าที่ GM ปรับเองไม่ใช่กฎบังคับจากหนังสือ{{else}}Module examples and GM-adjusted values are not official default rules{{/if}}</small>
+      </div>
+    </details>
+  {{/if}}
+
+  <section class="item-fields">
+    {{#if isOccupation}}
+      <label class="brp-wealth-enable"><input type="checkbox" name="system.wealthEnabled" {{checked system.wealthEnabled}} /> {{#if isTh}}เปิดแสดงระดับฐานะของอาชีพ{{else}}Show occupational wealth{{/if}}</label>
+      <div class="brp-wealth-picker" data-wealth-drop="wealthRef">
+        <label>{{#if isTh}}ระดับฐานะ (Wealth Item){{else}}Wealth (linked Item){{/if}}</label>
+        <select name="system.wealthRef">
+          <option value="">{{#if isTh}}ไม่กำหนดฐานะ{{else}}No wealth assigned{{/if}}</option>
+          {{#each wealthChoices as |o|}}<option value="{{o.ref}}" {{#if o.selected}}selected{{/if}}>{{o.label}}</option>{{/each}}
+        </select>
+        <small>{{#if isTh}}ลาก Wealth Item จาก Items Directory หรือ Compendium มาใส่ได้ หรือเลือกจากรายการ{{else}}Select a Wealth Item or drop one from Items/Compendium{{/if}}</small>
+      </div>
+      <div class="full-row brp-reference-panels">
+        {{#each referenceGroups as |g|}}
+          <div class="brp-reference-panel" data-ref-drop="{{g.field}}">
+            <strong>{{g.label}}</strong>
+            <div class="brp-ref-picker"><select data-ref-select="{{g.field}}"><option value="">{{#if @root.isTh}}เลือกจากคลัง / Items{{else}}Choose from Library / Items{{/if}}</option>
+              {{#each g.options as |o|}}<option value="{{o.ref}}">{{o.label}}</option>{{/each}}
+            </select><button type="button" class="brp-btn" data-action="addReference" data-ref-field="{{g.field}}"><i class="fa-solid fa-plus"></i></button></div>
+            <div class="brp-ref-chips">{{#each g.selected as |s|}}<span class="brp-ref-chip">{{s.label}} <button type="button" data-action="removeReference" data-ref-field="{{g.field}}" data-ref="{{s.ref}}" aria-label="Remove">×</button></span>{{/each}}</div>
+            <small>{{#if @root.isTh}}ลาก Item จาก Items Directory หรือ Compendium มาวางที่กรอบนี้ได้{{else}}Drop a Skill / Item here from Items Directory or Compendium{{/if}}</small>
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    {{#if isWealth}}
+      <label>{{#if isTh}}ลำดับฐานะ (ใช้เพื่อจัดเรียงเท่านั้น){{else}}Wealth tier (sorting only){{/if}}</label>
+      <input type="number" name="system.tier" min="0" max="20" value="{{system.tier}}" />
+      <p class="full-row brp-item-help">{{#if isTh}}ชื่อไทย/อังกฤษอยู่ด้านบน และแก้ไขได้ตามปกติ อาชีพจะอ้างอิง Wealth Item นี้โดยตรง{{else}}Edit the bilingual name above. Occupations reference this item directly.{{/if}}</p>
+    {{/if}}
+
+    {{#if isStatus}}
+      <p class="full-row brp-item-help">{{#if isTh}}เทมเพลตสถานะสำหรับลากลง Actor หรือเพิ่มจากคลัง โดยสถานะที่ใช้งานจริงจะอยู่ในแท็บสถานะของตัวละคร{{else}}Drag this preset to an Actor or add it from the library. Its active copy appears on the Actor's Status tab.{{/if}}</p>
+      <label>{{#if isTh}}ที่มา{{else}}Source{{/if}}</label>
+      <input name="system.source" type="text" value="{{system.source}}" />
+      <label>{{#if isTh}}ค่าสถานะที่ถูกปรับ{{else}}Characteristic{{/if}}</label>
+      <select name="system.characteristic">
+        <option value="" {{#if (eq system.characteristic "")}}selected{{/if}}>—</option>
+        {{#each statusCharacteristics as |v|}}<option value="{{v}}" {{#if (eq @root.system.characteristic v)}}selected{{/if}}>{{v}}</option>{{/each}}
+      </select>
+      <label>{{#if isTh}}ค่าที่เปลี่ยน (+/−){{else}}Characteristic modifier{{/if}}</label>
+      <input name="system.statModifier" type="number" value="{{system.statModifier}}" />
+      <label>{{#if isTh}}ขอบเขตทักษะ{{else}}Skill scope{{/if}}</label>
+      <select name="system.skillScope">
+        <option value="none" {{#if (eq system.skillScope "none")}}selected{{/if}}>—</option>
+        <option value="all" {{#if (eq system.skillScope "all")}}selected{{/if}}>{{#if isTh}}ทุกทักษะ{{else}}All skills{{/if}}</option>
+        <option value="visual" {{#if (eq system.skillScope "visual")}}selected{{/if}}>{{#if isTh}}ทักษะสายตา{{else}}Visual skills{{/if}}</option>
+        <option value="category" {{#if (eq system.skillScope "category")}}selected{{/if}}>{{#if isTh}}ทั้งหมวด{{else}}Whole category{{/if}}</option>
+        <option value="specific" {{#if (eq system.skillScope "specific")}}selected{{/if}}>{{#if isTh}}ทักษะที่เลือก{{else}}Selected skills{{/if}}</option>
+      </select>
+      <label>{{#if isTh}}หมวดทักษะ (กรณีเลือกทั้งหมวด){{else}}Category (if selected){{/if}}</label>
+      <select name="system.skillCategory">
+        <option value="">—</option>
+        {{#each statusCategories as |v|}}<option value="{{v.key}}" {{#if (eq @root.system.skillCategory v.key)}}selected{{/if}}>{{v.label}}</option>{{/each}}
+      </select>
+      <div class="full-row brp-reference-panels">
+        {{#each referenceGroups as |g|}}
+          <div class="brp-reference-panel" data-ref-drop="{{g.field}}"><strong>{{g.label}}</strong>
+            <div class="brp-ref-picker"><select data-ref-select="{{g.field}}"><option value="">{{#if @root.isTh}}เลือก Skill จากคลัง{{else}}Choose Skill from library{{/if}}</option>
+            {{#each g.options as |o|}}<option value="{{o.ref}}">{{o.label}}</option>{{/each}}</select>
+            <button type="button" class="brp-btn" data-action="addReference" data-ref-field="{{g.field}}">+</button></div>
+            <div class="brp-ref-chips">{{#each g.selected as |s|}}<span class="brp-ref-chip">{{s.label}} <button type="button" data-action="removeReference" data-ref-field="{{g.field}}" data-ref="{{s.ref}}">×</button></span>{{/each}}</div>
+            <small>{{#if @root.isTh}}หรือวาง Skill Item ที่นี่{{else}}Or drop a Skill Item here{{/if}}</small></div>
+        {{/each}}
+      </div>
+      <label>{{#if isTh}}แต้มทักษะ +/- (%){{else}}Skill modifier (+/- %){{/if}}</label>
+      <input name="system.skillModifier" type="number" value="{{system.skillModifier}}" />
+      <label>{{#if isTh}}บังคับทอย Difficult{{else}}Difficult tests{{/if}}</label>
+      <input name="system.makeDifficult" type="checkbox" {{checked system.makeDifficult}} />
+      <label>{{#if isTh}}หมายเหตุ{{else}}Notes{{/if}}</label>
+      <textarea name="system.notes">{{system.notes}}</textarea>
+    {{/if}}
+
+    {{#if isSkill}}
+      <label>{{#if isTh}}หมวดทักษะ{{else}}Skill category{{/if}}</label>
+      <select name="system.category">
+        {{#each statusCategories as |v|}}<option value="{{v.key}}" {{#if (eq @root.system.category v.key)}}selected{{/if}}>{{v.label}}</option>{{/each}}
+      </select>
+      <label>{{#if isTh}}แท็กทักษะ (visual ใช้กับสถานะตาบอด){{else}}Skill tags (visual for blindness){{/if}}</label>
+      <input name="system.tags" type="text" value="{{system.tags}}" placeholder="visual" />
+      <label>ความเชี่ยวชาญ (Specialty)</label>
+      <input name="system.specialty" type="text" value="{{system.specialty}}" />
+      <label>พื้นฐาน (Base %)</label>
+      <input name="system.base" type="number" value="{{system.base}}" />
+      <label>สูตรคำนวณ (Dynamic Formula)</label>
+      <input name="system.baseFormula" type="text" value="{{system.baseFormula}}" placeholder="INT*5, DEX*2, INT+POW, DEX*4" />
+      <label>แต้มจากอาชีพ (Occupation +%)</label>
+      <input name="system.occupationBonus" type="number" min="0" value="{{system.occupationBonus}}" />
+      <label>แต้มส่วนตัว (Personal +%)</label>
+      <input name="system.personalBonus" type="number" min="0" value="{{system.personalBonus}}" />
+      <label data-tooltip="{{#if isTh}}แต้มจากระบบเก่าก่อนใช้บันทึกการพัฒนา{{else}}Legacy training from older builds{{/if}}">แต้มฝึกฝนเดิม (Legacy)</label>
+      <input type="number" min="0" value="{{system.rank}}" disabled title="Training is managed in the Advancement tab" />
+      <label>คะแนน NPC จาก Rulebook (ว่าง = คำนวณตามปกติ)</label>
+      <input name="system.fixedRating" type="number" min="0" value="{{system.fixedRating}}" placeholder="อัตโนมัติ" />
+      <label>ติ๊กพัฒนา (Exp Checked)</label>
+      <input name="system.checked" type="checkbox" {{checked system.checked}} />
+    {{/if}}
+
+    {{#if isWeapon}}
+      <label>ประเภทอาวุธ (Class)</label>
+      <select name="system.weaponClass">
+        <option value="melee" {{#if (eq system.weaponClass "melee")}}selected{{/if}}>ระยะประชิด (Melee)</option>
+        <option value="missile" {{#if (eq system.weaponClass "missile")}}selected{{/if}}>ยิง/ขว้าง (Missile)</option>
+        <option value="firearm" {{#if (eq system.weaponClass "firearm")}}selected{{/if}}>อาวุธปืน (Firearm)</option>
+        <option value="heavy" {{#if (eq system.weaponClass "heavy")}}selected{{/if}}>อาวุธหนัก (Heavy)</option>
+        <option value="natural" {{#if (eq system.weaponClass "natural")}}selected{{/if}}>มือเปล่า/ธรรมชาติ (Natural)</option>
+      </select>
+      <label>{{#if isTh}}ทักษะที่ใช้ (อ้างอิง Item){{else}}Associated skill Item{{/if}}</label>
+      <div class="brp-ref-picker" data-ref-drop="skillRef"><select name="system.skillRef"><option value="">{{#if isTh}}ใช้ชื่อเดิม (Fallback){{else}}Use legacy name{{/if}}</option>
+        {{#each skillReferenceOptions as |option|}}<option value="{{option.ref}}" {{#if (eq option.ref @root.selectedSkillRef)}}selected{{/if}}>{{option.label}}</option>{{/each}}</select>
+        <small>⇢ Item</small></div>
+      <details class="full-row"><summary>{{#if isTh}}ชื่อทักษะเก่า (สำรอง){{else}}Legacy skill name{{/if}}</summary><input name="system.skillName" type="text" value="{{system.skillName}}" /></details>
+      <label>ความเสียหาย (Damage)</label>
+      <input name="system.damage" type="text" value="{{system.damage}}" />
+      <label>โบนัส DM</label>
+      <select name="system.dmMode">
+        <option value="full" {{#if (eq system.dmMode "full")}}selected{{/if}}>เต็ม (Full DM)</option>
+        <option value="half" {{#if (eq system.dmMode "half")}}selected{{/if}}>ครึ่งหนึ่ง (Half DM)</option>
+        <option value="none" {{#if (eq system.dmMode "none")}}selected{{/if}}>ไม่ใช้ (None)</option>
+      </select>
+      <label>ความยาวอาวุธ (Length)</label>
+      <select name="system.length">
+        <option value="missile" {{#if (eq system.length "missile")}}selected{{/if}}>ระยะไกล (Missile)</option>
+        <option value="long" {{#if (eq system.length "long")}}selected{{/if}}>ยาว (Long)</option>
+        <option value="medium" {{#if (eq system.length "medium")}}selected{{/if}}>กลาง (Medium)</option>
+        <option value="short" {{#if (eq system.length "short")}}selected{{/if}}>สั้น (Short)</option>
+      </select>
+      <label>ผลพิเศษ (Special)</label>
+      <select name="system.specialType">
+        <option value="none" {{#if (eq system.specialType "none")}}selected{{/if}}>ปกติ (None)</option>
+        <option value="bleeding" {{#if (eq system.specialType "bleeding")}}selected{{/if}}>เลือดไหล (Bleeding)</option>
+        <option value="crushing" {{#if (eq system.specialType "crushing")}}selected{{/if}}>ทุบทำลาย (Crushing)</option>
+        <option value="entangling" {{#if (eq system.specialType "entangling")}}selected{{/if}}>พันธนาการ (Entangling)</option>
+        <option value="impaling" {{#if (eq system.specialType "impaling")}}selected{{/if}}>แทงทะลุ (Impaling)</option>
+        <option value="knockback" {{#if (eq system.specialType "knockback")}}selected{{/if}}>ผลักกระเด็น (Knockback)</option>
+      </select>
+      <label>ระยะหวังผล (Range)</label>
+      <input name="system.range" type="text" value="{{system.range}}" />
+    {{/if}}
+
+    {{#if isArmor}}
+      <label>ค่าเกราะ (AP)</label>
+      <input name="system.ap" type="number" value="{{system.ap}}" />
+      <label>ส่วนที่ป้องกัน</label>
+      <input name="system.locations" type="text" value="{{system.locations}}" />
+      <label>ค่าถ่วงน้ำหนัก</label>
+      <input name="system.encumbrancePenalty" type="number" value="{{system.encumbrancePenalty}}" />
+      <label>สวมใส่อยู่</label>
+      <input name="system.equipped" type="checkbox" {{checked system.equipped}} />
+    {{/if}}
+
+    {{#if isShield}}
+      <label>{{#if isTh}}ทักษะที่ใช้ (Item){{else}}Associated skill Item{{/if}}</label>
+      <div class="brp-ref-picker" data-ref-drop="skillRef"><select name="system.skillRef"><option value="">Legacy</option>
+      {{#each skillReferenceOptions as |option|}}<option value="{{option.ref}}" {{#if (eq option.ref @root.selectedSkillRef)}}selected{{/if}}>{{option.label}}</option>{{/each}}</select></div>
+      <details class="full-row"><summary>{{#if isTh}}ชื่อทักษะเก่า{{else}}Legacy skill name{{/if}}</summary><input name="system.skillName" type="text" value="{{system.skillName}}" /></details>
+      <label>ความเสียหาย</label>
+      <input name="system.damage" type="text" value="{{system.damage}}" />
+      <label>ความทนทานโล่ (HP)</label>
+      <input name="system.hp.value" type="number" value="{{system.hp.value}}" />
+      <label>สวมใส่อยู่</label>
+      <input name="system.equipped" type="checkbox" {{checked system.equipped}} />
+    {{/if}}
+
+    {{#if isPower}}
+      <label>ระบบพลัง</label>
+      <select name="system.system">
+        <option value="Magic" {{#if (eq system.system "Magic")}}selected{{/if}}>เวทมนตร์ (Magic)</option>
+        <option value="Sorcery" {{#if (eq system.system "Sorcery")}}selected{{/if}}>ไสยเวท (Sorcery)</option>
+        <option value="Psychic" {{#if (eq system.system "Psychic")}}selected{{/if}}>พลังจิต (Psychic)</option>
+        <option value="Mutation" {{#if (eq system.system "Mutation")}}selected{{/if}}>การกลายพันธุ์ (Mutation)</option>
+        <option value="Superpower" {{#if (eq system.system "Superpower")}}selected{{/if}}>พลังยอดมนุษย์ (Superpower)</option>
+      </select>
+      <label>ค่าร่าย (PP Cost)</label>
+      <input name="system.costPP" type="text" value="{{system.costPP}}" />
+      <label>ระดับเวทเริ่มต้น (Default Spell Level)</label>
+      <input name="system.spellLevel" type="number" min="1" max="99" value="{{system.spellLevel}}" />
+      <label>PP ต่อ Level (ว่าง = อ่านจาก PP Cost)</label>
+      <input name="system.ppPerLevel" type="number" min="0" max="99" value="{{system.ppPerLevel}}" placeholder="ตาม PP Cost" />
+      <label>ต้องทำ Resistance กับเป้าหมาย</label>
+      <input name="system.requiresResistance" type="checkbox" {{checked system.requiresResistance}} />
+      <label>ต้านทานด้วย</label>
+      <select name="system.resistanceStat"><option value="pow" {{#if (eq system.resistanceStat "pow")}}selected{{/if}}>POW</option><option value="pp" {{#if (eq system.resistanceStat "pp")}}selected{{/if}}>Power Points</option></select>
+      <label>ระยะ (Range)</label>
+      <input name="system.range" type="text" value="{{system.range}}" />
+      <label>ระยะเวลา (Duration)</label>
+      <input name="system.duration" type="text" value="{{system.duration}}" />
+      <label>วิธีใช้พลัง (Resolution)</label>
+      <select name="system.activationType">
+        <option value="auto" {{#if (eq system.activationType "auto")}}selected{{/if}}>ตามประเภทพลัง (Rulebook default)</option>
+        <option value="skill" {{#if (eq system.activationType "skill")}}selected{{/if}}>ทอยโอกาสสำเร็จ % (Percentile)</option>
+        <option value="resistance" {{#if (eq system.activationType "resistance")}}selected{{/if}}>POW ต้านทาน (Resistance)</option>
+        <option value="automatic" {{#if (eq system.activationType "automatic")}}selected{{/if}}>เกิดผลอัตโนมัติ (Automatic)</option>
+      </select>
+      <label>โอกาสเริ่มต้น % (ว่าง = Magic INT×1 / Psychic POW×1)</label>
+      <input name="system.chanceOverride" type="number" min="0" max="999" value="{{system.chanceOverride}}" placeholder="อัตโนมัติ" />
+      <label>แต้มอาชีพ (Occupation)</label>
+      <input name="system.occupationBonus" type="number" min="0" value="{{system.occupationBonus}}" />
+      <label>แต้มส่วนตัว (Personal)</label>
+      <input name="system.personalBonus" type="number" min="0" value="{{system.personalBonus}}" />
+      <label>แต้มพัฒนาจากบันทึก (Training)</label>
+      <input type="number" value="{{system.trainingTotal}}" disabled />
+      <label>ทำเครื่องหมายพัฒนา (Experience)</label>
+      <input name="system.checked" type="checkbox" {{checked system.checked}} />
+    {{/if}}
+
+    {{#if isPassion}}
+      <label>ค่าพลัง (%)</label>
+      <input name="system.value" type="number" value="{{system.value}}" />
+      <label>ติ๊กพัฒนา (Exp Checked)</label>
+      <input name="system.checked" type="checkbox" {{checked system.checked}} />
+    {{/if}}
+
+    {{#if isGear}}
+      <label>จำนวน</label>
+      <input name="system.quantity" type="number" value="{{system.quantity}}" />
+      <label>น้ำหนัก (kg)</label>
+      <input name="system.weight" type="number" step="0.1" value="{{system.weight}}" />
+    {{/if}}
+
+    {{#if rulebookView}}
+      <details class="full-row brp-item-rulebook-edit">
+        <summary><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> {{#if isTh}}แก้ไขข้อความอ้างอิงสองภาษา{{else}}Edit bilingual reference text{{/if}}</summary>
+        <div class="brp-item-rulebook-edit-inner">
+    {{/if}}
+    {{#if isTh}}
+      <label class="full-row brp-language-primary">คำอธิบายภาษาไทย</label>
+      <textarea class="full-row item-desc brp-language-primary" name="system.descriptionTh">{{descriptionTh}}</textarea>
+      <label class="full-row brp-language-secondary">English description</label>
+      <textarea class="full-row item-desc brp-language-secondary" name="system.descriptionEn">{{descriptionEn}}</textarea>
+    {{else}}
+      <label class="full-row brp-language-primary">English description</label>
+      <textarea class="full-row item-desc brp-language-primary" name="system.descriptionEn">{{descriptionEn}}</textarea>
+      <label class="full-row brp-language-secondary">คำอธิบายภาษาไทย</label>
+      <textarea class="full-row item-desc brp-language-secondary" name="system.descriptionTh">{{descriptionTh}}</textarea>
+    {{/if}}
+    {{#if rulebookView}}
+        </div>
+      </details>
+    {{/if}}
+    {{#if system.description}}
+      <details class="full-row legacy-description"><summary>คำอธิบายจากเวอร์ชันเดิม (Fallback / Legacy)</summary>
+        <textarea class="full-row item-desc" name="system.description">{{system.description}}</textarea>
+      </details>
+    {{/if}}
+  </section>
+</div>

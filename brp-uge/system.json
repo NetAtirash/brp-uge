@@ -1,0 +1,140 @@
+{
+  "id": "brp-uge",
+  "title": "Basic Roleplaying: Universal Game Engine (Thai / EN)",
+  "description": "Foundry VTT V14 bilingual BRP UGE engine. Light/Dark paper notebook UI. Optional visual modules provide genres, palettes, and header art; no bundled content packs.",
+  "version": "1.21.5",
+  "compatibility": {
+    "minimum": "14",
+    "verified": "14"
+  },
+  "authors": [
+    {
+      "name": "BRP UGE System Contributors"
+    }
+  ],
+  "esmodules": [
+    "brp-uge.mjs"
+  ],
+  "styles": [
+    "styles/brp.css",
+    "styles/brp-refinement.css",
+    "styles/brp-bold.css",
+    "styles/brp-overview.css",
+    "styles/brp-editorial.css",
+    "styles/brp-compact-ribbon.css",
+    "styles/brp-integrated-ui.css",
+    "styles/brp-ui-consistency.css",
+    "styles/brp-thai-readability.css",
+    "styles/brp-personal-and-wizard.css",
+    "styles/brp-rulebook-reference.css",
+    "styles/brp-fa7-v14.css",
+    "styles/brp-paper.css"
+  ],
+  "languages": [
+    {
+      "lang": "th",
+      "name": "ไทย (Thai)",
+      "path": "lang/th.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "character": {
+        "htmlFields": [
+          "biography",
+          "notes"
+        ]
+      },
+      "npc": {
+        "htmlFields": [
+          "biography",
+          "notes"
+        ]
+      }
+    },
+    "Item": {
+      "occupation": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "skill": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "weapon": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "armor": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "shield": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "power": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "passion": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "gear": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "status": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      },
+      "wealth": {
+        "htmlFields": [
+          "description",
+          "descriptionTh",
+          "descriptionEn"
+        ]
+      }
+    }
+  },
+  "socket": false,
+  "grid": {
+    "distance": 1,
+    "units": "m"
+  },
+  "primaryTokenAttribute": "hp",
+  "secondaryTokenAttribute": "pp"
+}

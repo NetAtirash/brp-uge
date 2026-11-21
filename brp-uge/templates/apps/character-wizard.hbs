@@ -1,0 +1,316 @@
+<div class="brp-wizard">
+  <nav class="wiz-stepper">
+    {{#each steps as |st|}}
+      <button type="button" class="wiz-step-btn {{#if st.active}}active{{/if}}" data-action="goStep" data-step="{{st.num}}">
+        {{st.label}}
+      </button>
+    {{/each}}
+  </nav>
+
+  <section class="wiz-body">
+    {{#if isStep1}}
+      <div class="panel-card wiz-section">
+        <h3>{{#if isTh}}ขั้นที่ 1 ตามหนังสือ (หน้า 10): ชื่อ เพศ และคุณลักษณะ{{else}}Rulebook Step 1 (p.10): Name, Gender & Characteristics{{/if}}</h3>
+        <div class="wiz-grid-2">
+          <label class="field-box"><span>{{#if isTh}}ชื่อตัวละคร{{else}}Character Name{{/if}}</span><input type="text" data-wiz-field="name" value="{{wizardData.name}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}เพศ{{else}}Gender{{/if}}</span><input type="text" data-wiz-field="gender" value="{{wizardData.gender}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}ชื่อผู้เล่น{{else}}Player{{/if}}</span><input type="text" data-wiz-field="playerName" value="{{wizardData.playerName}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}วัฒนธรรม{{else}}Culture{{/if}}</span><input type="text" data-wiz-field="culture" value="{{wizardData.culture}}" /></label>
+        </div>
+        <p class="meta-text">{{#if isTh}}เลือกวิธีสร้างค่าสถานะก่อน แล้วกดปุ่มทอยด้วยตนเอง (ไม่มีการทอยอัตโนมัติเมื่อเปิด Wizard){{else}}Choose a characteristic generation method, then roll manually. Opening the Wizard never rolls dice.{{/if}}</p>
+      </div>
+      <div class="panel-card wiz-section">
+        <div class="panel-header">
+          <h3>{{#if isTh}}กำหนดค่าสถานะหลัก (Characteristics){{else}}Determine Characteristics{{/if}}</h3>
+          <div class="toolbar-btns">
+            <select data-wiz-method>
+              <option value="rolled" {{#if (eq wizardData.method "rolled")}}selected{{/if}}>Standard Roll (3D6 / 2D6+6)</option>
+              <option value="heroic_roll" {{#if (eq wizardData.method "heroic_roll")}}selected{{/if}}>Higher Starting Characteristics (2D6+6)</option>
+              <option value="point_buy" {{#if (eq wizardData.method "point_buy")}}selected{{/if}}>Point-Buy ({{pointBuyTotal}} แต้ม)</option>
+            </select>
+            {{#unless isPointBuy}}
+              <button type="button" class="brp-btn primary" data-action="rollAllChars">
+                {{#if isTh}}ทอยใหม่ทั้งหมด (Roll All){{else}}Roll All{{/if}}
+              </button>
+            {{/unless}}
+          </div>
+        </div>
+
+        {{#if isPointBuy}}
+          <div class="wiz-budget-bar">
+            <span>แต้ม Point-Buy ที่ใช้: <strong>{{pointBuyUsed}} / {{pointBuyTotal}}</strong></span>
+            <span>คงเหลือ: <strong class="{{#if (eq pointBuyRemaining 0)}}ok{{else}}accent{{/if}}">{{pointBuyRemaining}}</strong></span>
+          </div>
+        {{/if}}
+
+        {{#unless isPointBuy}}<p class="meta-text">{{#if isTh}}กฎหลัก: หลังทอยค่าสถานะ สามารถย้ายแต้มได้ไม่เกิน 3 แต้ม (ผลรวมต้องเท่าเดิม) — ย้ายแล้ว {{rolledRedistribution.moved}}/3{{else}}Core rule: move up to 3 points between rolled characteristics without changing the sum — moved {{rolledRedistribution.moved}}/3{{/if}}</p>{{/unless}}
+        <div class="wiz-chars-grid">
+          {{#each characteristics as |c|}}
+            <div class="char-box">
+              <span class="char-key">{{c.short}} <small>({{c.formula}})</small></span>
+              <div class="step-group">
+                <button type="button" class="step-btn" data-action="stepChar" data-char="{{c.key}}" data-delta="-1">−</button>
+                <input type="number" data-wiz-char="{{c.key}}" value="{{c.value}}" />
+                <button type="button" class="step-btn" data-action="stepChar" data-char="{{c.key}}" data-delta="1">+</button>
+              </div>
+              <div class="wiz-char-sub">
+                <span>{{c.rollPct}}%{{#unless (eq c.effective c.value)}} · {{#if @root.isTh}}ปรับตามอายุ{{else}}Age adjusted{{/if}}: {{c.effective}}{{/unless}}</span>
+                {{#unless @root.isPointBuy}}
+                  <button type="button" class="icon-btn" data-action="rollSingleChar" data-char="{{c.key}}" title="ทอยใหม่"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i></button>
+                {{/unless}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+
+        <div class="wiz-derived-preview">
+          <span>HP: <strong>{{derivedPreview.maxHp}}</strong> (MW ≥ {{derivedPreview.majorWound}})</span>
+          <span>PP: <strong>{{derivedPreview.maxPp}}</strong></span>
+          <span>FP: <strong>{{derivedPreview.maxFp}}</strong></span>
+          <span>SAN: <strong>{{derivedPreview.san}}</strong></span>
+          <span>DM: <strong>{{derivedPreview.dm}}</strong></span>
+        </div>
+      </div>
+    {{/if}}
+    {{#if isStep2}}
+      <div class="panel-card wiz-section">
+        <h3 data-tooltip="{{#if isTh}}แสดงเฉพาะระบบพลังที่ GM เปิดใช้{{else}}Only power families enabled by the GM appear here{{/if}}">{{#if isTh}}พลังพิเศษ{{else}}Powers{{/if}}</h3>
+        {{#unless powerSystemsAvailable}}
+          <p class="meta-text wiz-contrast-note">{{#if isTh}}แคมเปญนี้ไม่ได้เปิดใช้ระบบพลัง สามารถข้ามขั้นตอนนี้ได้{{else}}No power systems are enabled in this campaign. Skip this step.{{/if}}</p>
+        {{else}}
+          <p class="meta-text wiz-contrast-note">{{#if isTh}}เลือกหมวดและอ่านรายละเอียดก่อนเพิ่มพลังลงตัวละคร{{else}}Choose a family and inspect each power before adding it.{{/if}}</p>
+        {{/unless}}
+      </div>
+      {{#if powerSystemsAvailable}}
+      <div class="panel-card wiz-section">
+        <div class="wiz-power-board" data-wiz-drop-item="power">
+          <div class="panel-header"><h3>{{#if isTh}}เลือกพลัง{{else}}Choose Powers{{/if}}</h3></div>
+          <div class="wiz-power-filters">
+            <label class="field-box"><span>{{#if isTh}}ประเภทพลัง{{else}}Power family{{/if}}</span>
+              <select data-wiz-power-filter data-tooltip="{{#if isTh}}กรองตามประเภทพลังที่ GM อนุญาต{{else}}Filter by enabled power family{{/if}}">
+                <option value="all" {{#if powerFilterAll}}selected{{/if}}>{{#if isTh}}ทั้งหมด{{else}}All enabled families{{/if}}</option>
+                {{#each powerSystemGroups as |group|}}<option value="{{group.id}}" {{#if group.selected}}selected{{/if}}>{{group.label}} ({{group.count}})</option>{{/each}}
+              </select>
+            </label>
+            <label class="field-box"><span>{{#if isTh}}รายการพลัง{{else}}Power{{/if}}</span>
+              <select data-wiz-power-select data-tooltip="{{#if isTh}}เลือกรายการเพื่ออ่านคำอธิบายก่อนเพิ่ม{{else}}Select a power to read details first{{/if}}">
+                <option value="">{{#if isTh}}— เลือกเพื่อดูรายละเอียด —{{else}}— Select to inspect —{{/if}}</option>
+                {{#each powerCatalog as |pow|}}<option value="{{pow.index}}" {{#if pow.previewSelected}}selected{{/if}}>{{pow.name}}{{#if @root.isTh}} · {{pow.english}}{{/if}} ({{pow.type}}){{#if pow.selected}} ✓{{/if}}</option>{{/each}}
+              </select>
+            </label>
+            <button type="button" class="brp-btn primary" data-action="addWizardPower" data-tooltip="{{#if isTh}}เพิ่มพลังที่กำลังอ่านอยู่ หากยังไม่เคยเลือก{{else}}Add selected power once{{/if}}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {{#if isTh}}เพิ่มพลัง{{else}}Add Power{{/if}}</button>
+          </div>
+          {{#unless powerCatalog.length}}<p class="meta-text wiz-contrast-note">{{#if isTh}}ไม่มีพลังในหมวดนี้จากคลังที่ติดตั้ง{{else}}No powers in this family from installed sources{{/if}}</p>{{/unless}}
+          {{#if powerPreview}}
+            <div class="wiz-rule-preview" role="region" aria-label="Power rules">
+              <strong>{{powerPreview.name}}</strong><small lang="en">{{powerPreview.nameEn}} · {{powerPreview.system}}</small>
+              <div class="wiz-rule-copy">{{powerPreview.description}}</div>
+            </div>
+          {{/if}}
+          <div class="panel-header"><h3>{{#if isTh}}รายการพลังของตัวละคร{{else}}Character Powers{{/if}} ({{powerCount}})</h3></div>
+          <div class="wiz-power-selected-list">
+          {{#each powerRows as |power|}}
+            <div class="wiz-picked-row">
+              <div class="wiz-picked-heading">
+                <button class="wiz-power-open" type="button" data-action="viewWizardPower" data-index="{{power.index}}" data-tooltip="{{#if @root.isTh}}คลิกอ่านความสามารถ{{else}}Read full power description{{/if}}"><strong>{{power.name}}</strong><small lang="en">{{power.nameEn}} · {{power.type}}</small></button>
+                <button type="button" class="icon-btn danger" data-action="removeWizardPower" data-index="{{power.index}}" title="{{#if @root.isTh}}ลบพลัง{{else}}Remove power{{/if}}"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+              </div>
+              {{#if power.allocated}}
+              <div class="wiz-power-allocation">
+                <span>{{#if @root.isTh}}อาชีพ{{else}}Occupation{{/if}}</span>
+                <button type="button" class="step-btn" data-action="allocatePower" data-index="{{power.index}}" data-pool="occ" data-delta="-5">−5</button>
+                <strong>{{power.occPts}}</strong><button type="button" class="step-btn" data-action="allocatePower" data-index="{{power.index}}" data-pool="occ" data-delta="5">+5</button>
+                <span>{{#if @root.isTh}}ส่วนตัว{{else}}Personal{{/if}}</span>
+                <button type="button" class="step-btn" data-action="allocatePower" data-index="{{power.index}}" data-pool="pers" data-delta="-5">−5</button><strong>{{power.persPts}}</strong>
+                <button type="button" class="step-btn" data-action="allocatePower" data-index="{{power.index}}" data-pool="pers" data-delta="5">+5</button>
+                <strong>{{power.total}}%</strong>
+              </div>
+              {{/if}}
+              <details class="wiz-picked-details"><summary>{{#if @root.isTh}}อ่านรายละเอียดความสามารถ{{else}}Power details{{/if}}</summary><div class="wiz-rule-copy">{{power.description}}</div></details>
+            </div>
+          {{else}}<p class="empty-hint">{{#if isTh}}ยังไม่ได้เลือกพลัง{{else}}No powers selected{{/if}}</p>{{/each}}
+          </div>
+        </div>
+      </div>
+      {{/if}}
+    {{/if}}
+    {{#if isStep3}}
+      <div class="panel-card wiz-section">
+        <h3>{{#if isTh}}อายุและบุคลิก{{else}}Age & Personality{{/if}}</h3>
+        <div class="wiz-grid-2">
+          <div class="field-box"><span>{{#if isTh}}อายุเริ่มต้น (ทอย 17+1D6){{else}}Starting Age (roll 17+1D6){{/if}}</span><button type="button" class="brp-btn" data-action="rollAge" {{#unless isGM}}{{#unless ageRequiresRoll}}disabled{{/unless}}{{/unless}} title="{{#if isTh}}ทอยอายุด้วยตัวเอง GM สามารถอนุญาตให้ทอยใหม่ได้{{else}}Roll starting age; GM may authorize rerolls{{/if}}"><i class="fa-solid fa-dice" aria-hidden="true"></i> {{#if ageRule.reference}}{{ageRule.reference}}{{else}}{{#if isTh}}ทอยอายุ{{else}}Roll age{{/if}}{{/if}}</button></div>
+          <label class="field-box"><span>{{#if isTh}}อายุตัวละครปัจจุบัน{{else}}Current age{{/if}}</span><input type="number" min="0" data-wiz-field="age" value="{{wizardData.age}}" {{#unless isGM}}readonly{{/unless}} title="{{#if isTh}}GM กำหนดอายุต่างจากค่าเริ่มต้นได้เพื่อใช้กฎอายุ{{else}}Only GM can approve an age different from the starting roll{{/if}}" /></label>
+          {{#if ageHasAging}}<label class="field-box"><span>{{#if isTh}}ลำดับลดค่าสถานะตามอายุ{{else}}Aging characteristic order{{/if}}</span><select data-wiz-aging-priority {{#unless isGM}}disabled{{/unless}}>{{#each agingPriorityChoices as |v|}}<option value="{{v.key}}" {{#if v.selected}}selected{{/if}}>{{v.label}}</option>{{/each}}</select></label>{{/if}}
+          {{#if ageHasYouth}}<label class="field-box"><span>{{#if isTh}}ค่าสถานะที่ลดเนื่องจากอายุน้อยกว่าอายุฐาน{{else}}Youth characteristic reduction{{/if}}</span><select data-wiz-youth-stat {{#unless isGM}}disabled{{/unless}}>{{#each youthCharacteristicChoices as |v|}}<option value="{{v.key}}" {{#if v.selected}}selected{{/if}}>{{v.label}}</option>{{/each}}</select></label>{{/if}}
+        </div>
+        <div class="wiz-rules-summary wiz-contrast-note" role="status">{{#if isTh}}แต้มอาชีพปรับตามอายุ{{else}}Age-adjusted occupation points{{/if}}: <strong>{{ageRule.occupationDelta}}</strong> · EDU: <strong>+{{ageRule.eduBonus}}</strong> · {{#if isTh}}ค่าสถานะปรับตามอายุ{{else}}Characteristic aging changes{{/if}}: <strong>{{#if ageCharacteristicDeltas}}{{ageCharacteristicDeltas}}{{else}}—{{/if}}</strong></div>
+        <h3>{{#if isTh}}การทอยคุณลักษณะ{{else}}Step 4: Characteristic Rolls{{/if}}</h3>
+        <div class="wiz-derived-preview">{{#each characteristics as |c|}}<span>{{c.short}}: <strong>{{c.rollPct}}%</strong></span>{{/each}}</div>
+        <h3>{{#if isTh}}ค่าคำนวณจากคุณลักษณะ{{else}}Step 5: Derived Characteristics{{/if}}</h3>
+        <div class="wiz-derived-preview">
+          <span>HP: <strong>{{derivedPreview.maxHp}}</strong></span><span>PP: <strong>{{derivedPreview.maxPp}}</strong></span>
+          <span>FP: <strong>{{derivedPreview.maxFp}}</strong></span><span>SAN: <strong>{{derivedPreview.san}}</strong></span>
+          <span>DM: <strong>{{derivedPreview.dm}}</strong></span>
+        </div>
+        <h3>{{#if isTh}}บุคลิก{{else}}Personality{{/if}}</h3>
+        <div class="wiz-personality-config"><label>{{#if isTh}}รูปแบบบุคลิก{{else}}Personality package{{/if}}</label>
+          <select data-wiz-personality>{{#each personalityChoices as |p|}}<option value="{{p.key}}" {{#if p.selected}}selected{{/if}}>{{p.label}}</option>{{/each}}</select>
+          <p class="meta-text">{{#if isTh}}ตัวเลือกเริ่มต้นเป็นคำแนะนำสำหรับทักษะประเภท “any”; เลือกแก้รายทักษะได้ ไม่เปลี่ยนบุคลิกอัตโนมัติ{{else}}Presets suggest choices for “any” skills; manually review the 13 selected references{{/if}}</p>
+          <div class="brp-ref-picker"><select data-wiz-personality-select><option value="">{{#if isTh}}เลือกทักษะจากคลัง{{else}}Choose Skill{{/if}}</option>{{#each personalityAvailable as |o|}}<option value="{{o.index}}">{{o.label}}</option>{{/each}}</select>
+            <button type="button" class="brp-btn" data-action="addPersonalitySkill">+ 20%</button></div>
+          <div class="wiz-picked-list">{{#each personalitySelected as |o|}}<div class="wiz-picked-row"><div class="wiz-picked-heading"><strong>{{o.label}}</strong><button type="button" class="icon-btn danger" data-action="removePersonalitySkill" data-index="{{o.index}}" title="{{#if @root.isTh}}ลบทักษะ{{else}}Remove skill{{/if}}">×</button></div></div>{{/each}}</div>
+          <strong>{{personalityCount}} / {{#if (eq wizardData.personalityType "none")}}0{{else}}13{{/if}} {{#if isTh}}ทักษะ{{else}}skills{{/if}}</strong>
+        </div>
+      </div>
+    {{/if}}
+    {{#if isStep4}}
+      <div class="panel-card wiz-section">
+        <h3>{{#if isTh}}เลือกอาชีพและจัดสรรทักษะ{{else}}Occupation & Skills{{/if}}</h3>
+        <div class="wiz-drop-hint" data-wiz-drop-item="occupation">{{#if isTh}}ลาก Occupation Item จาก Items Directory / Compendium มาวางที่นี่ได้{{else}}Drop an Occupation Item here from Items Directory / Compendium{{/if}}</div>
+        <div class="wiz-prof-grid">
+          <button type="button" class="wiz-prof-card {{#unless selectedProfession.sourceUuid}}selected{{/unless}}" data-action="selectProfession" data-prof-id=""><div class="wiz-prof-title">{{#if isTh}}ยังไม่เลือกอาชีพ{{else}}No occupation yet{{/if}}</div><div class="wiz-prof-desc">{{#if isTh}}สร้างตัวละครเปล่าก่อน แล้วเพิ่ม Occupation Item ภายหลัง{{else}}Finish a blank character and assign an Occupation Item later.{{/if}}</div></button>
+          {{#each professions as |p|}}
+            <button type="button" class="wiz-prof-card {{#if p.selected}}selected{{/if}}" data-action="selectProfession" data-prof-id="{{p.id}}">
+              <div class="wiz-prof-title">{{p.title}}{{#if @root.isTh}}<small class="wiz-english-ref" lang="en">{{p.titleEn}}</small>{{/if}}</div>
+              <div class="wiz-prof-wealth">{{p.wealthLabel}}</div>
+              <div class="wiz-prof-desc">{{p.sub}}</div>
+            </button>
+          {{/each}}
+          {{#unless professions.length}}<p class="meta-text">{{#if isTh}}ยังไม่มี Occupation Items: GM สามารถสร้างอาชีพใน Items Directory หรือสร้างตัวละครเปล่าแล้วเพิ่มอาชีพทีหลัง{{else}}No Occupation Items available. Create an occupation in Items Directory, or finish a blank character and add it later.{{/if}}</p>{{/unless}}
+        </div>
+      </div>
+      <div class="panel-card wiz-section">
+        <div class="wiz-budget-bar">
+          <span>{{#if isTh}}อาชีพ{{else}}Occupation{{/if}} <strong>{{selectedProfession.title}}</strong></span>
+          <span data-tooltip="{{#if isTh}}วิธีคำนวณที่ GM เลือกใน Game Settings{{else}}GM-selected budget method{{/if}}">{{occupationBudgetLabel}}</span>
+          <span class="wiz-budget-pill"><i class="fa-solid fa-briefcase"></i> {{#if isTh}}แต้มอาชีพคงเหลือ{{else}}Occupation remaining{{/if}}: <strong class="accent">{{occRemaining}} pt</strong> / {{occBudget}}</span>
+          <span class="wiz-budget-pill"><i class="fa-solid fa-user"></i> {{#if isTh}}แต้มส่วนตัวคงเหลือ{{else}}Personal remaining{{/if}}: <strong class="accent">{{persRemaining}} pt</strong> / {{persBudget}}</span>
+          <span>{{#if isTh}}เพดานที่ GM ตั้ง{{else}}GM cap{{/if}}: <strong>{{rules.creationSkillCap}}%</strong></span>
+        </div>
+
+        {{#if selectedProfession.sourceUuid}}
+          <p class="wiz-linked-skills-note" role="status">
+            {{#if isTh}}ทักษะอาชีพที่เชื่อมโยงแล้ว: <strong>{{professionLinkedSkillCount}}</strong> รายการ — จะถูกเพิ่มลงชีทพร้อมค่าเริ่มต้น แม้ยังไม่แบ่งแต้ม อาชีพที่มีตัวเลือกทักษะเพิ่มเติมต้องเลือกตามคำอธิบายในรายการอาชีพ{{else}}Linked occupation skills: <strong>{{professionLinkedSkillCount}}</strong>. These will be added to the sheet at their base chance even without allocated points. Choose any additional optional specialties described by the occupation manually.{{/if}}
+            {{#if professionMissingSkillCount}}<strong class="wiz-link-warning">{{#if isTh}}ไม่พบลิงก์ทักษะ {{professionMissingSkillCount}} รายการ — ตรวจ Skills Compendium และเปิด Wizard ใหม่{{else}}Missing {{professionMissingSkillCount}} skill links — check the Skills Compendium and reopen the Wizard{{/if}}</strong>{{/if}}
+          </p>
+        {{/if}}
+        <div class="wiz-drop-hint" data-wiz-drop-item="skill">{{#if isTh}}ลาก Skill Item จากคลังมาวางเพื่อเพิ่มทักษะในรายการแบ่งแต้ม{{else}}Drop Skill Items to add custom skills to allocation{{/if}}</div>
+        <div class="wiz-search-row">
+          <input type="search" dir="auto" autocomplete="off" data-wiz-skill-search value="{{wizardData.skillFilter}}" placeholder="{{#if isTh}}ค้นหาทักษะ...{{else}}Filter skills...{{/if}}" />
+        </div>
+        <div class="wiz-skill-header" aria-hidden="true">
+          <span>{{#if isTh}}ทักษะ / พื้นฐาน{{else}}Skill / Base{{/if}}</span>
+          <span data-tooltip="{{#if isTh}}แต้มทักษะจากอาชีพ{{else}}Occupation allocation{{/if}}">{{#if isTh}}อาชีพ{{else}}Occupation{{/if}}</span>
+          <span data-tooltip="{{#if isTh}}แต้มทักษะจากความสนใจและประสบการณ์ส่วนตัว{{else}}Personal allocation{{/if}}">{{#if isTh}}ส่วนตัว{{else}}Personal{{/if}}</span>
+          <span>{{#if isTh}}รวม{{else}}Total{{/if}}</span>
+        </div>
+
+        {{#unless skillRows.length}}<p class="meta-text wiz-error-notice">{{#if isTh}}ยังไม่พบ Skill Items — ตรวจว่าเปิดใช้ Compendium Module และนำเข้า/เปิดใช้งาน Skill Pack แล้ว จากนั้นเปิด Wizard ใหม่ หรือสร้างทักษะด้วย Items Directory{{else}}No Skill Items found. Enable/import the content module's Skill Pack and reopen the Wizard, or create Skills in the Items Directory.{{/if}}</p>{{/unless}}
+        <div class="wiz-skill-list">
+          {{#each skillRows as |s|}}
+            <div class="wiz-skill-row {{#if s.isOcc}}is-occ{{/if}}" data-search="{{s.searchText}}">
+              <div class="wiz-skill-name" data-tooltip="{{s.description}}" title="{{s.description}}">
+                {{#if s.isOcc}}<span class="occ-tag">อาชีพ</span>{{/if}}
+                <span>{{s.name}}</span>{{#if @root.isTh}}<small class="wiz-english-ref" lang="en">{{s.nameEn}}</small>{{/if}}
+                <small>({{s.base}}%{{#if s.bonusCategory}} · {{#if @root.isTh}}หมวด{{else}}Cat{{/if}} {{s.bonusCategory}}{{/if}}{{#if s.personalityPts}} · Personality +{{s.personalityPts}}{{/if}})</small>
+              </div>
+              <div class="wiz-alloc-grp">
+                <span class="sr-only">{{#if @root.isTh}}แต้มอาชีพ{{else}}Occupation{{/if}}</span>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="-5">-5</button>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="-1">−</button>
+                <span class="alloc-num">{{s.occPts}}</span>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="1">+</button>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="5">+5</button>
+              </div>
+              <div class="wiz-alloc-grp">
+                <span class="sr-only">{{#if @root.isTh}}แต้มส่วนตัว{{else}}Personal{{/if}}</span>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="pers" data-delta="-5">-5</button>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="pers" data-delta="-1">−</button>
+                <span class="alloc-num">{{s.persPts}}</span>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="pers" data-delta="1">+</button>
+                <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="pers" data-delta="5">+5</button>
+              </div>
+              <strong class="wiz-skill-total {{#if s.atCap}}at-cap{{/if}}">{{s.total}}%</strong>
+            </div>
+          {{/each}}
+        </div>
+
+      </div>
+    {{/if}}
+    {{#if isStep5}}
+      <div class="panel-card wiz-section">
+        <h3>{{#if isTh}}ขั้นที่ 8 (หน้า 16): ทรัพย์สินและอุปกรณ์เริ่มต้น{{else}}Rulebook Step 8: Possessions{{/if}}</h3>
+        <div class="wiz-gear-box">
+          {{#if profStarterReferences.length}}
+          <div class="wiz-starter-library-refs"><strong>{{#if isTh}}อุปกรณ์จาก Occupation Item / คลัง{{else}}Equipment from Occupation Item / Library{{/if}}</strong>
+            {{#each profStarterReferences as |entry|}}<label class="wiz-check"><input type="checkbox" data-action="toggleStarterReference" data-gear-type="{{entry.type}}" data-ref="{{entry.ref}}" {{checked entry.checked}} /> {{entry.label}}</label>{{/each}}
+          </div>{{/if}}
+          {{#unless profStarterReferences.length}}
+          <p class="meta-text">{{#if isTh}}ยังไม่มีอุปกรณ์อ้างอิงจาก Occupation Item — สามารถเพิ่มจากชีทภายหลังได้{{else}}No starter equipment references; you may add gear on the character sheet later.{{/if}}</p>
+          {{/unless}}
+        </div>
+      </div>
+      <div class="panel-card wiz-section">
+        <h3>{{#if isTh}}ขั้นที่ 9 (หน้า 16): รูปลักษณ์และข้อมูลส่วนตัว{{else}}Rulebook Step 9: Size & Distinctive Features{{/if}}</h3>
+        <div class="wiz-grid-2">
+          <label class="field-box"><span>{{#if isTh}}มือถนัด{{else}}Handedness{{/if}}</span><input type="text" data-wiz-field="handedness" value="{{wizardData.handedness}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}ส่วนสูง{{else}}Height{{/if}}</span><input type="text" data-wiz-field="height" value="{{wizardData.height}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}น้ำหนัก{{else}}Weight{{/if}}</span><input type="text" data-wiz-field="weight" value="{{wizardData.weight}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}เทพเจ้า/ศาสนา{{else}}Gods / Religion{{/if}}</span><input type="text" data-wiz-field="religion" value="{{wizardData.religion}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}ลักษณะเด่น{{else}}Distinctive Features{{/if}}</span><input type="text" data-wiz-field="distinctiveFeatures" value="{{wizardData.distinctiveFeatures}}" /></label>
+          <label class="field-box"><span>{{#if isTh}}คำบรรยาย{{else}}Description{{/if}}</span><input type="text" data-wiz-field="personalDescription" value="{{wizardData.personalDescription}}" /></label>
+        </div>
+        <p class="meta-text">{{#if isTh}}หากไม่ต้องการระบุตัวเลขส่วนสูง/น้ำหนัก สามารถใช้คำบรรยายแทนได้ตามหนังสือกฎ{{else}}Height and weight may be descriptive, not strictly numeric, as permitted by the rulebook.{{/if}}</p>
+      </div>
+    {{/if}}
+    {{#if isStep6}}
+      <div class="panel-card wiz-section">
+        <h3><i class="fa-solid fa-clipboard-check"></i> {{#if isTh}}ขั้นที่ 10: ตรวจสอบข้อมูลและบันทึกตัวละคร{{else}}Step 10: Finishing Touches & Review{{/if}}</h3>
+        <div class="wiz-review-progress">
+          <div><span>{{#if isTh}}แต้มอาชีพใช้แล้ว{{else}}Occupation allocated{{/if}}</span><strong>{{occUsed}} / {{occBudget}}</strong><small>{{#if isTh}}คงเหลือ{{else}}Remaining{{/if}} {{occRemaining}} pt</small></div>
+          <div><span>{{#if isTh}}แต้มส่วนตัวใช้แล้ว{{else}}Personal allocated{{/if}}</span><strong>{{persUsed}} / {{persBudget}}</strong><small>{{#if isTh}}คงเหลือ{{else}}Remaining{{/if}} {{persRemaining}} pt</small></div>
+          <div><span>{{#if isTh}}ทักษะที่ปรับแต้ม{{else}}Allocated skills{{/if}}</span><strong>{{topSkills.length}}</strong><small>{{#if isTh}}ทักษะ{{else}}skills{{/if}}</small></div>
+        </div>
+        <div class="wiz-rules-summary">{{#if isTh}}ข้อมูลส่วนตัว ชื่อ อาชีพ และอายุจะบันทึกลงแผ่นตัวละครโดยไม่ลบข้อมูลที่มีอยู่{{else}}Personal data and characteristics will be saved on the character sheet{{/if}}</div>
+        <p class="wiz-summary-head"><strong>{{wizardData.name}}</strong> · {{selectedProfession.title}} · {{wizardData.culture}} · {{#if isTh}}อายุ{{else}}Age{{/if}} {{wizardData.age}} · Personality: {{wizardData.personalityType}}</p>
+        <div class="wiz-rules-summary">{{#if isTh}}อายุอ้างอิง{{else}}Reference age{{/if}}: {{ageRule.reference}} · {{#if isTh}}แต้มอาชีพตามอายุ{{else}}Occupation age adjustment{{/if}} {{ageRule.occupationDelta}} · EDU +{{ageRule.eduBonus}}</div>
+        <div class="wiz-derived-preview">
+          {{#each characteristics as |c|}}
+            <span>{{c.short}}: <strong>{{c.value}}</strong></span>
+          {{/each}}
+        </div>
+        <div class="wiz-derived-preview">
+          <span>HP: <strong>{{derivedPreview.maxHp}}</strong></span>
+          <span>PP: <strong>{{derivedPreview.maxPp}}</strong></span>
+          <span>FP: <strong>{{derivedPreview.maxFp}}</strong></span>
+          <span>SAN: <strong>{{derivedPreview.san}}</strong></span>
+          <span>DM: <strong>{{derivedPreview.dm}}</strong></span>
+        </div>
+        {{#if powerCount}}<div class="wiz-top-skills"><strong>{{#if isTh}}พลังที่เลือก{{else}}Selected powers{{/if}} ({{powerCount}})</strong><div class="wiz-chips">{{#each powerRows as |p|}}<span class="wiz-chip">{{p.name}}: <strong>{{#if p.allocated}}{{p.total}}%{{else}}—{{/if}}</strong></span>{{/each}}</div></div>{{/if}}
+        <div class="wiz-top-skills">
+          <strong>{{#if isTh}}ทักษะอาชีพและทักษะที่จัดสรรแต้ม ({{topSkills.length}}):{{else}}Occupation and Allocated Skills ({{topSkills.length}}):{{/if}}</strong>
+          <div class="wiz-chips">
+            {{#each topSkills as |sk|}}
+              <span class="wiz-chip" data-tooltip="{{#if @root.isTh}}อาชีพ{{else}}Occupation{{/if}} +{{sk.occPts}} · {{#if @root.isTh}}ส่วนตัว{{else}}Personal{{/if}} +{{sk.persPts}}">{{sk.name}}: <strong>{{sk.total}}%</strong></span>
+            {{/each}}
+          </div>
+        </div>
+      </div>
+    {{/if}}
+  </section>
+
+  <footer class="wiz-footer">
+    <button type="button" class="brp-btn" data-action="prevStep" {{#if isStep1}}disabled{{/if}}>
+      ◀ {{#if isTh}}ย้อนกลับ{{else}}Back{{/if}}
+    </button>
+    {{#unless isStep6}}
+      <button type="button" class="brp-btn primary" data-action="nextStep">
+        {{#if isTh}}ขั้นตอนถัดไป{{else}}Next{{/if}} ▶
+      </button>
+    {{else}}
+      <button type="button" class="brp-btn primary" data-action="finishWizard">
+        ✓ {{#if isTh}}สร้างตัวละครและบันทึกลงชีท{{else}}Create & Save Character{{/if}}
+      </button>
+    {{/unless}}
+  </footer>
+</div>

@@ -1,0 +1,67 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "ตัวละครผู้เล่น",
+      "npc": "ตัวละครผู้คุมเกม / สัตว์ประหลาด"
+    },
+    "Item": {
+      "skill": "ทักษะ",
+      "weapon": "อาวุธ",
+      "armor": "ชุดเกราะ",
+      "shield": "โล่",
+      "power": "เวทมนตร์ / พลังพิเศษ",
+      "passion": "แรงผลักดัน",
+      "gear": "อุปกรณ์และพาหนะ",
+      "occupation": "อาชีพ",
+      "status": "สถานะ (ไอเทมเทมเพลต)",
+      "wealth": "ระดับฐานะ"
+    }
+  },
+  "BRP": {
+    "SystemTitle": "Basic Roleplaying: Universal Game Engine (ภาษาไทย)",
+    "Characteristics": {
+      "str": "STR พละกำลัง (ออกแรง)",
+      "con": "CON ความอึด (อดทน)",
+      "siz": "SIZ ขนาดตัว",
+      "int": "INT สติปัญญา (ความคิด)",
+      "pow": "POW พลังจิต (โชค)",
+      "dex": "DEX ความคล่องตัว (ว่องไว)",
+      "cha": "CHA เสน่ห์ (ชวนเชื่อ)",
+      "edu": "EDU การศึกษา (ความรู้)"
+    },
+    "Derived": {
+      "HP": "พลังชีวิต (HP)",
+      "MajorWound": "บาดแผลฉกรรจ์",
+      "PP": "พลังจิต/มานา (PP)",
+      "FP": "ความเหนื่อยล้า (FP)",
+      "SAN": "สติสัมปชัญญะ (SAN)",
+      "DamageMod": "โบนัสความเสียหาย (DM)",
+      "ExpBonus": "โบนัสพัฒนา (EXP)",
+      "MOV": "ระยะเคลื่อนที่ (MOV)"
+    },
+    "Degrees": {
+      "critical": "สำเร็จวิกฤต (Critical)",
+      "special": "สำเร็จพิเศษ (Special)",
+      "success": "สำเร็จ (Success)",
+      "failure": "ล้มเหลว (Failure)",
+      "fumble": "พลาดมหันต์ (Fumble)"
+    },
+    "Outcome": {
+      "succeed": "สำเร็จ (SUCCEED)",
+      "fail": "ล้มเหลว (FAIL)"
+    },
+    "Difficulty": {
+      "automatic": "อัตโนมัติ (Automatic)",
+      "easy": "ง่าย ×2 (Easy)",
+      "average": "ปกติ ×1 (Average)",
+      "difficult": "ยาก ÷2 (Difficult)",
+      "impossible": "แทบเป็นไปไม่ได้ (01%)"
+    },
+    "Combat": {
+      "Statements": "ระยะที่ 1: ประกาศเจตนา",
+      "Powers": "ระยะที่ 2: ใช้พลังและเวทมนตร์ (ลำดับ INT)",
+      "Action": "ระยะที่ 3: การกระทำ (ลำดับ DEX)",
+      "Resolution": "ระยะที่ 4: ตัดสินผล"
+    }
+  }
+}

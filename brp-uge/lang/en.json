@@ -1,0 +1,67 @@
+{
+  "TYPES": {
+    "Actor": {
+      "character": "Player Character",
+      "npc": "Non-Player Character"
+    },
+    "Item": {
+      "skill": "Skill",
+      "weapon": "Weapon",
+      "armor": "Armor",
+      "shield": "Shield",
+      "power": "Power / Spell",
+      "passion": "Passion",
+      "gear": "Equipment",
+      "occupation": "Occupation",
+      "status": "Condition / Status Template",
+      "wealth": "Wealth"
+    }
+  },
+  "BRP": {
+    "SystemTitle": "Basic Roleplaying: Universal Game Engine",
+    "Characteristics": {
+      "str": "STR (Effort)",
+      "con": "CON (Stamina)",
+      "siz": "SIZ (Size)",
+      "int": "INT (Idea)",
+      "pow": "POW (Luck)",
+      "dex": "DEX (Agility)",
+      "cha": "CHA (Charm)",
+      "edu": "EDU (Knowledge)"
+    },
+    "Derived": {
+      "HP": "Hit Points",
+      "MajorWound": "Major Wound",
+      "PP": "Power Points",
+      "FP": "Fatigue Points",
+      "SAN": "Sanity",
+      "DamageMod": "Damage Modifier",
+      "ExpBonus": "Experience Bonus",
+      "MOV": "Move"
+    },
+    "Degrees": {
+      "critical": "Critical",
+      "special": "Special",
+      "success": "Success",
+      "failure": "Failure",
+      "fumble": "Fumble"
+    },
+    "Outcome": {
+      "succeed": "SUCCEED",
+      "fail": "FAIL"
+    },
+    "Difficulty": {
+      "automatic": "Automatic",
+      "easy": "Easy (x2)",
+      "average": "Average (x1)",
+      "difficult": "Difficult (/2)",
+      "impossible": "Impossible (01%)"
+    },
+    "Combat": {
+      "Statements": "Phase 1: Statements of Intent",
+      "Powers": "Phase 2: Powers (INT Rank)",
+      "Action": "Phase 3: Action (DEX Rank)",
+      "Resolution": "Phase 4: Resolution"
+    }
+  }
+}

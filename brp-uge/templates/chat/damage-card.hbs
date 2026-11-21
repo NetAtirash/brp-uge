@@ -1,0 +1,35 @@
+<div class="brp-chat-card brp-damage-card is-fail" data-brp-damage-card="1" data-brp-damage="{{damageTotal}}" data-brp-bypass="{{#if bypassArmor}}1{{else}}0{{/if}}" data-brp-weapon="{{weaponName}}" data-brp-target-uuid="{{targetInfo.uuid}}">
+  <div class="damage-total-row">
+    <div>
+      <span class="damage-num">{{damageTotal}}</span>
+      <span class="damage-unit">ความเสียหาย</span>
+    </div>
+    <div class="verdict-wrap">
+      <div class="verdict-badge">{{weaponName}}</div>
+      <div class="degree-sub">{{degreeLabel}}{{#if specialType}} · พิเศษ: {{specialType}}{{/if}}</div>
+    </div>
+  </div>
+
+  <div class="damage-meta-line">
+    จาก: <strong>{{attackerName}}</strong> · สูตร: <code>{{breakdown}}</code>
+    {{#if bypassArmor}}<span class="bypass-pill">ทะลุเกราะ (Bypass AP)</span>{{/if}}
+  </div>
+
+  {{#if targetInfo}}
+    <div class="damage-target-pill">
+      <i class="fa-solid fa-bullseye" aria-hidden="true"></i> เป้าหมาย: <strong>{{targetInfo.name}}</strong> ({{targetInfo.ap}} AP · HP {{targetInfo.hp}}/{{targetInfo.hpMax}})
+    </div>
+  {{/if}}
+
+  <div class="damage-action-grid">
+    <button type="button" class="dmg-btn primary" data-brp-damage-action="full" title="หักเกราะ AP ของโทเคนที่เลือก">
+      ⚔ เต็ม ({{damageTotal}} − AP)
+    </button>
+    <button type="button" class="dmg-btn" data-brp-damage-action="half" title="ครึ่งหนึ่ง (เมื่อปัดป้อง/หลบได้บางส่วน)">
+      ½ ครึ่ง ({{halfDamage}} − AP)
+    </button>
+    <button type="button" class="dmg-btn warn" data-brp-damage-action="bypass" title="ทะลุเกราะไม่หัก AP">
+      <i class="fa-solid fa-shield-halved" aria-hidden="true"></i> ทะลุเกราะ ({{damageTotal}})
+    </button>
+  </div>
+</div>

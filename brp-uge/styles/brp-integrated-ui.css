@@ -1,0 +1,257 @@
+/* BRP UGE 1.18.0 — Integrated Editorial UI
+ * Consistent information density for every system interface.
+ * Presentation only: data-action, form names, roll hooks and Handlebars data unchanged.
+ */
+:root { --brp-density-row: 37px; --brp-density-gap: 8px; }
+
+/* Common rhythm: visual grouping via whitespace and rules, not nested cards. */
+.brp-uge :is(.sheet-body,.wiz-body,.brp-item-sheet,.brp-compendium) {
+  min-width:0; font-size:14px; line-height:1.42;
+}
+.brp-uge :is(.sheet-body,.wiz-body,.brp-item-sheet,.brp-compendium) * { min-width:0; box-sizing:border-box; }
+.brp-uge :is(.sheet-body,.wiz-body,.brp-item-sheet,.brp-compendium) :is(input,select,textarea) {
+  font:inherit; color:var(--brp-text,#e9edf1);
+}
+.brp-uge :is(.sheet-body,.wiz-body,.brp-item-sheet,.brp-compendium) :is(input,select,textarea):focus-visible,
+.brp-uge :is(.sheet-body,.wiz-body,.brp-item-sheet,.brp-compendium) button:focus-visible {
+  outline:2px solid var(--brp-tertiary,var(--brp-accent));outline-offset:2px;
+}
+
+/* Shared tab pages — sections become ruled regions rather than decorated cards. */
+html[data-brp-theme] .brp-uge .sheet-body :is(.panel-card,.skill-category-block,.inventory-panel,.brp-status-panel) {
+  background:transparent!important; box-shadow:none!important; border:0!important;
+  border-radius:0!important; padding:6px 5px 8px!important; margin:0!important;
+  min-height:0!important;
+}
+html[data-brp-theme] .brp-uge .sheet-body :is(.panel-card,.skill-category-block,.inventory-panel,.brp-status-panel):hover {
+  box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge .sheet-body :is(.panel-header,.cat-header) {
+  min-height:35px; margin:0 0 4px!important; padding:3px 4px 6px!important;
+  gap:8px; border:0!important; border-bottom:1px solid var(--brp-border)!important;
+  background:transparent!important;box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge .sheet-body :is(.panel-header h3,.cat-header h3) {
+  color:var(--brp-accent)!important; font-size:clamp(14px,1.1vw,17px)!important;
+  font-weight:700!important; line-height:1.3;
+}
+.brp-uge .sheet-body :is(.combat-split,.inventory-split,.wounds-tab-layout,.brp-status-layout,.notes-board) {gap:10px!important;}
+.brp-uge .sheet-body .combat-split {grid-template-columns:repeat(2,minmax(0,1fr));}
+.brp-uge .sheet-body :is(.panel-card,.inventory-panel)>.toolbar-btns,
+.brp-uge .sheet-body .panel-header .toolbar-btns {display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0;}
+.brp-uge .sheet-body .item-list {list-style:none;margin:0;padding:0;}
+html[data-brp-theme] .brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) {
+  display:flex; align-items:center; gap:7px; padding:5px 4px!important;
+  min-height:var(--brp-density-row); border:0!important;
+  border-bottom:1px solid color-mix(in srgb,var(--brp-border) 65%,transparent)!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row):hover {
+  background:color-mix(in srgb,var(--brp-tertiary) 7%,transparent)!important;
+}
+.brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) :is(.item-label,.link-btn,.wound-main) {flex:1 1 auto; min-width:0;}
+.brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) :is(.icon-btn,.step-btn,.mini-rec-btn) {flex-shrink:0;}
+.brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) :is(.item-label,.link-btn) {
+  font-size:13px!important;line-height:1.4!important;
+}
+.brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) :is(.meta-text,small) {font-size:12px!important;}
+.brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) :is(.inline-num,input[type="number"]) {max-width:76px;}
+.brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) :is(.brp-roll-value,.skill-total) {
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  color:var(--brp-accent)!important;min-width:0!important;padding:2px 3px!important;font-size:15px!important;
+  font-variant-numeric:tabular-nums;
+}
+.brp-uge .sheet-body :is(.item-row,.wound-row,.brp-status-row) .brp-roll-value:hover {color:var(--brp-tertiary)!important;text-decoration:underline;}
+
+/* Skills keep checkbox column; rows don't become tiles. */
+html[data-brp-theme] .brp-uge .sheet-body .skills-columns {gap:5px 12px!important;align-items:start;}
+.brp-uge .sheet-body .skill-category-block .item-list {padding:0 1px;}
+html[data-brp-theme] .brp-uge .sheet-body .skill-play-row {padding:5px 3px!important;min-height:34px!important;}
+html[data-brp-theme] .brp-uge .sheet-body .skill-play-row :is(.exp-toggle,.brp-share-label) {align-self:center;}
+.brp-uge .sheet-body .skill-category-block .cat-bonus {white-space:nowrap;font-size:12px!important;}
+.brp-uge .sheet-body .skill-sticky-wrap {padding:3px 1px 5px;}
+.brp-uge .sheet-body .tab-toolbar {display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.brp-uge .sheet-body .skill-search-input {flex:1 1 220px;min-width:140px;}
+
+/* Recovery, Combat, Advancement, Powers, Inventory: compact action strips and no empty spacer cards. */
+.brp-uge .sheet-body :is(.recovery-toolbar,.skill-add-bar,.inventory-toolbar,.advancement-toolbar,.power-toolbar,.status-toolbar) {
+  display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:5px 2px;margin:0 0 5px;
+}
+.brp-uge .sheet-body .recovery-toolbar :is(.brp-btn,.mini-rec-btn) {min-height:29px;}
+.brp-uge .sheet-body :is(.brp-status-row,.wound-row) :is(.toolbar-btns,.wound-actions,.comp-actions) {
+  display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;margin:0;
+}
+.brp-uge .sheet-body :is(.combat-split,.inventory-split) > * {min-width:0;}
+.brp-uge .sheet-body :is(.resist-controls,.power-allocation,.brp-status-panel .toolbar-btns) {gap:7px;}
+.brp-uge .sheet-body :is(.notes-area,textarea) {min-height:110px;}
+.brp-uge .sheet-body .empty-hint {padding:14px 8px!important;margin:0!important;min-height:0!important;}
+
+/* Buttons / labels: reserved fill for genuine actions, quiet chrome for utilities. */
+html[data-brp-theme] .brp-uge :is(.sheet-body,.wiz-body,.brp-compendium,.brp-item-sheet) .brp-btn:not(.primary):not(.danger) {
+  box-shadow:none!important;min-height:30px;padding:4px 9px!important;font-size:12.5px!important;
+}
+html[data-brp-theme] .brp-uge :is(.sheet-body,.wiz-body,.brp-compendium,.brp-item-sheet) .brp-btn.primary {
+  min-height:30px;padding:4px 10px!important; font-size:12.5px!important;
+}
+html[data-brp-theme] .brp-uge :is(.sheet-body,.wiz-body,.brp-compendium,.brp-item-sheet) .brp-btn:hover {border-color:var(--brp-tertiary)!important;}
+
+/* Item editor — compact two-column label/control grid, full-width long-form sections. */
+html[data-brp-theme] .brp-uge .brp-item-sheet {padding:10px 14px!important;}
+html[data-brp-theme] .brp-uge .brp-item-sheet .item-header {
+  display:flex;align-items:center;gap:12px;margin:0 0 9px!important;padding:0 0 9px!important;
+  border-bottom:1px solid var(--brp-border)!important;
+}
+.brp-uge .brp-item-sheet .item-header .profile-img {flex-shrink:0;}
+.brp-uge .brp-item-sheet .item-header-meta {flex:1;min-width:0;gap:4px!important;}
+html[data-brp-theme] .brp-uge .item-fields {
+  display:grid;grid-template-columns:minmax(130px, min(30%,195px)) minmax(0,1fr);
+  align-items:center;gap:6px 12px!important;
+}
+.brp-uge .item-fields > label:not(.brp-wealth-enable) {font-size:13px!important;line-height:1.4;}
+.brp-uge .item-fields :is(input:not([type="checkbox"]),select) {width:100%;min-height:30px;}
+.brp-uge .item-fields > .full-row {grid-column:1/-1!important;}
+.brp-uge .item-fields .item-desc {min-height:105px!important;}
+.brp-uge .item-fields .brp-item-help {margin:3px 0 6px!important;padding:6px 0!important;border:0!important;border-bottom:1px solid var(--brp-border)!important;}
+html[data-brp-theme] .brp-uge .item-fields .brp-reference-panels {display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:9px;}
+html[data-brp-theme] .brp-uge .item-fields .brp-reference-panel {
+  background:transparent!important;box-shadow:none!important;border:0!important;
+  border-top:1px solid var(--brp-border)!important;border-radius:0!important;
+  padding:7px 4px!important;margin:0!important;
+}
+.brp-uge .item-fields .brp-ref-picker {display:flex;align-items:center;gap:5px;}
+.brp-uge .item-fields .brp-ref-picker select {flex:1;}
+.brp-uge .item-fields .brp-ref-chips {display:flex;flex-wrap:wrap;gap:4px;}
+
+/* Wizard — progression is a ribbon, controls are form rows; no card-in-card scaffolding. */
+html[data-brp-theme] .brp-uge .brp-wizard {gap:4px!important;}
+html[data-brp-theme] .brp-uge .wiz-stepper {gap:0!important;padding:0 0 4px!important;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;}
+html[data-brp-theme] .brp-uge .wiz-step-btn {
+  flex:1 0 auto;min-width:95px!important;margin:0!important;border:0!important;border-bottom:2px solid transparent!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+  padding:8px 9px!important;line-height:1.25;font-size:12px!important;
+}
+html[data-brp-theme] .brp-uge .wiz-step-btn.active {border-bottom-color:var(--brp-tertiary)!important;color:var(--brp-text)!important;}
+html[data-brp-theme] .brp-uge .wiz-step-btn:hover {color:var(--brp-tertiary)!important;background:var(--brp-highlight)!important;}
+.brp-uge .wiz-body {padding:0 3px!important;}
+html[data-brp-theme] .brp-uge .wiz-body .wiz-section {
+  border:0!important;box-shadow:none!important;border-radius:0!important;
+  background:transparent!important;padding:7px 4px!important;margin:0!important;
+}
+.brp-uge .wiz-body .wiz-section + .wiz-section {border-top:1px solid var(--brp-border)!important;}
+.brp-uge .wiz-body .wiz-grid-2 {grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 12px!important;}
+html[data-brp-theme] .brp-uge .wiz-body .field-box {
+  background:transparent!important;border:0!important;box-shadow:none!important;padding:4px 2px!important;min-height:0!important;
+}
+.brp-uge .wiz-body .field-box :is(input,select) {min-height:30px;max-width:100%;}
+html[data-brp-theme] .brp-uge .wiz-body :is(.wiz-rules-summary,.wiz-budget-bar,.wiz-derived-preview) {
+  background:transparent!important;border:0!important;border-top:1px solid var(--brp-border)!important;
+  border-radius:0!important;box-shadow:none!important;padding:7px 2px!important;margin:5px 0!important;gap:6px 12px!important;
+}
+.brp-uge .wiz-chars-grid {gap:4px!important;margin-top:6px!important;}
+html[data-brp-theme] .brp-uge .wiz-chars-grid .char-box {box-shadow:none!important;padding:6px!important;}
+.brp-uge .wiz-prof-grid {grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 12px!important;}
+html[data-brp-theme] .brp-uge .wiz-prof-card {
+  padding:8px!important;min-height:0!important;border:0!important;
+  border-bottom:1px solid var(--brp-border)!important;border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge .wiz-prof-card:hover {background:var(--brp-highlight)!important;}
+html[data-brp-theme] .brp-uge .wiz-prof-card.selected {border-left:3px solid var(--brp-tertiary)!important;padding-left:5px!important;}
+.brp-uge .wiz-skill-list {max-height:min(45vh,420px)!important;}
+.brp-uge .wiz-footer {display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:8px;padding:7px 3px!important;}
+
+/* Compendium — filter rail and list, not a stack of information tiles. */
+.brp-uge .brp-compendium {display:flex;flex-direction:column;gap:3px;min-height:0;}
+.brp-uge .comp-top {align-items:center!important;gap:10px!important;margin-bottom:3px!important;}
+.brp-uge .comp-top h2 {font-size:19px!important;line-height:1.2;}
+.brp-uge .comp-top .comp-sub {font-size:12px;line-height:1.3;margin:0;}
+.brp-uge .comp-tabs {display:flex;overflow-x:auto;white-space:nowrap;gap:2px;padding:2px 0 5px;}
+html[data-brp-theme] .brp-uge .comp-filter-panel {
+  display:grid!important;grid-template-columns:minmax(180px,2fr) repeat(2,minmax(115px,1fr));
+  align-items:end;gap:7px!important;padding:5px 0!important;margin:3px 0!important;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+}
+.brp-uge .comp-filter-panel .comp-filter-field {min-width:0;}
+.brp-uge .comp-filter-panel .comp-filter-field span {font-size:12px!important;}
+.brp-uge .comp-filter-panel input,.brp-uge .comp-filter-panel select {width:100%;min-height:30px;}
+.brp-uge .comp-result-summary {font-size:12px;margin:0 0 4px;padding:2px 0;}
+html[data-brp-theme] .brp-uge .comp-list {
+  margin:0!important;max-height:none!important;min-height:0;overflow-y:auto;
+  border:0!important;border-top:1px solid var(--brp-border)!important;
+  border-radius:0!important;background:transparent!important;
+}
+html[data-brp-theme] .brp-uge .comp-row {
+  padding:7px 3px!important;gap:9px!important;min-height:52px;
+  border:0!important;border-bottom:1px solid var(--brp-border)!important;
+  background:transparent!important;box-shadow:none!important;
+}
+.brp-uge .comp-row:hover {background:color-mix(in srgb,var(--brp-tertiary) 7%,transparent)!important;}
+.brp-uge .comp-row .comp-icon {width:32px;height:32px;flex-shrink:0;}
+.brp-uge .comp-row .comp-name {font-size:14px!important;}
+.brp-uge .comp-row .comp-meta {font-size:12px!important;}
+.brp-uge .comp-row .comp-tags {display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+.brp-uge .comp-row .comp-actions {display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px;}
+
+/* Chat cards: one surfaced information block, action buttons stay inline. */
+.brp-chat-card {box-shadow:none!important;}
+.brp-chat-card :is(.card-priority-banner,.damage-total-row) {box-shadow:none!important;padding:8px 9px!important;}
+.brp-chat-card :is(.card-header,.card-thresholds,.damage-meta-line) {margin:0!important;padding:6px 4px!important;}
+.brp-chat-card :is(.card-body,.damage-action-grid) {margin:0!important;padding:6px 3px!important;}
+.brp-chat-card .damage-action-grid {display:flex!important;gap:5px;flex-wrap:wrap;}
+.brp-chat-card .damage-action-grid button {flex:1 1 100px;}
+
+/* Do not let hard-coded minimum widths create an empty row with horizontal overflow. */
+@media (max-width:900px) {
+  .brp-uge .sheet-body :is(.combat-split,.inventory-split) {grid-template-columns:1fr!important;}
+  .brp-uge .comp-filter-panel {grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;}
+  .brp-uge .comp-filter-panel .comp-filter-search {grid-column:1/-1;}
+  .brp-uge .wiz-grid-2,.brp-uge .wiz-prof-grid {grid-template-columns:1fr!important;}
+}
+@media (max-width:600px) {
+  .brp-uge .item-fields {grid-template-columns:minmax(0,1fr)!important;}
+  .brp-uge .item-fields > * {grid-column:1/-1!important;}
+  .brp-uge .comp-filter-panel {grid-template-columns:1fr!important;}
+  .brp-uge .comp-filter-panel > * {grid-column:1/-1!important;}
+  .brp-uge .comp-row {flex-wrap:wrap;}
+  .brp-uge .comp-row .comp-actions {margin-left:auto;}
+  .brp-uge .wiz-step-btn {min-width:80px!important;}
+}
+
+/* Combat tracker lives in Foundry sidebar, outside the actor application. */
+.brp-combat-tracker-tools {gap:4px!important;padding:3px!important;}
+.brp-combat-tracker-tools .brp-combat-phase-bar,
+.brp-combat-tracker-tools .brp-combat-planner {
+  border:0!important;border-bottom:1px solid var(--brp-border,#415268)!important;
+  border-radius:0!important;box-shadow:none!important;
+  background:transparent!important;padding:6px 3px!important;gap:5px!important;
+}
+.brp-combat-tracker-tools .brp-phase-pills {gap:2px!important;margin:4px 0!important;}
+.brp-combat-tracker-tools .brp-phase-pill {
+  padding:4px 7px!important;min-height:26px!important;
+  border:0!important;border-left:2px solid transparent!important;
+  border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+.brp-combat-tracker-tools .brp-phase-pill.active {border-left-color:var(--brp-tertiary,#9ec5ba)!important;}
+.brp-combat-tracker-tools .brp-phase-actions {gap:4px!important;}
+.brp-combat-tracker-tools .brp-phase-meta {padding:3px 0!important;}
+.brp-combatant-extra {
+  border:0!important;border-bottom:1px solid var(--brp-border,#415268)!important;
+  border-radius:0!important;background:transparent!important;
+  padding:4px 2px!important;margin:0!important;gap:4px 6px!important;
+}
+.brp-combatant-extra :is(input,select) {font-size:12px!important;}
+
+/* Foundry roll/recovery/status dialogs are rendered outside .brp-uge windows. */
+.brp-macro-form {min-width:0;display:grid;gap:7px;color:inherit;font-size:13px;}
+.brp-macro-form :is(input,select,textarea) {min-width:0;max-width:100%;font:inherit;}
+.brp-macro-form :is(label,.field-box) {min-width:0;}
+.brp-macro-form :is(.toolbar-btns,.brp-dialog-actions) {display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;}
+.brp-macro-form :is(.panel-card,.field-box) {
+  background:transparent!important;box-shadow:none!important;border:0!important;
+  border-radius:0!important;padding:4px 2px!important;
+}
+.brp-macro-form :is(.field-box,.brp-dialog-grid) {gap:5px 9px!important;}
+.brp-macro-form :is(input,select,textarea):focus-visible {outline:2px solid var(--brp-tertiary,#84c9bf);outline-offset:2px;}
+.brp-macro-form .brp-status-skill-checklist {padding:5px!important;border-width:0 0 1px!important;border-radius:0!important;}
+.brp-macro-form .brp-status-skill-checklist fieldset {border:0!important;border-top:1px solid var(--brp-border,#455b70)!important;padding:6px 2px!important;}
+.brp-macro-form :is(.brp-status-dialog,.brp-care-dialog) {gap:7px!important;}

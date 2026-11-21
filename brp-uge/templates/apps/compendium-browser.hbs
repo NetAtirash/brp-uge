@@ -1,0 +1,79 @@
+<div class="brp-compendium">
+  <header class="comp-top">
+    <div>
+      <h2>{{#if isTh}}แหล่งไอเทมที่ติดตั้ง{{else}}Installed Item Library{{/if}}</h2>
+      {{#if targetActorName}}
+        <p class="comp-sub">{{#if isTh}}กำลังเพิ่มไอเทมลงในตัวละคร{{else}}Adding items to character{{/if}}: <strong>{{targetActorName}}</strong></p>
+      {{else}}
+        <p class="comp-sub">{{#if isTh}}แสดงไอเทมจาก World และ Compendium Modules ที่ติดตั้ง โดยระบบหลักไม่มีข้อมูลสำเร็จรูป{{else}}Browse World Items and optional installed Compendium Modules. No built-in catalog.{{/if}}</p>
+      {{/if}}
+    </div>
+    <button type="button" class="brp-btn action-library" data-action="refreshSources"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> {{#if isTh}}โหลดแหล่งข้อมูลใหม่{{else}}Refresh sources{{/if}}</button>
+  </header>
+
+  <nav class="comp-tabs">
+    {{#each categories as |cat|}}
+      <button type="button" class="tab-btn {{#if cat.active}}active{{/if}}" data-action="selectCategory" data-category="{{cat.key}}">
+        {{cat.label}}
+      </button>
+    {{/each}}
+  </nav>
+
+  <div class="comp-filter-panel">
+    <label class="comp-filter-field comp-filter-search"><span><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> {{#if isTh}}ค้นหา{{else}}Search{{/if}}</span><input type="search" dir="auto" autocomplete="off" name="compendiumSearch" value="{{searchQuery}}" placeholder="{{#if isTh}}ชื่อ / คำอธิบาย / หมวดหมู่...{{else}}Name / description / folder...{{/if}}" /></label>
+    <label class="comp-filter-field"><span><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> {{#if isTh}}ยุคสมัย{{else}}Era{{/if}}</span>
+      <select name="compendiumEra">
+        {{#each eras as |era|}}<option value="{{era.key}}" {{#if era.selected}}selected{{/if}}>{{era.label}}</option>{{/each}}
+      </select>
+    </label>
+    <label class="comp-filter-field"><span><i class="fa-solid fa-folder-tree" aria-hidden="true"></i> {{#if isTh}}โฟลเดอร์{{else}}Folder{{/if}}</span>
+      <select name="compendiumGroup">
+        {{#each groups as |group|}}<option value="{{group.key}}" {{#if group.selected}}selected{{/if}}>{{group.label}}</option>{{/each}}
+      </select>
+    </label>
+  </div>
+  <div class="comp-result-summary"><i class="fa-solid fa-filter" aria-hidden="true"></i> {{#if isTh}}แสดง{{else}}Showing{{/if}} <strong>{{resultCount}}</strong> / {{totalCount}} {{#if isTh}}รายการ{{else}}entries{{/if}}</div>
+
+  <ul class="comp-list">
+    {{#each entries as |entry|}}
+      <li class="comp-row" data-search="{{entry.searchText}}" data-tooltip="{{entry.description}}">
+        <img class="comp-icon" src="{{entry.img}}" alt="" />
+        <div class="comp-info">
+          <div class="comp-name">{{entry.name}}</div>
+          <div class="comp-meta">{{entry.meta}}</div>
+          <div class="comp-tags"><span class="comp-folder-tag"><i class="fa-regular fa-folder" aria-hidden="true"></i> {{entry.groupLabel}}</span><span class="comp-era-tag">{{entry.eraLabels}}</span>{{#if entry.source}}<span class="comp-ref-tag">{{entry.source}}</span>{{/if}}</div>
+        </div>
+        <div class="comp-actions">
+          <details class="comp-rulebook-inline">
+            <summary><i class="fa-solid fa-book-open-reader" aria-hidden="true"></i> {{#if @root.isTh}}อ่านกฎ{{else}}Read rules{{/if}}</summary>
+            <div class="comp-rulebook-panel">
+              <div class="comp-rulebook-provenance">
+                {{#if entry.isDirectRulebook}}
+                  {{#if @root.isTh}}รายการอ้างอิงจากหนังสือ{{else}}Direct rulebook reference{{/if}}
+                {{else}}
+                  {{#if entry.isModuleExample}}
+                    {{#if @root.isTh}}ข้อมูลดัดแปลงจากโมดูลภายนอก{{else}}External module adaptation{{/if}}
+                  {{else}}
+                    {{#if @root.isTh}}ข้อมูลจากแหล่งที่ติดตั้ง · ไม่ได้ยืนยันว่าเป็นกฎจากหนังสือ{{else}}Installed source · not verified as official rulebook content{{/if}}
+                  {{/if}}
+                {{/if}}
+                {{#if entry.hasRuleReference}} · BRP UGE {{#if entry.bookPages}}{{#if @root.isTh}}น.{{else}}pp.{{/if}} {{entry.bookPages}}{{/if}}{{/if}}
+              </div>
+              {{#if entry.rulebookWarning}}<p class="comp-rulebook-warning"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> {{entry.rulebookWarning}}</p>{{/if}}
+              <div class="comp-rulebook-text" dir="auto">{{entry.fullDescription}}</div>
+              {{#if entry.sourceEnglish}}
+                <details class="comp-rulebook-original"><summary>{{#if @root.isTh}}ดูข้อความอ้างอิงภาษาอังกฤษ{{else}}English source{{/if}}</summary><div class="comp-rulebook-text" dir="auto">{{entry.sourceEnglish}}</div></details>
+              {{/if}}
+            </div>
+          </details>
+          {{#unless @root.isActorCategory}}
+            <button type="button" class="brp-btn action-create" data-action="addToSheet" data-index="{{entry.index}}"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i> {{#if @root.isTh}}เพิ่มลงชีท{{else}}Add to sheet{{/if}}</button>
+          {{/unless}}
+          {{#if @root.isGM}}<button type="button" class="brp-btn action-import" data-action="importToWorld" data-index="{{entry.index}}"><i class="fa-solid fa-file-import" aria-hidden="true"></i> {{#if @root.isTh}}นำเข้า{{else}}Import{{/if}}</button>{{/if}}
+        </div>
+      </li>
+    {{/each}}
+  </ul>
+  {{#unless hasSources}}<p class="comp-empty">{{#if isTh}}ยังไม่มีไอเทมใน World หรือ Compendium ที่เปิดใช้งาน — คุณยังสร้างไอเทมจากชีทได้ตามปกติ{{else}}No Item sources available. You can still create Items manually on the sheets.{{/if}}</p>{{/unless}}
+  <div class="comp-live-empty comp-empty" hidden><i class="fa-solid fa-box-open" aria-hidden="true"></i> {{#if isTh}}ไม่พบรายการตามคำค้นหา{{else}}No matches for your search{{/if}}</div>
+</div>

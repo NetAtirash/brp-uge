@@ -1,0 +1,116 @@
+/* BRP UGE v1.17.4 | Concept A — Editorial Ribbon. Visual-only override.
+   Preserve existing templates' inputs, data-action handlers, and optional rules. */
+html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell.brp-sheet-v1174 {
+  display:grid!important; grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:auto minmax(250px,1fr)!important;
+  grid-template-areas:'overview' 'workspace'!important; gap:7px!important;
+  min-height:0; height:100%; overflow:hidden;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .brp-persistent-top {
+  grid-area:overview; display:flex; flex-direction:column; gap:0!important;
+  padding:0!important; overflow-y:auto; overflow-x:hidden; min-height:0;
+  max-height:min(48vh,430px); flex:none; scrollbar-width:thin;
+  background:var(--brp-panel); border:1px solid var(--brp-border);
+  border-radius:var(--brp-corner);
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .brp-banner {
+  min-height:118px!important; max-height:156px; flex:none; border:0!important;
+  border-bottom:1px solid var(--brp-border)!important; border-radius:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .brp-banner .sidebar-identity {
+  margin:8px min(11%,115px) 8px 0!important; padding:7px 11px!important;
+  border:0!important; box-shadow:none!important; background:rgb(7 13 21 / 48%)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .sheet-sidebar {
+  display:grid!important; grid-template-columns:minmax(0,1fr)!important;
+  grid-template-areas:'chars-title' 'chars' 'pools-title' 'pools' 'combat'!important;
+  gap:0!important; padding:0 13px 8px!important; border:0!important;
+  overflow:visible!important; min-height:0;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 :is(.brp-editorial-characteristics-title,.brp-editorial-pools-title) {
+  font-family:var(--brp-heading-font); color:var(--brp-accent); font-size:11px;
+  letter-spacing:.14em; text-transform:uppercase; line-height:1.3;
+  padding:8px 0 5px; opacity:.9;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .brp-editorial-characteristics-title {grid-area:chars-title}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .brp-editorial-pools-title {grid-area:pools-title}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-grid {
+  grid-area:chars; display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(106px,1fr))!important;
+  gap:0!important; border-top:1px solid var(--brp-border);
+  border-bottom:1px solid var(--brp-border); min-width:0;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card {
+  position:relative; min-height:79px!important; padding:7px 9px!important; margin:0!important;
+  background:transparent!important; border:0!important; box-shadow:none!important;
+  border-radius:0!important; overflow:visible; gap:3px;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card + .char-mini-card {border-left:1px solid var(--brp-border)!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card:hover {background:var(--brp-highlight)!important;box-shadow:none!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-top {align-items:center;gap:5px}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .char-key {font-size:12px!important;letter-spacing:.06em}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .brp-stat-effective-value {font-size:clamp(21px,1.8vw,27px)!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .brp-stat-adjustment {font-size:10px;line-height:1.1}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .brp-stat-actions {
+  display:flex!important; justify-content:space-between; align-items:center;
+  border:0!important; padding:0!important; margin:0!important; gap:5px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .brp-share-label {
+  font-size:12px!important;min-width:0;flex:1;text-overflow:ellipsis;overflow:hidden;
+  white-space:nowrap; font-weight:600!important; padding:2px 0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .brp-roll-value {
+  min-width:0!important;min-height:27px!important;border:0!important;box-shadow:none!important;
+  background:transparent!important;padding:1px 3px!important;
+  color:var(--brp-accent)!important;font-size:15px!important;font-weight:800!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .brp-roll-value:hover,
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card .brp-roll-value:focus-visible {
+  color:var(--brp-tertiary)!important; background:var(--brp-highlight)!important;
+  text-decoration:underline; text-underline-offset:3px;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .sidebar-pools {
+  grid-area:pools;display:grid!important;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))!important;
+  gap:0!important;border-top:1px solid var(--brp-border);border-bottom:1px solid var(--brp-border);
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-card.compact-pool {
+  min-width:0!important; min-height:61px!important; padding:7px 11px!important;
+  background:transparent!important; border:0!important;box-shadow:none!important;
+  border-radius:0!important; margin:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-card.compact-pool + .pool-card.compact-pool {border-left:1px solid var(--brp-border)!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-card.compact-pool:hover {background:var(--brp-highlight)!important;box-shadow:none!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-top-row {gap:5px!important; min-height:18px}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-label {font-size:12px!important;letter-spacing:.07em}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-max-hint {font-size:10px!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-val {gap:3px!important;margin:0!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-val input {font-size:21px!important;height:28px!important;line-height:28px!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-recovery-row {margin-top:1px!important;gap:8px!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-recovery-row .mini-rec-btn {min-height:22px!important;line-height:1!important;font-size:11px!important;padding:2px 5px!important;border:0!important;background:transparent!important;box-shadow:none!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .sidebar-combat-strip {
+  grid-area:combat; display:flex!important;justify-content:flex-start!important;align-items:center!important;
+  min-width:0!important;padding:6px 0 0!important;gap:0!important;
+  background:transparent!important; border:0!important;box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .strip-metric {display:flex;min-height:28px!important;gap:8px;align-items:center;padding:0 14px 0 0!important;margin-right:14px!important;border-right:1px solid var(--brp-border)!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .strip-metric:last-child {border-right:0!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .strip-metric span {font-size:12px!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .strip-metric strong {font-size:17px!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .sheet-main {grid-area:workspace!important;min-height:0;overflow:hidden}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .sheet-navigation {border-bottom:1px solid var(--brp-border)!important;box-shadow:none!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .skill-row,
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .item-row {border-radius:0!important;box-shadow:none!important}
+@media(max-width:850px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-grid {grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card:nth-child(4n+1) {border-left:0!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .sidebar-pools {grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-card.compact-pool:nth-child(2n+1) {border-left:0!important}
+}
+@media(max-width:540px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-grid {grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .char-mini-card:nth-child(3n+1) {border-left:0!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .brp-persistent-top {max-height:57vh}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1174 .pool-max-hint {display:none}
+}
+/* Derived roll cells: Effort, Stamina, Idea, Luck, Agility etc stay visibly labeled. */
+html[data-brp-theme] .brp-uge .brp-sheet-v1174 .brp-derived-roll {min-width:0;}

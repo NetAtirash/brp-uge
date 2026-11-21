@@ -1,0 +1,755 @@
+<div class="brp-sheet brp-sheet-shell brp-sheet-v1175 brp-sheet-v1174 brp-sheet-v1173">
+  <section class="brp-persistent-top" aria-label="Always visible character summary">
+  <!-- COMPACT LEFT RAIL: Portrait, Identity, Vitals & Characteristics -->
+  <header class="brp-banner" aria-label="Character identity and personal details">
+    <div class="brp-banner-atmosphere" aria-hidden="true"></div>
+    <div class="brp-banner-copy" aria-hidden="true">
+      <span class="brp-brand-overline">BASIC ROLEPLAYING</span>
+      <span class="brp-brand-title">UNIVERSAL<br>GAME ENGINE</span>
+      <span class="brp-brand-footnote">CHARACTER DOSSIER <span class="brp-brand-star">✦</span> BRP / UGE</span>
+    </div>
+    <div class="sidebar-identity brp-personal-identity">
+      <div class="id-top-row">
+        <img class="profile-img compact-img" src="{{actor.img}}" data-action="editImage" data-edit="img" data-tooltip="{{actor.name}}" />
+        <div class="id-name-col">
+          <input class="char-name-input compact-name" name="name" type="text" value="{{actor.name}}" placeholder="ชื่อตัวละคร" {{#unless editMode}}readonly{{/unless}} />
+          <button type="button" class="brp-occupation-name" data-action="switchTab" data-tab="status" title="{{#if isTh}}ดูหรือเปลี่ยนอาชีพ{{else}}View / change profession{{/if}}">{{#if displayOccupation}}{{displayOccupation}}{{else}}{{#if isTh}}เลือกอาชีพ{{else}}Choose profession{{/if}}{{/if}} <i class="fa-solid fa-briefcase" aria-hidden="true"></i></button>
+        </div>
+      </div>
+    </div>
+    <div class="brp-personal-details" role="group" aria-label="{{#if isTh}}ข้อมูลส่วนตัว{{else}}Personal information{{/if}}">
+      <label class="brp-personal-fact brp-personal-age"><span class="brp-personal-label">{{#if isTh}}อายุ{{else}}Age{{/if}}</span>{{#if editMode}}{{#unless isStatusTab}}<input class="brp-personal-input" name="system.age" type="number" data-dtype="Number" min="0" step="1" value="{{system.age}}" aria-label="{{#if isTh}}อายุ{{else}}Age{{/if}}" />{{else}}<span class="brp-personal-value">{{system.age}}</span>{{/unless}}{{else}}<span class="brp-personal-value">{{system.age}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-gender"><span class="brp-personal-label">{{#if isTh}}เพศ{{else}}Gender{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.gender" type="text" value="{{system.gender}}" placeholder="—" aria-label="{{#if isTh}}เพศ{{else}}Gender{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.gender}}{{system.gender}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-playerName"><span class="brp-personal-label">{{#if isTh}}ผู้เล่น{{else}}Player{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.playerName" type="text" value="{{system.playerName}}" placeholder="—" aria-label="{{#if isTh}}ผู้เล่น{{else}}Player{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.playerName}}{{system.playerName}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-culture"><span class="brp-personal-label">{{#if isTh}}วัฒนธรรม{{else}}Culture{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.culture" type="text" value="{{system.culture}}" placeholder="—" aria-label="{{#if isTh}}วัฒนธรรม{{else}}Culture{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.culture}}{{system.culture}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-handedness"><span class="brp-personal-label">{{#if isTh}}มือถนัด{{else}}Handedness{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.handedness" type="text" value="{{system.handedness}}" placeholder="—" aria-label="{{#if isTh}}มือถนัด{{else}}Handedness{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.handedness}}{{system.handedness}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-height"><span class="brp-personal-label">{{#if isTh}}ส่วนสูง{{else}}Height{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.height" type="text" value="{{system.height}}" placeholder="—" aria-label="{{#if isTh}}ส่วนสูง{{else}}Height{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.height}}{{system.height}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-weight"><span class="brp-personal-label">{{#if isTh}}น้ำหนัก{{else}}Weight{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.weight" type="text" value="{{system.weight}}" placeholder="—" aria-label="{{#if isTh}}น้ำหนัก{{else}}Weight{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.weight}}{{system.weight}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-wealth"><span class="brp-personal-label">{{#if isTh}}ฐานะ{{else}}Wealth{{/if}}</span><button type="button" class="brp-personal-value brp-personal-link" data-action="switchTab" data-tab="status" title="{{#if isTh}}แก้ไขฐานะผ่านอาชีพที่แท็บสถานะ{{else}}Manage wealth via Occupation in Status{{/if}}">{{#if activeWealth}}{{activeWealth}}{{else}}—{{/if}}</button></label>
+      <label class="brp-personal-fact brp-personal-religion"><span class="brp-personal-label">{{#if isTh}}เทพเจ้า/ศาสนา{{else}}Gods / Religion{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.religion" type="text" value="{{system.religion}}" placeholder="—" aria-label="{{#if isTh}}เทพเจ้า/ศาสนา{{else}}Gods / Religion{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.religion}}{{system.religion}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-distinctiveFeatures"><span class="brp-personal-label">{{#if isTh}}ลักษณะเด่น{{else}}Distinctive Features{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.distinctiveFeatures" type="text" value="{{system.distinctiveFeatures}}" placeholder="—" aria-label="{{#if isTh}}ลักษณะเด่น{{else}}Distinctive Features{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.distinctiveFeatures}}{{system.distinctiveFeatures}}{{else}}—{{/if}}</span>{{/if}}</label>
+      <label class="brp-personal-fact brp-personal-personalDescription"><span class="brp-personal-label">{{#if isTh}}คำบรรยาย{{else}}Description{{/if}}</span>{{#if editMode}}<input class="brp-personal-input" name="system.personalDescription" type="text" value="{{system.personalDescription}}" placeholder="—" aria-label="{{#if isTh}}คำบรรยาย{{else}}Description{{/if}}" />{{else}}<span class="brp-personal-value">{{#if system.personalDescription}}{{system.personalDescription}}{{else}}—{{/if}}</span>{{/if}}</label>
+    </div>
+<div class="brp-header-utilities" role="group" aria-label="{{#if isTh}}เครื่องมือจัดการตัวละคร{{else}}Character utilities{{/if}}">
+    <button type="button" class="brp-header-icon brp-paper-toggle" data-action="togglePaperTheme" data-tooltip="{{#if isTh}}สลับสมุด Light / Dark{{else}}Switch notebook Light / Dark{{/if}}" aria-label="{{#if isTh}}สลับธีมสมุดบันทึก{{else}}Toggle notebook theme{{/if}}"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i></button>
+    <button type="button" role="switch" class="brp-edit-switch {{#if editMode}}is-on{{/if}}" aria-checked="{{#if editMode}}true{{else}}false{{/if}}" aria-label="{{#if isTh}}โหมดแก้ไขชีท{{else}}Sheet edit mode{{/if}}" data-action="toggleEdit" data-tooltip="{{#if editMode}}{{ui.lockSheet}}{{else}}{{ui.editSheet}}{{/if}}"><span class="brp-switch-track"><span class="brp-switch-thumb"><i class="fa-solid fa-gear" aria-hidden="true"></i></span></span></button>
+    {{#if canUseWizard}}<button type="button" class="brp-header-icon" data-action="openWizard" data-tooltip="{{ui.wizardTitle}}" aria-label="{{ui.wizardTitle}}"><i class="fa-solid fa-hat-wizard" aria-hidden="true"></i></button>{{/if}}
+    <button type="button" class="brp-header-icon" data-action="openCompendium" data-category="skills" data-tooltip="{{ui.compendium}}" aria-label="{{ui.compendium}}"><i class="fa-solid fa-book-open" aria-hidden="true"></i></button>
+    <button type="button" class="brp-header-icon" data-action="toggleResistance" data-tooltip="{{ui.resistTitle}}" aria-label="{{ui.resistTitle}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i></button>
+    <button type="button" class="brp-header-icon brp-exp-utility" data-action="runExp" data-tooltip="{{#if isTh}}ทดสอบการพัฒนาทักษะที่ทำเครื่องหมาย{{else}}Test checked skill improvements{{/if}}" aria-label="EXP ({{checkedCount}})"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i>{{#if checkedCount}}<span class="brp-utility-count">{{checkedCount}}</span>{{/if}}</button>
+  </div>
+  </header>
+  <aside class="sheet-sidebar">
+
+
+    <!-- Compact Vitals 2-Col Grid -->
+    <div class="sidebar-pools">
+      <div class="pool-card compact-pool" data-tooltip="{{derivedTips.hp}}">
+        <div class="pool-top-row">
+          <span class="pool-label">HP</span>
+          <span class="pool-max-hint">MW ≥{{system.derived.majorWound}}</span>
+        </div>
+        <div class="pool-val">
+          <div class="step-group compact-step">
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.hp.value" data-delta="-1" data-min="{{system.hp.min}}" data-max="{{system.hp.max}}">−</button>
+            {{/if}}
+            <input name="system.hp.value" type="number" value="{{system.hp.value}}" />
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.hp.value" data-delta="1" data-min="{{system.hp.min}}" data-max="{{system.hp.max}}">+</button>
+            {{/if}}
+          </div>
+          <span class="pool-sep">/{{system.hp.max}}</span>
+        </div>
+        <progress class="brp-resource-meter" aria-label="HP" value="{{system.hp.value}}" max="{{system.hp.max}}"></progress>
+        <div class="pool-recovery-row">
+          <button type="button" class="mini-rec-btn" data-action="switchTab" data-tab="wounds" title="{{#if isTh}}รักษาผ่านทักษะ First Aid / Medicine{{else}}Treat via First Aid / Medicine{{/if}}"><i class="fa-solid fa-kit-medical"></i> {{#if isTh}}รักษา{{else}}Treat{{/if}}</button>
+        </div>
+      </div>
+
+      <div class="pool-card compact-pool" data-tooltip="{{derivedTips.pp}}">
+        <div class="pool-top-row">
+          <span class="pool-label">PP</span>
+          <span class="pool-max-hint">EXP +{{system.derived.expBonus}}%</span>
+        </div>
+        <div class="pool-val">
+          <div class="step-group compact-step">
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.pp.value" data-delta="-1" data-min="0" data-max="{{system.pp.max}}">−</button>
+            {{/if}}
+            <input name="system.pp.value" type="number" value="{{system.pp.value}}" />
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.pp.value" data-delta="1" data-min="0" data-max="{{system.pp.max}}">+</button>
+            {{/if}}
+          </div>
+          <span class="pool-sep">/{{system.pp.max}}</span>
+        </div>
+        <progress class="brp-resource-meter" aria-label="PP" value="{{system.pp.value}}" max="{{system.pp.max}}"></progress>
+        <div class="pool-recovery-row">
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="pp25" title="ฟื้นฟู PP 25%">+25%</button>
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull" title="ฟื้นฟู PP เต็ม">เต็ม</button>
+        </div>
+      </div>
+
+      {{#if campaignRules.useSanity}}
+        <div class="pool-card compact-pool san-card" data-tooltip="{{derivedTips.san}}">
+          <div class="pool-top-row">
+            <span class="pool-label">SAN</span>
+            <button type="button" class="san-roll-btn" data-action="rollSanity">{{ui.rollSanBtn}}</button>
+          </div>
+          <div class="pool-val">
+            <div class="step-group compact-step">
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.san.value" data-delta="-1" data-min="0" data-max="{{system.san.max}}">−</button>
+              {{/if}}
+              <input name="system.san.value" type="number" value="{{system.san.value}}" />
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.san.value" data-delta="1" data-min="0" data-max="{{system.san.max}}">+</button>
+              {{/if}}
+            </div>
+            <span class="pool-sep">/{{system.san.max}}</span>
+          </div>
+        <progress class="brp-resource-meter" aria-label="SAN" value="{{system.san.value}}" max="{{system.san.max}}"></progress>
+          <div class="pool-recovery-row">
+            <button type="button" class="mini-rec-btn" data-action="switchTab" data-tab="wounds" title="{{#if isTh}}บำบัดผ่านทักษะจิตบำบัด{{else}}Psychotherapy treatment{{/if}}"><i class="fa-solid fa-brain"></i> {{#if isTh}}บำบัด{{else}}Therapy{{/if}}</button>
+          </div>
+        </div>
+      {{/if}}
+
+      {{#if campaignRules.useFatigue}}
+        <div class="pool-card compact-pool fp-card" data-tooltip="{{derivedTips.fp}}">
+          <div class="pool-top-row">
+            <span class="pool-label">FP</span>
+            <span class="pool-max-hint">STR+CON</span>
+          </div>
+          <div class="pool-val">
+            <div class="step-group compact-step">
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.fp.value" data-delta="-1" data-min="{{system.fp.min}}" data-max="{{system.fp.max}}">−</button>
+              {{/if}}
+              <input name="system.fp.value" type="number" value="{{system.fp.value}}" />
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.fp.value" data-delta="1" data-min="{{system.fp.min}}" data-max="{{system.fp.max}}">+</button>
+              {{/if}}
+            </div>
+            <span class="pool-sep">/{{system.fp.max}}</span>
+          </div>
+        <progress class="brp-resource-meter" aria-label="FP" value="{{system.fp.value}}" max="{{system.fp.max}}"></progress>
+        </div>
+      {{/if}}
+    </div>
+
+    <!-- Single-line Derived Combat Strip -->
+    <div class="sidebar-combat-strip">
+      <div class="strip-metric" data-tooltip="{{derivedTips.dm}}">
+        <span>DM</span>
+        <strong class="accent">{{system.derived.damageModifier}}</strong>
+      </div>
+      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
+        <span>เกราะ</span>
+        <strong>{{equippedAp}} AP</strong>
+      </div>
+      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
+        <span>MOV</span>
+        <div class="step-group compact-step">
+          {{#if editMode}}
+            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="-1" data-min="0" data-max="30">−</button>
+          {{/if}}
+          <input class="strip-num" name="system.mov" type="number" value="{{system.mov}}" {{#unless editMode}}readonly{{/unless}} />
+          {{#if editMode}}
+            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="1" data-min="0" data-max="30">+</button>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <!-- Compact 2-Column Characteristics Block -->
+    <div class="char-mini-grid">
+      {{#each characteristicsList as |c|}}
+        <div class="char-mini-card" data-tooltip="{{c.tooltip}}">
+          <div class="char-mini-top">
+            <span class="char-key">{{c.short}}</span>
+            <div class="step-group compact-step">
+              {{#if @root.editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.characteristics.{{c.key}}.value" data-delta="-1" data-min="1" data-max="99">−</button>
+              {{/if}}
+              {{#if @root.editMode}}
+                <input name="system.characteristics.{{c.key}}.value" type="number" value="{{c.rawValue}}" />
+              {{else}}
+                <span class="brp-stat-effective-value" title="Base {{c.rawValue}} / Status {{c.delta}}">{{c.effectiveValue}}</span>
+              {{/if}}
+              {{#if @root.editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.characteristics.{{c.key}}.value" data-delta="1" data-min="1" data-max="99">+</button>
+              {{/if}}
+            </div>
+          </div>
+          {{#if c.delta}}<div class="brp-stat-adjustment" title="Status/age modifiers">{{#if @root.isTh}}สถานะ{{else}}Status{{/if}} {{c.delta}} · {{#if @root.isTh}}พื้นฐาน{{else}}Base{{/if}} {{c.rawValue}}</div>{{/if}}
+          <div class="brp-stat-actions brp-derived-roll">
+            <button type="button" class="brp-share-label" data-action="shareEntry" data-char="{{c.key}}" data-tooltip="{{#if @root.isTh}}ส่งข้อมูลลงแชท{{else}}Share information in chat{{/if}}">{{c.rollLabel}}</button>
+            <button type="button" class="brp-roll-value" data-action="rollChar" data-char="{{c.key}}" aria-label="Roll {{c.rollLabel}} ({{c.short}} × 5)">{{c.rollPct}}%</button>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </aside>
+  </section>
+
+  <!-- RIGHT WORKSPACE: Compact Action Toolbar, Tabs, & Full-Height Content -->
+  <main class="sheet-main">
+    <nav class="sheet-navigation" aria-label="Character sheet pages">
+      <span class="nav-heading"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> {{#if isTh}}หน้าต่างข้อมูล{{else}}Pages{{/if}}</span>
+      <div class="sheet-tabs">
+        <button type="button" class="tab-btn {{#if isSkillsTab}}active{{/if}}" data-action="switchTab" data-tab="skills"><i class="fa-solid fa-list-check" aria-hidden="true"></i> {{ui.tabSkills}}</button>
+        <button type="button" class="tab-btn {{#if isCombatTab}}active{{/if}}" data-action="switchTab" data-tab="combat"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ui.tabCombat}}</button>
+        <button type="button" class="tab-btn {{#if isPowersTab}}active{{/if}}" data-action="switchTab" data-tab="powers"><i class="fa-solid fa-wand-sparkles" aria-hidden="true"></i> {{ui.tabPowers}}</button>
+        <button type="button" class="tab-btn {{#if isWoundsTab}}active{{/if}}" data-action="switchTab" data-tab="wounds"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i> {{ui.tabWounds}} {{#if totalIssueCount}}<span class="tab-count-badge">{{totalIssueCount}}</span>{{/if}}</button>
+        <button type="button" class="tab-btn {{#if isInventoryTab}}active{{/if}}" data-action="switchTab" data-tab="inventory"><i class="fa-solid fa-box-open" aria-hidden="true"></i> {{#if isTh}}สิ่งของ{{else}}Inventory{{/if}} <span class="tab-count-badge">{{inventoryCount}}</span></button>
+        <button type="button" class="tab-btn {{#if isStatusTab}}active{{/if}}" data-action="switchTab" data-tab="status"><i class="fa-solid fa-person-circle-exclamation" aria-hidden="true"></i> {{#if isTh}}สถานะ{{else}}Status{{/if}}</button>
+        <button type="button" class="tab-btn {{#if isAdvancementTab}}active{{/if}}" data-action="switchTab" data-tab="advancement"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> {{#if isTh}}บันทึกการพัฒนา{{else}}Advancement{{/if}}</button>
+        <button type="button" class="tab-btn {{#if isNotesTab}}active{{/if}}" data-action="switchTab" data-tab="notes"><i class="fa-solid fa-book-open" aria-hidden="true"></i> {{#if isTh}}บันทึก{{else}}Notes{{/if}}</button>
+      </div>
+    </nav>
+
+    {{#if resistanceOpen}}
+      <section class="resistance-drawer">
+        <div class="resist-title">
+          <span>{{ui.resistTitle}}</span>
+          {{#if targetActor}}
+            <span class="resist-target-banner">
+              <i class="fa-solid fa-bullseye" aria-hidden="true"></i> เป้าหมาย: <strong>{{targetActor.name}}</strong> ({{targetActor.ap}} AP · HP {{targetActor.hp}}/{{targetActor.hpMax}})
+            </span>
+          {{/if}}
+        </div>
+        <div class="resist-controls">
+          <label class="field-box">
+            <span>{{ui.resistLabel}}</span>
+            <input type="text" data-resist="label" value="{{resistLabel}}" />
+          </label>
+          <div class="field-box small">
+            <span>{{ui.activeStat}}</span>
+            <div class="resist-pair">
+              <select data-resist="activeStat">
+                {{#each resistStatChoices as |st|}}
+                  <option value="{{st.key}}" {{#if (eq st.key @root.resistActiveStat)}}selected{{/if}}>{{st.label}}</option>
+                {{/each}}
+              </select>
+              <input type="number" data-resist="active" value="{{resistActive}}" />
+            </div>
+          </div>
+          <div class="field-box small">
+            <span>{{ui.passiveVal}}</span>
+            <div class="resist-pair">
+              <select data-resist="targetStat">
+                {{#each resistStatChoices as |st|}}
+                  <option value="{{st.key}}" {{#if (eq st.key @root.resistTargetStat)}}selected{{/if}}>{{st.targetLabel}}</option>
+                {{/each}}
+              </select>
+              <input type="number" data-resist="passive" value="{{resistPassive}}" />
+            </div>
+          </div>
+          <div class="resist-chance-box">
+            <span>โอกาส</span>
+            <strong class="resist-chance-val">{{resistChance}}%</strong>
+          </div>
+          <div class="toolbar-btns">
+            <button type="button" class="brp-btn" data-action="pullTargetResistStat" title="ดึงค่าจากโทเคนที่ Target ไว้">ดึง Target</button>
+            <button type="button" class="brp-btn primary" data-action="rollResistance">
+              {{ui.resistRollBtn}}
+            </button>
+          </div>
+        </div>
+      </section>
+    {{/if}}
+
+    <section class="sheet-body">
+      {{#if isSkillsTab}}
+        <div class="skill-sticky-wrap">
+        <div class="tab-toolbar">
+          <label class="brp-skill-search-field"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" class="skill-search-input" data-skill-filter value="{{skillFilter}}" placeholder="{{ui.skillSearchPlaceholder}}" aria-label="{{ui.skillSearchPlaceholder}}" /></label>
+          {{#if editMode}}
+            <div class="toolbar-btns">
+              <button type="button" class="brp-btn primary" data-action="createItem" data-type="skill">{{ui.newSkill}}</button>
+            </div>
+          {{/if}}
+        </div>
+        {{#if editMode}}
+          {{#if skillCatalog.length}}
+          <div class="skill-add-bar compact">
+            <span class="add-bar-label">{{ui.skillCatalogLabel}}</span>
+            <select data-skill-catalog>
+              {{#each skillCatalog as |s|}}<option value="{{s.uuid}}">{{s.label}}</option>{{/each}}
+            </select>
+            <input type="text" data-skill-specialty placeholder="{{ui.customSpecialtyPlaceholder}}" />
+            <button type="button" class="brp-btn primary" data-action="addCatalogSkill">{{ui.addCatalogSkill}}</button>
+          </div>
+          {{else}}<p class="brp-library-empty">{{#if isTh}}ยังไม่มีทักษะใน World หรือ Compendium ที่ติดตั้ง — ใช้ปุ่มสร้างทักษะ หรือเพิ่มโมดูล Compendium ภายหลัง{{else}}No Skill Items in World or installed Compendiums — create a skill manually or install a content module later.{{/if}}</p>{{/if}}
+        {{/if}}
+          {{#if editMode}}
+          <div class="skill-budget-summary">
+            <span class="budget-item" data-tooltip="{{#if isTh}}งบแต้มอาชีพตามระดับพลังแคมเปญ; ใช้จากทุกทักษะรวมกัน{{else}}Occupation budget for current campaign power level{{/if}}"><i class="fa-solid fa-briefcase"></i> {{#if isTh}}อาชีพคงเหลือ{{else}}Occupation left{{/if}} <strong class="{{#if occOverBudget}}over-budget{{/if}}">{{occRemaining}} pt</strong> <small>/ {{occBudget}}</small></span>
+            <span class="budget-item" data-tooltip="{{#if isTh}}งบแต้มส่วนตัวจาก INT×10; ใช้จากทุกทักษะรวมกัน{{else}}Personal budget: INT×10{{/if}}"><i class="fa-solid fa-user"></i> {{#if isTh}}ส่วนตัวคงเหลือ{{else}}Personal left{{/if}} <strong class="{{#if persOverBudget}}over-budget{{/if}}">{{persRemaining}} pt</strong> <small>/ {{persBudget}}</small></span>
+          </div>
+          {{/if}}
+        </div><!-- /skill-sticky-wrap -->
+        <div class="skills-columns {{#if editMode}}is-editing{{else}}is-playing{{/if}}">
+          {{#each skillGroups as |group|}}
+            {{#if group.items.length}}
+              <section class="skill-category-block" data-category="{{group.key}}">
+                <div class="cat-header">
+                  <h3><i class="fa-solid fa-folder-open" aria-hidden="true"></i> {{group.label}}</h3>
+                  <span class="cat-bonus">{{@root.ui.catBonusLabel}} {{group.bonus}}%</span>
+                </div>
+                {{#if @root.editMode}}
+                  <div class="skill-edit-heading" aria-hidden="true">
+                    <span>{{#if @root.isTh}}ทักษะ{{else}}Skill{{/if}}</span>
+                    <span data-tooltip="{{#if @root.isTh}}ค่าตั้งต้นของทักษะจากคู่มือ หรือคำนวณตามค่าสถานะ{{else}}Base skill rating from rules or characteristics{{/if}}">{{#if @root.isTh}}พื้นฐาน{{else}}Base{{/if}}</span>
+                    <span data-tooltip="{{#if @root.isTh}}โบนัสหมวดทักษะจากค่าสถานะ (ตามกฎแคมเปญ){{else}}Skill category bonus derived from characteristics{{/if}}">{{#if @root.isTh}}หมวด{{else}}Cat.{{/if}}</span>
+                    <span data-tooltip="{{#if @root.isTh}}แต้มอาชีพจากขั้นตอนสร้างตัวละคร และแก้ไขเพิ่มเติมที่นี่{{else}}Points allocated from profession budget{{/if}}">{{#if @root.isTh}}อาชีพ{{else}}Occupation{{/if}}</span>
+                    <span data-tooltip="{{#if @root.isTh}}แต้มความสนใจส่วนตัวจากขั้นตอนสร้างตัวละคร{{else}}Points allocated from personal budget{{/if}}">{{#if @root.isTh}}ส่วนตัว{{else}}Personal{{/if}}</span>
+                    <span data-tooltip="{{#if @root.isTh}}เพิ่มจากแท็บบันทึกการพัฒนาเท่านั้น (รวมแต้มจากเวอร์ชันเก่า){{else}}Read-only. Changes originate from Advancement log, including legacy points{{/if}}">{{#if @root.isTh}}ฝึกฝน{{else}}Training{{/if}}</span>
+                    <span>{{#if @root.isTh}}รวม{{else}}Total{{/if}}</span>
+                    <span></span>
+                  </div>
+                {{/if}}
+                <ul class="item-list">
+                  {{#each group.items as |skill|}}
+                    {{#if @root.editMode}}
+                      <li class="item-row skill-edit-row" data-item-id="{{skill.id}}" data-skill-name="{{skill.displayName}}" data-skill-desc="{{skill.localizedTooltip}}" data-tooltip="{{skill.localizedTooltip}}">
+                        <div class="brp-skill-id-cell">
+                          <button type="button" class="exp-toggle {{#if skill.system.checked}}checked{{/if}}" data-action="toggleExp" data-tooltip="{{#if @root.isTh}}ทำเครื่องหมายพัฒนาทักษะ{{else}}Mark for improvement{{/if}}" aria-label="Experience check">{{#if skill.system.checked}}<i class="fa-solid fa-check" aria-hidden="true"></i>{{else}}<i class="fa-regular fa-square" aria-hidden="true"></i>{{/if}}</button>
+                          <button type="button" class="brp-share-label skill-edit-name" data-action="shareEntry" title="Share {{skill.displayName}}"><span class="brp-bilingual-display">{{skill.displayName}}{{#if skill.showEnglishName}}<small lang="en">{{skill.englishName}}</small>{{/if}}</span></button>
+                        </div>
+                        <span class="skill-edit-base">{{skill.system.effectiveBase}}%</span>
+                        <span class="skill-edit-cat">{{skill.system.categoryBonus}}%</span>
+                        <input aria-label="Occupation points" type="number" min="0" class="skill-points-input" data-item-field="system.occupationBonus" value="{{skill.system.occupationBonus}}" />
+                        <input aria-label="Personal points" type="number" min="0" class="skill-points-input" data-item-field="system.personalBonus" value="{{skill.system.personalBonus}}" />
+                        <span class="skill-training-readonly" data-tooltip="{{#if @root.isTh}}แก้ไขในแท็บบันทึกการพัฒนา{{else}}Edit in the Advancement tab{{/if}}"><i class="fa-solid fa-lock" aria-hidden="true"></i> {{skill.system.trainingTotal}}</span>
+                        <button type="button" class="brp-roll-value skill-edit-total" data-action="rollSkill" aria-label="Roll {{skill.displayName}}">{{skill.system.total}}%</button>
+                        <span class="skill-edit-actions">
+                          <button type="button" class="icon-btn" data-action="editItem" data-tooltip="{{#if @root.isTh}}ตั้งค่าทักษะ{{else}}Edit skill{{/if}}"><i class="fa-solid fa-pen" aria-hidden="true"></i></button>
+                          <button type="button" class="icon-btn danger" data-action="deleteItem" data-tooltip="{{@root.ui.deleteSkillTip}}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
+                        </span>
+                      </li>
+                    {{else}}
+                      <li class="item-row skill-play-row" data-item-id="{{skill.id}}" data-skill-name="{{skill.displayName}}" data-skill-desc="{{skill.localizedTooltip}}" data-tooltip="{{skill.localizedTooltip}}">
+                        <button type="button" class="exp-toggle {{#if skill.system.checked}}checked{{/if}}" data-action="toggleExp" data-tooltip="{{#if @root.isTh}}ทำเครื่องหมายพัฒนาทักษะ{{else}}Mark for improvement{{/if}}" aria-label="Experience check">{{#if skill.system.checked}}<i class="fa-solid fa-check" aria-hidden="true"></i>{{else}}<i class="fa-regular fa-square" aria-hidden="true"></i>{{/if}}</button>
+                        <button type="button" class="link-btn" data-action="shareEntry" title="{{skill.displayName}}"><span class="brp-bilingual-display">{{skill.displayName}}{{#if skill.showEnglishName}}<small lang="en">{{skill.englishName}}</small>{{/if}}</span></button>
+                        <button type="button" class="brp-roll-value skill-total" data-action="rollSkill" aria-label="Roll {{skill.displayName}}">{{skill.system.total}}%</button>
+                        <button type="button" class="icon-btn skill-roll-icon" data-action="rollSkill" data-tooltip="Roll d100"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i></button>
+                      </li>
+                    {{/if}}
+                  {{/each}}
+                </ul>
+              </section>
+            {{/if}}
+          {{/each}}
+        </div>
+      {{/if}}
+
+      {{#if isCombatTab}}
+        {{#if combatFocus}}
+          <div class="brp-sheet-combat-status">
+            <i class="fa-solid fa-stopwatch"></i>
+            <strong>{{#if isTh}}การต่อสู้รอบ{{else}}Combat round{{/if}} {{combatFocus.round}}</strong>
+            <span>{{combatFocus.phase}}</span>
+            <span class="brp-sheet-combat-rank">{{combatFocus.rank}}</span>
+            <span class="brp-sheet-combat-rank">{{#if combatFocus.engaged}}{{#if isTh}}⚔ ประชิดอยู่{{else}}⚔ Engaged{{/if}}{{else}}{{#if isTh}}ไม่ได้ประชิด{{else}}Disengaged{{/if}}{{/if}}{{#if combatFocus.engagedWith}} · {{combatFocus.engagedWith}}{{/if}}</span>
+            <span>{{#if isTh}}เจตนา{{else}}Intent{{/if}}: {{combatFocus.intent}}{{#if combatFocus.note}} · {{combatFocus.note}}{{/if}}</span>
+            {{#if combatFocus.done}}<span class="brp-sheet-combat-done"><i class="fa-solid fa-check"></i> {{#if isTh}}เสร็จแล้ว{{else}}Done{{/if}}</span>{{/if}}
+          </div>
+        {{/if}}
+        {{#if targetActor}}
+          <div class="resist-target-banner" style="margin-bottom:8px;">
+            <i class="fa-solid fa-bullseye" aria-hidden="true"></i> เป้าหมาย (Target): <strong>{{targetActor.name}}</strong> · เกราะ <strong>{{targetActor.ap}} AP</strong> · HP <strong>{{targetActor.hp}}/{{targetActor.hpMax}}</strong> (ระบบจะดึงค่าเป้าหมายลงในการ์ดโจมตีและทำดาเมจอัตโนมัติ)
+          </div>
+        {{else}}
+          <div class="toolbar-hint" style="margin-bottom:8px;"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> กด Target โทเคน (T) เพื่อคำนวณค่า AP และหลบหลีกอัตโนมัติ</div>
+        {{/if}}
+        <div class="combat-split">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>{{ui.weaponsTitle}} <small class="inventory-linked"><i class="fa-solid fa-link"></i> {{#if isTh}}จากสิ่งของที่สวมใส่/พกพา{{else}}From equipped inventory{{/if}}</small></h3>
+              <div class="toolbar-btns">
+                <button type="button" class="brp-btn" data-action="switchTab" data-tab="inventory"><i class="fa-solid fa-box-open"></i> {{#if isTh}}จัดการสิ่งของ{{else}}Manage inventory{{/if}}</button>
+              </div>
+            </div>
+            <ul class="item-list">
+              {{#unless equippedWeapons.length}}<li class="empty-inventory-row">{{#if isTh}}ไม่มีอาวุธที่เลือกใช้ — ไปที่แท็บสิ่งของเพื่อสวมใส่{{else}}No equipped weapon — equip one in Inventory{{/if}}</li>{{/unless}}
+              {{#each equippedWeapons as |weapon|}}
+                <li class="item-row" data-item-id="{{weapon.id}}" data-tooltip="{{weapon.localizedTooltip}}">
+                  <img class="item-type-icon" src="{{weapon.img}}" alt="" loading="lazy" />
+                  <button type="button" class="link-btn" data-action="shareEntry">{{weapon.displayName}}</button>
+                  <button type="button" class="brp-attack-cta" data-action="rollWeapon">{{#if @root.isTh}}โจมตี{{else}}Attack{{/if}} <i class="fa-solid fa-dice-d20"></i></button>
+                  <span class="meta-text">{{weapon.system.damage}} · {{weapon.system.length}}</span>
+                  {{#if @root.editMode}}
+                    <button type="button" class="icon-btn" data-action="editItem">✎</button>
+                    <button type="button" class="icon-btn danger" data-action="deleteItem">✕</button>
+                  {{/if}}
+                </li>
+              {{/each}}
+            </ul>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>{{ui.armorTitle}} ({{equippedAp}} AP) <small class="inventory-linked"><i class="fa-solid fa-link"></i> Inventory</small></h3>
+              <div class="toolbar-btns">
+                <button type="button" class="brp-btn" data-action="openCompendium" data-category="armor">{{ui.browseArmor}}</button>
+                {{#if editMode}}
+                  <button type="button" class="brp-btn" data-action="createItem" data-type="armor">{{ui.addArmor}}</button>
+                {{/if}}
+              </div>
+            </div>
+            <ul class="item-list">
+              {{#each equippedArmor as |arm|}}
+                <li class="item-row" data-item-id="{{arm.id}}" data-tooltip="{{arm.localizedTooltip}}">
+                  <img class="item-type-icon" src="{{arm.img}}" alt="" loading="lazy" />
+                  <button type="button" class="exp-toggle {{#if arm.system.equipped}}checked{{/if}}" data-action="toggleEquipped">
+                    {{#if arm.system.equipped}}✓{{else}}☐{{/if}}
+                  </button>
+                  <button type="button" class="brp-share-label item-label" data-action="shareEntry">{{arm.name}}</button>
+                  {{#if @root.editMode}}
+                    <div class="step-group compact-step">
+                      <button type="button" class="step-btn" data-action="stepItemValue" data-item-path="system.ap" data-delta="-1" data-min="0">−</button>
+                      <input type="number" class="inline-num" data-item-field="system.ap" value="{{arm.system.ap}}" />
+                      <button type="button" class="step-btn" data-action="stepItemValue" data-item-path="system.ap" data-delta="1" data-min="0">+</button>
+                    </div>
+                  {{else}}
+                    <span class="skill-total">{{arm.system.ap}} AP</span>
+                  {{/if}}
+                  {{#if @root.editMode}}
+                    <button type="button" class="icon-btn" data-action="editItem">✎</button>
+                    <button type="button" class="icon-btn danger" data-action="deleteItem">✕</button>
+                  {{/if}}
+                </li>
+              {{/each}}
+            </ul>
+          </div>
+        </div>
+
+        {{#if campaignRules.useHitLocations}}
+          <div class="panel-card hit-locations-card">
+            <div class="panel-header">
+              <h3>{{ui.hitLocationsTitle}}</h3>
+            </div>
+            <div class="hit-locations-grid">
+              {{#each hitLocations as |loc|}}
+                <div class="hit-loc-box">
+                  <span class="hit-loc-range">1D20: {{loc.range}}</span>
+                  <strong class="hit-loc-name">{{loc.label}}</strong>
+                  <span class="hit-loc-hp">HP: {{loc.maxHp}}</span>
+                </div>
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
+      {{/if}}
+
+      {{#if isPowersTab}}
+        <div class="combat-split">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>{{ui.powersTitle}}</h3>
+              <div class="toolbar-btns">
+                <button type="button" class="brp-btn" data-action="openCompendium" data-category="powers">{{ui.browsePowers}}</button>
+                {{#if editMode}}
+                  <button type="button" class="brp-btn" data-action="createItem" data-type="power">{{ui.addPower}}</button>
+                {{/if}}
+              </div>
+            </div>
+            {{#if hiddenPowerCount}}<div class="brp-disabled-power">{{#if isTh}}มีพลัง {{hiddenPowerCount}} รายการถูกซ่อนตาม World Settings (ข้อมูลไม่ถูกลบ){{else}}{{hiddenPowerCount}} power items hidden by campaign settings (data retained){{/if}}</div>{{/if}}
+            <ul class="item-list">
+              {{#each powers as |pwr|}}
+                <li class="item-row" data-item-id="{{pwr.id}}" data-tooltip="{{pwr.localizedTooltip}}">
+                  <img class="item-type-icon" src="{{pwr.img}}" alt="" loading="lazy" />
+                  <button type="button" class="link-btn" data-action="shareEntry"><span class="brp-bilingual-display">{{pwr.displayName}}{{#if pwr.showEnglishName}}<small lang="en">{{pwr.englishName}}</small>{{/if}}</span></button>
+                  <span class="meta-text">{{pwr.system.system}} · {{pwr.system.costPP}}</span>
+                  {{#if (eq pwr.system.system "Magic")}}<span class="brp-spell-level-badge">Lv. {{pwr.system.spellLevel}}</span>{{/if}}
+                  {{#if (eq pwr.resolvedMode "skill")}}
+                    {{#if @root.editMode}}
+                      <span class="power-allocation">{{#if @root.isTh}}อาชีพ{{else}}Occ{{/if}} <input type="number" min="0" class="inline-num" data-item-field="system.occupationBonus" value="{{pwr.system.occupationBonus}}" aria-label="Power occupation points" /></span>
+                      <span class="power-allocation">{{#if @root.isTh}}ส่วนตัว{{else}}Pers{{/if}} <input type="number" min="0" class="inline-num" data-item-field="system.personalBonus" value="{{pwr.system.personalBonus}}" aria-label="Power personal points" /></span>
+                    {{/if}}
+                    <button type="button" class="brp-roll-value power-chance" data-action="rollPower">{{pwr.previewChance}}%</button>
+                    <button type="button" class="exp-toggle {{#if pwr.system.checked}}checked{{/if}}" data-action="toggleExp" data-tooltip="{{#if @root.isTh}}ทำเครื่องหมายพัฒนาพลัง{{else}}Mark power for advancement{{/if}}"><i class="fa-solid fa-star" aria-hidden="true"></i>{{#if pwr.system.checked}}✓{{/if}}</button>
+                  {{else}}
+                    <button type="button" class="brp-power-use power-mode-pill" data-action="rollPower">{{#if (eq pwr.resolvedMode "resistance")}}POW vs POW{{else}}{{#if @root.isTh}}ใช้พลัง{{else}}Activate{{/if}}{{/if}}</button>
+                  {{/if}}
+                  {{#if @root.editMode}}
+                    <button type="button" class="icon-btn" data-action="editItem" data-tooltip="{{#if @root.isTh}}แก้ไขโอกาสสำเร็จ / วิธีใช้พลัง{{else}}Edit chance and activation method{{/if}}"><i class="fa-solid fa-sliders"></i></button>
+                    <button type="button" class="icon-btn danger" data-action="deleteItem">✕</button>
+                  {{/if}}
+                </li>
+              {{/each}}
+            </ul>
+          </div>
+
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>{{ui.passionsTitle}}</h3>
+              <div class="toolbar-btns">
+                <button type="button" class="brp-btn" data-action="openCompendium" data-category="passions">{{ui.browsePassions}}</button>
+                {{#if editMode}}
+                  <button type="button" class="brp-btn" data-action="createItem" data-type="passion">{{ui.addPassion}}</button>
+                {{/if}}
+              </div>
+            </div>
+            <ul class="item-list">
+              {{#each passions as |pas|}}
+                <li class="item-row" data-item-id="{{pas.id}}" data-tooltip="{{pas.localizedTooltip}}">
+                  <img class="item-type-icon" src="{{pas.img}}" alt="" loading="lazy" />
+                  <button type="button" class="link-btn" data-action="shareEntry">{{pas.displayName}}</button>
+                  {{#if @root.editMode}}
+                    <div class="step-group compact-step">
+                      <button type="button" class="step-btn" data-action="stepItemValue" data-item-path="system.value" data-delta="-1" data-min="0" data-max="100">−</button>
+                      <input type="number" class="inline-num" data-item-field="system.value" value="{{pas.system.value}}" />
+                      <button type="button" class="step-btn" data-action="stepItemValue" data-item-path="system.value" data-delta="1" data-min="0" data-max="100">+</button>
+                    </div>
+                  {{/if}}
+                  <button type="button" class="brp-roll-value skill-total" data-action="rollPassion">{{pas.system.value}}%</button>
+                  {{#if @root.editMode}}
+                    <button type="button" class="icon-btn" data-action="editItem">✎</button>
+                    <button type="button" class="icon-btn danger" data-action="deleteItem">✕</button>
+                  {{/if}}
+                </li>
+              {{/each}}
+            </ul>
+          </div>
+        </div>
+      {{/if}}
+
+      {{#if isWoundsTab}}
+        <div class="wounds-tab-layout">
+          <div class="panel-card recovery-toolbar">
+            <div class="panel-header brp-care-header">
+              <h3><i class="fa-solid fa-kit-medical"></i> {{#if isTh}}การรักษาและฟื้นฟู{{else}}Treatment &amp; Recovery{{/if}}</h3>
+              <span class="meta-text">{{#if isTh}}เลือกวิธีรักษาและบาดแผลก่อนทอยทักษะ{{else}}Choose a method and condition before a skill roll{{/if}}</span>
+            </div>
+            <div class="brp-care-methods">
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="firstAid"><i class="fa-solid fa-kit-medical"></i> First Aid</button>
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="medicine"><i class="fa-solid fa-user-doctor"></i> Medicine</button>
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="natural"><i class="fa-solid fa-leaf"></i> Natural Recovery</button>
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="psychotherapy"><i class="fa-solid fa-brain"></i> Psychotherapy</button>
+            </div>
+            <details class="brp-recovery-quick-tools">
+              <summary><i class="fa-solid fa-screwdriver-wrench"></i> {{#if isTh}}ตัวเลือกปรับค่าพลังชีวิตและทรัพยากร{{else}}Additional resource adjustments{{/if}}</summary>
+              <div class="toolbar-btns">
+                <button type="button" class="brp-btn" data-action="recoverPool" data-recover="hp1">+1 HP</button>
+                <button type="button" class="brp-btn" data-action="recoverPool" data-recover="hp1d3">+1D3 HP</button>
+                <button type="button" class="brp-btn" data-action="recoverPool" data-recover="pp25">+25% PP</button>
+                <button type="button" class="brp-btn" data-action="recoverPool" data-recover="ppFull">PP {{#if isTh}}เต็ม{{else}}Full{{/if}}</button>
+                <button type="button" class="brp-btn" data-action="recoverPool" data-recover="san1">+1 SAN</button>
+                <button type="button" class="brp-btn" data-action="recoverPool" data-recover="san1d6">+1D6 SAN</button>
+                <button type="button" class="brp-btn" data-action="recoverPool" data-recover="longRest">{{#if isTh}}พักผ่อนเต็มที่{{else}}Long rest{{/if}}</button>
+                <button type="button" class="brp-btn" data-action="rollMajorWound">Major Wound (1D100)</button>
+              </div>
+            </details>
+          </div>
+
+          <div class="combat-split">
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-kit-medical" aria-hidden="true"></i> บันทึกบาดแผล (Wounds · {{activeWoundsCount}})</h3>
+                <button type="button" class="brp-btn primary" data-action="addWound">+ บันทึกบาดแผล</button>
+              </div>
+              <ul class="item-list">
+                {{#each woundsList as |w|}}
+                  <li class="wound-row {{#if w.healed}}is-resolved{{/if}}">
+                    <div class="wound-main">
+                      <div class="wound-title-row">
+                        <strong>{{w.title}}</strong>
+                        <span class="wound-badge {{w.severity}}">{{w.severityLabel}}</span>
+                        {{#if w.treated}}<span class="brp-treated-badge" title="{{w.treatmentMethod}} · {{w.treatmentResult}} · {{w.treatmentCount}} attempts">{{#if @root.isTh}}รักษาแล้ว · รอปิดแผล{{else}}Treated · Awaiting closure{{/if}}</span>{{/if}}
+                        <span class="meta-text">-{{w.hpLost}} HP · {{w.location}} · {{#if @root.isTh}}ฟื้นแล้ว{{else}}Recovered{{/if}} +{{w.recoveryHp}} HP · {{#if w.firstAidAttempted}}First Aid ✓{{else}}First Aid —{{/if}}</span>
+                      </div>
+                      {{#if w.notes}}<div class="meta-text">{{w.notes}}{{#if w.createdAt}} · {{w.createdAt}}{{/if}}</div>{{/if}}
+                      {{#if w.majorDetermined}}<div class="brp-major-detail"><strong>Major Wound 1D100: {{w.majorRoll}}</strong> · {{#if @root.isTh}}{{w.majorEffectTh}}{{else}}{{w.majorEffectEn}}{{/if}} · {{#if w.majorLuckPassed}}Luck ✓ {{#if @root.isTh}}ไม่เสียค่าสถานะถาวร{{else}}No permanent stat loss{{/if}}{{else}}{{#if w.majorApplied}}{{#if @root.isTh}}ลดค่าสถานะแล้ว{{else}}Stat loss applied{{/if}}: {{w.majorLossSummary}}{{else}}{{#if @root.isTh}}GM เลือกค่าสถานะที่เสีย{{else}}GM to assign losses{{/if}}{{/if}}{{/if}}</div>{{/if}}
+                    </div>
+                    <div class="comp-actions">
+                      {{#if (eq w.severity "major")}}{{#unless w.majorDetermined}}<button type="button" class="brp-btn" data-action="rollMajorWound" data-wound-id="{{w.id}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i> Major Wound</button>{{/unless}}{{/if}}
+                      <button type="button" class="brp-btn {{#if w.healed}}is-active{{/if}}" data-action="toggleHealWound" data-wound-id="{{w.id}}">
+                        {{#if w.healed}}{{#if @root.isTh}}ปิดบาดแผลแล้ว ✓{{else}}Resolved ✓{{/if}}{{else}}{{#if @root.isTh}}ทำเครื่องหมายหาย{{else}}Mark healed{{/if}}{{/if}}
+                      </button>
+                      <button type="button" class="icon-btn danger" data-action="deleteWound" data-wound-id="{{w.id}}" title="ลบบันทึก">✕</button>
+                    </div>
+                  </li>
+                {{else}}
+                  <li class="toolbar-hint">ยังไม่มีบันทึกบาดแผล</li>
+                {{/each}}
+              </ul>
+            </div>
+
+            <div class="panel-card">
+              <div class="panel-header">
+                <h3><i class="fa-solid fa-brain" aria-hidden="true"></i> อาการทางจิต / สติสัมปชัญญะ (Sanity · {{activeInsanitiesCount}})</h3>
+                <button type="button" class="brp-btn primary" data-action="addInsanity">+ บันทึกอาการเสียสติ</button>
+              </div>
+              <ul class="item-list">
+                {{#each insanitiesList as |c|}}
+                  <li class="wound-row {{#if c.cured}}is-resolved{{/if}}">
+                    <div class="wound-main">
+                      <div class="wound-title-row">
+                        <strong>{{c.title}}</strong>
+                        <span class="wound-badge {{c.kind}}">{{c.kindLabel}}</span>
+                        {{#if c.treated}}<span class="brp-treated-badge">{{#if @root.isTh}}บำบัดแล้ว · รอปิดอาการ{{else}}Treated · Awaiting closure{{/if}}</span>{{/if}}
+                        <span class="meta-text">-{{c.sanLost}} SAN · {{c.duration}} · {{#if @root.isTh}}ฟื้นแล้ว{{else}}Recovered{{/if}} +{{c.recoverySan}} SAN</span>
+                      </div>
+                      {{#if c.notes}}<div class="meta-text">{{c.notes}}{{#if c.createdAt}} · {{c.createdAt}}{{/if}}</div>{{/if}}
+                    </div>
+                    <div class="comp-actions">
+                      <button type="button" class="brp-btn {{#if c.cured}}is-active{{/if}}" data-action="toggleCureInsanity" data-cond-id="{{c.id}}">
+                        {{#if c.cured}}{{#if @root.isTh}}ปิดอาการแล้ว ✓{{else}}Resolved ✓{{/if}}{{else}}{{#if @root.isTh}}ทำเครื่องหมายหาย{{else}}Mark resolved{{/if}}{{/if}}
+                      </button>
+                      <button type="button" class="icon-btn danger" data-action="deleteInsanity" data-cond-id="{{c.id}}" title="ลบบันทึก">✕</button>
+                    </div>
+                  </li>
+                {{else}}
+                  <li class="toolbar-hint">ยังไม่มีอาการเสียสติหรือโรคกลัว</li>
+                {{/each}}
+              </ul>
+            </div>
+          </div>
+        </div>
+      {{/if}}
+
+      {{#if isInventoryTab}}
+        <div class="inventory-layout">
+          <div class="panel-card brp-wallet-panel">
+            <div class="panel-header"><h3><i class="fa-solid fa-coins"></i> {{#if isTh}}การเงิน / Currency{{else}}Finances / Currency{{/if}}</h3></div>
+            {{#if activeWealth}}<div class="brp-wealth-level brp-readonly-value" aria-live="polite"><span class="brp-display-label">{{#if isTh}}ฐานะตามอาชีพ{{else}}Occupational wealth{{/if}}</span>
+              <strong>{{activeWealth}}</strong>
+            </div>{{/if}}
+            <div class="brp-currency-grid">{{#each currencyRows as |unit|}}
+              <label>{{unit.unit}} <input type="number" step="1" value="{{unit.amount}}" data-currency-unit="{{unit.unit}}" {{#unless @root.editMode}}readonly{{/unless}} /></label>
+            {{/each}}</div>
+            {{#if isGM}}{{#if editMode}}<p class="meta-text brp-gm-guidance">{{#if isTh}}ตั้งค่าหน่วยเงิน: World Settings → BRP UGE{{else}}Currency units: World Settings → BRP UGE{{/if}}</p>{{/if}}{{/if}}
+          </div>
+          <div class="inventory-heading"><h3><i class="fa-solid fa-box-open"></i> {{#if isTh}}สิ่งของและสัมภาระ{{else}}Inventory & Equipment{{/if}}</h3><span>{{inventoryCount}} {{#if isTh}}รายการ{{else}}items{{/if}}</span></div>
+          <div class="panel-card inventory-panel">
+            <div class="panel-header"><h3><i class="fa-solid fa-sword"></i> {{ui.weaponsTitle}} ({{weapons.length}})</h3>
+              <div class="toolbar-btns"><button type="button" class="brp-btn" data-action="openCompendium" data-category="weapons"><i class="fa-solid fa-book"></i> {{ui.browseWeapons}}</button>{{#if editMode}}<button type="button" class="brp-btn" data-action="createItem" data-type="weapon"><i class="fa-solid fa-plus"></i> {{ui.addWeapon}}</button>{{/if}}</div>
+            </div>
+            <ul class="item-list">{{#each weapons as |item|}}
+              <li class="item-row" data-item-id="{{item.id}}" data-tooltip="{{item.localizedTooltip}}"><img class="item-type-icon" src="{{item.img}}" alt="" />
+                <button type="button" class="exp-toggle {{#if item.system.equipped}}checked{{/if}}" data-action="toggleEquipped" data-tooltip="{{#if @root.isTh}}พกพา/สวมใส่{{else}}Equipped{{/if}}">{{#if item.system.equipped}}✓{{else}}☐{{/if}}</button>
+                <button type="button" class="brp-share-label item-label" data-action="shareEntry">{{item.displayName}}</button><span class="meta-text">{{item.system.damage}}</span>
+                <button type="button" class="icon-btn" data-action="rollWeapon" data-tooltip="{{#if @root.isTh}}โจมตี{{else}}Attack{{/if}}"><i class="fa-solid fa-dice-d20"></i></button>
+                {{#if @root.editMode}}<button type="button" class="icon-btn" data-action="editItem"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-btn danger" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
+              </li>{{/each}}
+            </ul>
+          </div>
+          <div class="panel-card inventory-panel">
+            <div class="panel-header"><h3><i class="fa-solid fa-shield-halved"></i> {{ui.armorTitle}} ({{armor.length}})</h3>
+              <div class="toolbar-btns"><button type="button" class="brp-btn" data-action="openCompendium" data-category="armor"><i class="fa-solid fa-book"></i> {{ui.browseArmor}}</button>{{#if editMode}}<button type="button" class="brp-btn" data-action="createItem" data-type="armor"><i class="fa-solid fa-plus"></i> {{ui.addArmor}}</button>{{/if}}</div>
+            </div>
+            <ul class="item-list">{{#each armor as |item|}}
+              <li class="item-row" data-item-id="{{item.id}}" data-tooltip="{{item.localizedTooltip}}"><img class="item-type-icon" src="{{item.img}}" alt="" />
+                <button type="button" class="exp-toggle {{#if item.system.equipped}}checked{{/if}}" data-action="toggleEquipped" data-tooltip="{{#if @root.isTh}}สวมใส่/ถอด{{else}}Equip/Unequip{{/if}}">{{#if item.system.equipped}}✓{{else}}☐{{/if}}</button>
+                <button type="button" class="brp-share-label item-label" data-action="shareEntry">{{item.displayName}}</button><strong class="skill-total">{{item.system.ap}} AP</strong>
+                {{#if @root.editMode}}<button type="button" class="icon-btn" data-action="editItem"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-btn danger" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
+              </li>{{/each}}
+            </ul>
+          </div>
+          <div class="panel-card inventory-panel">
+            <div class="panel-header"><h3><i class="fa-solid fa-bag-shopping"></i> {{ui.gearTitle}} ({{gear.length}})</h3>
+              <div class="toolbar-btns"><button type="button" class="brp-btn" data-action="openCompendium" data-category="gear"><i class="fa-solid fa-book"></i> {{ui.browseGear}}</button>{{#if editMode}}<button type="button" class="brp-btn" data-action="createItem" data-type="gear"><i class="fa-solid fa-plus"></i> {{ui.addGear}}</button>{{/if}}</div>
+            </div>
+            <ul class="item-list">{{#each gear as |item|}}
+              <li class="item-row" data-item-id="{{item.id}}" data-tooltip="{{item.localizedTooltip}}"><img class="item-type-icon" src="{{item.img}}" alt="" />
+                <button type="button" class="brp-share-label item-label" data-action="shareEntry">{{item.displayName}}</button><span class="meta-text">{{item.system.weight}} kg</span>
+                {{#if @root.editMode}}<button type="button" class="step-btn" data-action="stepItemValue" data-item-path="system.quantity" data-delta="-1" data-min="0">−</button><input type="number" min="0" class="inline-num" data-item-field="system.quantity" value="{{item.system.quantity}}" /><button type="button" class="step-btn" data-action="stepItemValue" data-item-path="system.quantity" data-delta="1">+</button>{{else}}<strong>x{{item.system.quantity}}</strong>{{/if}}
+                {{#if @root.editMode}}<button type="button" class="icon-btn" data-action="editItem"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-btn danger" data-action="deleteItem"><i class="fa-solid fa-trash"></i></button>{{/if}}
+              </li>{{/each}}
+            </ul>
+          </div>
+        </div>
+      {{/if}}
+
+      {{#if isStatusTab}}
+        <div class="brp-status-layout">
+          <section class="panel-card brp-status-panel">
+            <div class="panel-header"><h3><i class="fa-solid fa-hourglass-half"></i> {{#if isTh}}อายุและผลต่อค่าสถานะ{{else}}Age and characteristic effects{{/if}}</h3></div>
+            {{#if editMode}}
+              <div class="brp-status-age-grid">
+                <label>{{#if isTh}}อายุเริ่มต้น{{else}}Starting age{{/if}}
+                  <input type="number" data-dtype="Number" min="0" step="1" required name="system.startingAge" value="{{startingAgeForEdit}}" />
+                </label>
+                <label>{{#if isTh}}อายุปัจจุบัน{{else}}Current age{{/if}}
+                  <input type="number" data-dtype="Number" min="0" step="1" required name="system.age" value="{{system.age}}" />
+                </label>
+                <label class="brp-age-check"><input type="checkbox" name="system.applyAgingRules" {{checked system.applyAgingRules}} /> {{#if isTh}}ใช้เกณฑ์อายุ 50+ ตามขั้นสร้างตัวละคร{{else}}Apply 50+ character creation aging thresholds{{/if}}</label>
+                <label>{{#if isTh}}ลำดับค่าสถานะที่ลด (STR, CON, DEX, CHA){{else}}Aging stat choices (STR, CON, DEX, CHA){{/if}}
+                  <input name="system.agingPriority" type="text" value="{{system.agingPriority}}" />
+                </label>
+              </div>
+              <p class="meta-text">{{#if isTh}}อายุที่เพิ่มหลังสร้างตัวละคร: {{ageBreakdown.yearsElapsed}} ปี · ผลจากช่วงอายุที่ผ่านเพิ่ม:{{else}}Years since creation: {{ageBreakdown.yearsElapsed}} · New milestone effects:{{/if}} <strong>{{#if ageAfterStartSummary}}{{ageAfterStartSummary}}{{else}}—{{/if}}</strong></p>
+              {{#if ageBreakdown.invalidAgeOrder}}<p class="brp-age-warning">{{#if isTh}}อายุปัจจุบันต่ำกว่าอายุตั้งต้นได้โดยไม่ถูกบล็อก (หากเป็นตัวละครที่เพิ่งสร้าง แนะนำให้ปรับอายุตั้งต้นให้ตรงด้วย) และจะไม่เกิดโทษจากอายุที่ยังไม่ถึง{{else}}Current age can be below starting age. For a newly created character, consider aligning starting age. Future age penalties are not applied early.{{/if}}</p>{{/if}}
+              <p class="meta-text">{{#if isTh}}อายุ 50, 60, 70: ลด 1 ค่าที่เลือกต่อทศวรรษ; อายุ 80+ ลด 3 ค่าต่อทศวรรษ (ขั้นสร้างตัวละคร หน้า 10). กฎเสริม Aging & Inaction หน้า 120 ใช้การทอยรายปีแยกต่างหาก ไม่ได้สุ่มอัตโนมัติ{{else}}At 50, 60, 70: -1 to a chosen stat per decade; at 80+: -1 to three chosen stats per decade (creation rules p.10). Optional annual Aging & Inaction (p.120) uses separate rolls, not automated here.{{/if}}</p>
+            {{else}}
+              <p class="brp-age-current">{{#if isTh}}อายุปัจจุบัน{{else}}Current age{{/if}} <strong>{{system.age}}</strong></p>
+            {{/if}}
+            <p class="meta-text">{{#if isTh}}ผลปรับค่าสถานะจากอายุ:{{else}}Age-related characteristic modifiers:{{/if}} <strong>{{#if agePenaltySummary}}{{agePenaltySummary}}{{else}}—{{/if}}</strong></p>
+          </section>
+          <section class="panel-card brp-status-panel">
+            <div class="panel-header"><h3><i class="fa-solid fa-briefcase"></i> {{#if isTh}}อาชีพ (Item แบบลากวาง){{else}}Occupation (draggable Item){{/if}}</h3>
+              <div class="toolbar-btns"><button type="button" class="brp-btn action-library" data-action="openCompendium" data-category="occupations"><i class="fa-solid fa-book-atlas"></i> {{#if isTh}}เพิ่มจากคลัง{{else}}Browse occupations{{/if}}</button>
+              {{#if editMode}}<button type="button" class="brp-btn" data-action="createItem" data-type="occupation"><i class="fa-solid fa-plus"></i> {{#if isTh}}สร้างอาชีพ{{else}}New occupation{{/if}}</button>{{/if}}</div>
+            </div>
+            {{#if editMode}}<p class="meta-text brp-context-guidance">{{#if isTh}}ลากอาชีพจาก Items Directory เพื่อเพิ่มให้ตัวละคร{{else}}Drop an Occupation item here to assign it{{/if}}</p>{{/if}}
+            {{#each occupationItems as |job|}}<div class="brp-status-row" data-item-id="{{job.id}}"><button type="button" class="brp-share-label" data-action="shareEntry">{{job.name}}</button>{{#if job.wealth}}<span class="brp-occupation-wealth">{{job.wealth}}</span>{{/if}}
+              {{#unless job.active}}<button type="button" class="brp-btn" data-action="activateOccupation" title="Make active">{{#if @root.isTh}}ใช้{{else}}Use{{/if}}</button>{{else}}<span class="brp-occupation-active"><i class="fa-solid fa-check-circle"></i> {{#if @root.isTh}}ปัจจุบัน{{else}}Active{{/if}}</span>{{/unless}}
+              <button type="button" class="icon-btn" data-action="editItem" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              {{#if @root.editMode}}<button type="button" class="icon-btn danger" data-action="deleteItem" title="Remove"><i class="fa-solid fa-trash"></i></button>{{/if}}
+            </div>{{/each}}
+          </section>
+          <section class="panel-card brp-status-panel">
+            <div class="panel-header"><h3><i class="fa-solid fa-person-circle-exclamation"></i> {{#if isTh}}ผลของสถานะ (Conditions & Modifiers){{else}}Status effects & modifiers{{/if}}</h3>
+              <div class="toolbar-btns"><button type="button" class="brp-btn action-library" data-action="openCompendium" data-category="statuses"><i class="fa-solid fa-book-atlas"></i> {{#if isTh}}เพิ่มจากคลัง{{else}}Browse conditions{{/if}}</button>
+              <button type="button" class="brp-btn primary" data-action="createStatus"><i class="fa-solid fa-plus"></i> {{#if isTh}}เพิ่มสถานะ{{else}}Add effect{{/if}}</button></div>
+            </div>
+            {{#if editMode}}<p class="meta-text brp-context-guidance">{{#if isTh}}สถานะและตัวปรับค่าชั่วคราว (ไม่เปลี่ยนค่าพื้นฐาน){{else}}Temporary modifiers (base values unchanged){{/if}}</p>{{/if}}
+            {{#each statusRows as |st|}}<div class="brp-status-row {{#unless st.active}}inactive{{/unless}}" data-status-id="{{st.id}}">
+              <div><strong>{{st.name}}</strong><div class="meta-text">{{st.source}} · {{st.characteristicLabel}} {{st.signedStat}} · {{st.scopeLabel}} {{st.signedSkill}}{{#if st.makeDifficult}} · Difficult{{/if}}</div>{{#if st.notes}}<div class="meta-text">{{st.notes}}</div>{{/if}}</div>
+              <button type="button" class="brp-btn" data-action="toggleStatus">{{#if st.active}}{{#if @root.isTh}}เปิด{{else}}On{{/if}}{{else}}{{#if @root.isTh}}ปิด{{else}}Off{{/if}}{{/if}}</button>
+              <button type="button" class="icon-btn" data-action="editStatus" title="Edit"><i class="fa-solid fa-pen"></i></button>
+              <button type="button" class="icon-btn danger" data-action="deleteStatus" title="Delete"><i class="fa-solid fa-trash"></i></button>
+            </div>{{else}}<p class="empty-hint">{{#if isTh}}ยังไม่มีสถานะเพิ่มเติม{{else}}No status effects yet{{/if}}</p>{{/each}}
+          </section>
+        </div>
+      {{/if}}
+
+      {{#if isAdvancementTab}}
+        <div class="panel-card advancement-board">
+          <div class="panel-header"><div><h3><i class="fa-solid fa-chart-line"></i> {{#if isTh}}บันทึกการพัฒนาตัวละคร{{else}}Character Advancement Log{{/if}}</h3><p class="meta-text">{{#if isTh}}การเพิ่มหรือแก้แต้มในหน้านี้จะเปลี่ยนค่าทักษะ/พลังทันที ส่วนแต้มฝึกฝนในหน้าทักษะอ่านอย่างเดียว{{else}}Add or edit entries here; Skill training is read-only elsewhere{{/if}}</p></div>
+            <button type="button" class="brp-btn primary" data-action="createAdvancement"><i class="fa-solid fa-plus"></i> {{#if isTh}}เพิ่มรายการ{{else}}New entry{{/if}}</button>
+          </div>
+          <div class="advancement-head"><span>{{#if isTh}}วัน/รายการ{{else}}Date / Entry{{/if}}</span><span>{{#if isTh}}ทักษะ/พลัง{{else}}Skill / Power{{/if}}</span><span>{{#if isTh}}แต้ม{{else}}Points{{/if}}</span><span>{{#if isTh}}จัดการ{{else}}Actions{{/if}}</span></div>
+          {{#each advancementLog as |entry|}}
+            <div class="advancement-row">
+              <div><strong>{{entry.date}}</strong><small>{{entry.reason}}</small></div>
+              <span><i class="fa-solid {{#if entry.isPower}}fa-wand-magic-sparkles{{else}}fa-list-check{{/if}}"></i> {{entry.itemDisplay}}</span>
+              <strong class="{{#if entry.positive}}point-positive{{else}}{{#if entry.negative}}point-negative{{/if}}{{/if}}">{{entry.points}}%</strong>
+              <div class="row-actions"><button type="button" class="icon-btn" data-action="editAdvancement" data-log-id="{{entry.id}}" data-tooltip="{{#if @root.isTh}}แก้ไข{{else}}Edit{{/if}}"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-btn danger" data-action="deleteAdvancement" data-log-id="{{entry.id}}" data-tooltip="{{#if @root.isTh}}ลบ{{else}}Delete{{/if}}"><i class="fa-solid fa-trash"></i></button></div>
+            </div>
+          {{else}}
+            <p class="empty-hint"><i class="fa-solid fa-book-open"></i> {{#if isTh}}ยังไม่มีประวัติการพัฒนา เพิ่มรายการแรกด้วยปุ่มด้านบน{{else}}No advancements recorded yet{{/if}}</p>
+          {{/each}}
+        </div>
+      {{/if}}
+
+      {{#if isNotesTab}}
+        <div class="panel-card notes-board">
+          <div class="panel-header"><h3><i class="fa-solid fa-book-open"></i> {{#if isTh}}สมุดบันทึกตัวละคร{{else}}Character Notes{{/if}}</h3><button type="button" class="brp-btn primary" data-action="createNote"><i class="fa-solid fa-plus"></i> {{#if isTh}}สร้างหัวข้อใหม่{{else}}New note{{/if}}</button></div>
+          <input class="notes-search" dir="auto" type="search" data-note-filter value="{{noteFilter}}" placeholder="{{#if isTh}}ค้นหาชื่อ หมวดหมู่ หรือเนื้อหาบันทึก...{{else}}Search notes, categories, contents...{{/if}}" />
+          <div class="notes-grid">{{#each journalEntries as |note|}}
+            <article class="note-card" data-note-search="{{note.title}} {{note.category}} {{note.description}}"><header><span class="note-category"><i class="fa-solid fa-tag"></i> {{note.category}}</span><small>{{note.createdAt}}</small></header>
+              <h4>{{note.title}}</h4><p class="note-description">{{note.description}}</p>
+              <div class="note-actions"><button type="button" class="brp-btn" data-action="shareNote" data-note-id="{{note.id}}"><i class="fa-solid fa-comment-dots"></i> {{#if @root.isTh}}แชร์ในแชท{{else}}Share to chat{{/if}}</button><button type="button" class="icon-btn" data-action="editNote" data-note-id="{{note.id}}"><i class="fa-solid fa-pen"></i></button><button type="button" class="icon-btn danger" data-action="deleteNote" data-note-id="{{note.id}}"><i class="fa-solid fa-trash"></i></button></div>
+            </article>
+          {{else}}<p class="empty-hint">{{#if isTh}}ยังไม่มีหัวข้อบันทึก{{else}}No notes yet{{/if}}</p>{{/each}}</div>
+          {{#if legacyNotes}}<details class="legacy-notes"><summary>{{#if isTh}}บันทึกเดิม (จากเวอร์ชันก่อนหน้า){{else}}Legacy notes{{/if}}</summary><textarea name="system.notes" class="notes-area">{{legacyNotes}}</textarea></details>{{/if}}
+        </div>
+      {{/if}}
+    </section>
+  </main>
+</div>

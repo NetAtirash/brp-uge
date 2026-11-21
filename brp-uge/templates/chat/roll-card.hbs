@@ -1,0 +1,26 @@
+<div class="brp-chat-card degree-{{degree}} {{#if isSuccess}}is-succeed{{else}}is-fail{{/if}}">
+  <!-- Priority 1 & 2: Rolled Number & Succeed/Fail Result First -->
+  <div class="card-priority-banner">
+    <div class="roll-num-wrap">
+      <span class="dice-total">{{rollTotal}}</span>
+      <span class="roll-num-caption">{{ui.rolledNum}}</span>
+    </div>
+    <div class="verdict-wrap">
+      <div class="verdict-badge">
+        {{#if isSuccess}}✓{{else}}✕{{/if}} {{verdictLabel}}
+      </div>
+      <div class="degree-sub">{{degreeLabel}}</div>
+      <div class="target-sub">{{chanceLabel}}: {{finalTarget}}%</div>
+    </div>
+  </div>
+
+  <!-- Priority 3: Secondary Details -->
+  <header class="card-header">
+    <strong>{{title}}</strong>
+    <div class="card-actor">{{actorName}}{{#if subtitle}} · {{subtitle}}{{/if}}</div>
+  </header>
+
+  <footer class="card-thresholds">
+    {{ui.critShort}} ≤ {{thresholds.critical}} · {{ui.specShort}} ≤ {{thresholds.special}} · {{ui.fumbleShort}} ≥ {{thresholds.fumble}}
+  </footer>
+</div>
