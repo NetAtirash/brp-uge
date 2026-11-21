@@ -13,3 +13,6 @@ coverage/
 # Build archives and temporary exports
 *.zip
 *.tmp
+
+# Generated Foundry release outputs
+dist/
