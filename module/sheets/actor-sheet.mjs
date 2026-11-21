@@ -59,6 +59,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       toggleCureInsanity: BRPActorSheet.#onToggleCureInsanity,
       deleteInsanity: BRPActorSheet.#onDeleteInsanity,
       openCompendium: BRPActorSheet.#onOpenCompendium,
+      configureStartingSkills: BRPActorSheet.#onConfigureStartingSkills,
       addCatalogSkill: BRPActorSheet.#onAddCatalogSkill,
       runExp: BRPActorSheet.#onRunExp,
       shareEntry: BRPActorSheet.#onShareEntry,
@@ -501,6 +502,11 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     event.preventDefault();
     const current = game.brp?.appearance?.getTheme?.() ?? 'light';
     await game.brp?.appearance?.setTheme?.(current === 'light' ? 'dark' : 'light');
+  }
+
+  static async #onConfigureStartingSkills(event) {
+    event.preventDefault();
+    if(game.user?.isGM)await game.brp?.configureStartingSkills?.();
   }
 
   static #onOpenWizard(event) {

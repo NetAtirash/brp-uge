@@ -24,6 +24,8 @@ import { BRPCharacterWizard } from "./module/apps/character-wizard.mjs";
 import { BRPCombatPhases } from "./module/combat/combat-phases.mjs";
 import { applyStatusTemplate } from "./module/status-template.mjs";
 import { ensureActorFoundationSkills } from "./module/skill-foundation.mjs";
+import { configureStartingSkills } from "./module/skill-selection.mjs";
+import { installBRPSettingsUI } from "./module/apps/settings-organization.mjs";
 
 function refreshBRPWorldUI() {
   try {
@@ -43,7 +45,7 @@ function refreshBRPWorldUI() {
 }
 
 Hooks.once("init", async () => {
-  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.5 (Foundry V14)");
+  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.6 (Foundry V14)");
 
   if (globalThis.Handlebars && !Handlebars.helpers.eq) {
     Handlebars.registerHelper("eq", (a, b) => a === b);
@@ -55,6 +57,7 @@ Hooks.once("init", async () => {
     macros: BRP_MACROS,
     combat: BRPCombatPhases,
     getCampaignRules,
+    configureStartingSkills,
     openWizard: (actor) => {
       try {
         const target = actor ?? canvas.tokens?.controlled?.[0]?.actor ?? game.user?.character;
@@ -193,6 +196,18 @@ Hooks.once("init", async () => {
     choices: {all: "World Items + installed Compendium Skills",world: "World Items only"},
     default: "all"
   });
+
+  game.settings.register('brp-uge','startingSkillsMode',{
+    name:'รายการทักษะตั้งต้น / Starting Skill Selection',
+    hint:'เลือกใช้ทักษะทุกชนิดที่พบ หรือเฉพาะรายการที่ GM เลือกผ่านตัวจัดการทักษะตั้งต้น',
+    scope:'world',config:true,restricted:true,type:String,
+    choices:{all:'All available Skills',selected:'GM selected Skills'},default:'all'
+  });
+  game.settings.register('brp-uge','startingSkillsKeys',{
+    name:'Selected starting skill keys',scope:'world',config:false,restricted:true,type:String,default:'[]'
+  });
+
+  installBRPSettingsUI();
 
   game.settings.register("brp-uge", "characteristicMethod", {
     name: "วิธีสร้างค่าสถานะเริ่มต้น / Characteristic Generation (GM)",

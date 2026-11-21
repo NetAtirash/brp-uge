@@ -67,3 +67,11 @@ Dark Mode has neutral charcoal surfaces rather than red/brown. The Wizard now re
 ## GitHub Releases and Foundry installation
 
 GitHub Actions builds a versioned `brp-uge.zip` and matching `system.json` for tagged releases. See [the release and installation guide](docs/GITHUB-RELEASES.md) for version tagging, verification, and the important Private Repository limitation. **Release URLs do not provide anonymous Foundry installation while the GitHub Repository is Private.**
+## v1.21.6 — Usability and starting Skills configuration
+
+- A GM may choose the exact baseline Skills copied to newly created Actors. Configure the source and selection mode under Game Settings, then choose Skill Items through the **Select starting skills** button in Settings or the Character Sheet header. Selection uses external World/Compendium data; no skills are embedded in this system. Existing Actors and their allocations are preserved.
+- Localized Skill names remain compact. Hover over a Skill to see its English reference name; the detailed tooltip remains on the surrounding row.
+- Game Settings gains localized section headings and clearer field descriptions.
+- The character identity header uses more space for portrait, name and Occupation; notebook lines no longer pass over data; utility icons use readable foreground colors.
+
+For this version, create and merge the GitHub Pull Request, then release using tag `v1.21.6` to trigger the Foundry system packaging workflow.

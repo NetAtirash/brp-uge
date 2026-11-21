@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
-const cfg=JSON.parse(read('../system.json'));assert.ok(['1.17.5','1.18.0','1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.5'].includes(cfg.version));assert.ok(cfg.styles.includes('styles/brp-compact-ribbon.css'));
+const cfg=JSON.parse(read('../system.json'));assert.ok(['1.17.5','1.18.0','1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.6'].includes(cfg.version));assert.ok(cfg.styles.includes('styles/brp-compact-ribbon.css'));
 const css=read('../styles/brp-compact-ribbon.css');assert.match(css,/brp-switch-thumb/);assert.match(css,/translateX\(22px\)/);assert.match(css,/brp-resource-meter/);
 for(const file of ['character-sheet.hbs','npc-sheet.hbs']){const t=read('../templates/actor/'+file);assert.match(t,/data-action="toggleEdit"/);assert.match(t,/role="switch"/);assert.match(t,/aria-checked=/);assert.match(t,/brp-header-utilities/);assert.match(t,/data-action="openCompendium"/);assert.doesNotMatch(t,/<section class="sheet-toolbar/);for(const r of ['hp','pp'])assert.ok(t.includes('max="{{system.'+r+'.max}}"'));}
 const char=read('../templates/actor/character-sheet.hbs');assert.match(char,/fa-hat-wizard/);assert.match(char,/data-action="openWizard"/);assert.ok((char.match(/data-action="toggleExp"/g)||[]).length>=2);assert.match(char,/data-action="rollChar"/);assert.match(char,/data-action="shareEntry"/);console.log('PASS v1.17.5 compact ribbon + real switch');

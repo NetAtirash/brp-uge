@@ -1,0 +1,110 @@
+/* v1.21.6 — Controls first: readable skills, clear notebook hierarchy, compact header. */
+html[data-brp-theme] .application.brp-uge .window-content {
+  /* Remove the long vertical red ledger rule from the clickable data area. */
+  background-image:
+    repeating-linear-gradient(180deg,transparent 0 38px,var(--brp-rule) 39px,transparent 40px),
+    linear-gradient(var(--brp-paper-wash,transparent),var(--brp-paper-wash,transparent)),
+    var(--brp-paper-texture)!important;
+  background-position:left top,left top,center center!important;
+  background-size:auto,auto,cover!important;
+  background-repeat:no-repeat,no-repeat,no-repeat!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner {
+  background-image:
+    linear-gradient(180deg,var(--brp-glaze),transparent 110px),
+    linear-gradient(var(--brp-paper-wash,transparent),var(--brp-paper-wash,transparent)),
+    var(--brp-paper-texture)!important;
+  background-position:left top,left top,center center!important;
+  background-size:auto,auto,cover!important;
+  background-repeat:no-repeat,no-repeat,no-repeat!important;
+}
+html[data-brp-theme] .brp-uge .brp-banner::before {display:none!important;}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {
+  grid-template-columns:165px minmax(245px,1.0fr) minmax(370px,1.8fr) auto!important;
+  min-height:132px!important;
+  padding:7px 11px!important;
+  gap:6px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell {
+  grid-template-rows:142px minmax(0,1fr)!important;
+  gap:6px 9px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity {
+  align-self:stretch!important;min-width:0!important;margin:0!important;
+  padding:6px 9px!important;
+  background:var(--brp-surface)!important;
+  border:1px solid var(--brp-border)!important;
+  border-radius:4px!important;
+}
+html[data-brp-theme] .brp-uge .brp-personal-identity .id-top-row {width:100%!important;min-width:0;}
+html[data-brp-theme] .brp-uge .brp-personal-identity .id-name-col {min-width:0!important;max-width:100%!important;flex:1 1 auto!important;}
+html[data-brp-theme] .brp-uge .brp-banner .profile-img.compact-img {
+  width:58px!important;height:58px!important;flex:0 0 58px!important;
+  background:var(--brp-deep)!important;
+}
+html[data-brp-theme] .brp-uge .brp-personal-identity .char-name-input {
+  max-width:100%!important;min-width:0!important;width:100%!important;
+  font-size:clamp(17px,1.65vw,23px)!important;
+  text-overflow:ellipsis!important;
+}
+html[data-brp-theme] .brp-uge .brp-personal-identity :is(.brp-occupation-name,.brp-readonly-value) {
+  width:100%!important;min-width:0!important;max-width:100%!important;
+  display:flex!important;align-items:center;justify-content:space-between!important;
+  gap:6px!important;padding:4px 6px!important;margin-top:4px!important;
+  white-space:nowrap!important;text-align:left!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  font-size:12.5px!important;line-height:1.4!important;
+  color:var(--brp-text)!important;background:var(--brp-panel)!important;
+  border:1px solid var(--brp-border)!important;border-radius:3px!important;
+}
+html[data-brp-theme] .brp-uge .brp-personal-identity .brp-occupation-name i {flex-shrink:0!important;color:var(--brp-text)!important;}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-details {
+  align-self:stretch!important;gap:2px 9px!important;padding:5px 8px!important;
+}
+html[data-brp-theme] .brp-uge .brp-personal-fact {gap:0!important;padding:1px 0!important;}
+html[data-brp-theme] .brp-uge .sidebar-combat-strip {min-height:0!important;padding:5px 9px!important;gap:7px!important;}
+html[data-brp-theme] .brp-uge .sheet-toolbar {margin:3px 0!important;padding:3px 4px!important;}
+html[data-brp-theme] .brp-uge .skills-columns {gap:12px!important;}
+html[data-brp-theme] .brp-uge .brp-bilingual-display {display:inline!important;line-height:1.35!important;}
+html[data-brp-theme] .brp-uge .brp-bilingual-display small {display:none!important;}
+html[data-brp-theme="light"] .brp-uge .brp-header-icon {
+  background:#f1e4d1!important;border-color:#9b8065!important;color:#2d2521!important;
+}
+html[data-brp-theme="light"] .brp-uge .brp-header-icon i {color:#2d2521!important;}
+html[data-brp-theme="dark"] .brp-uge .brp-header-icon {
+  background:#2b3035!important;border-color:#76828e!important;color:#f6f2e9!important;
+}
+html[data-brp-theme="dark"] .brp-uge .brp-header-icon i {color:#f6f2e9!important;}
+html[data-brp-theme] .brp-uge .brp-header-icon:hover {
+  background:var(--brp-highlight)!important;border-color:var(--brp-border-strong)!important;
+}
+html[data-brp-theme] .brp-uge .brp-header-icon:focus-visible {outline:2px solid var(--brp-focus)!important;outline-offset:2px;}
+@media(max-width:1180px){
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {
+   grid-template-columns:130px minmax(210px,.9fr) minmax(290px,1.7fr) auto!important;
+ }
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-details{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+}
+@media(max-width:870px){
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {grid-template-columns:150px minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;min-height:185px!important;}
+ html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell{grid-template-rows:auto minmax(0,1fr)!important;}
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy{grid-column:1!important;grid-row:1/3!important;display:flex!important;}
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity {grid-column:2!important;grid-row:1!important;}
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details {grid-column:2/4!important;grid-row:2!important;}
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities {grid-column:3!important;grid-row:1!important;}
+}
+@media(max-width:550px){
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy{display:none!important;}
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity{grid-column:1/3!important;}
+ html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details{grid-column:1/-1!important;}
+}
+/* V14 native settings form group headings. Scoped to injected classes. */
+.brp-settings-group {margin:18px 0 8px;padding:7px 9px 5px;border-left:3px solid #a73439;border-bottom:1px solid currentColor;font-size:1rem;font-weight:750;}
+.brp-settings-row {min-width:0;}
+.brp-configure-starting-skills {display:inline-flex;align-items:center;margin:7px 0 3px;padding:7px 12px;border:1px solid #a73439;border-radius:4px;cursor:pointer;}
+.brp-starting-skill-editor {max-width:780px;min-width:0;}
+.brp-starting-skill-editor p {margin:0 0 9px;}
+.brp-starting-skill-list {max-height:380px;overflow-y:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 10px;}
+.brp-starting-skill {display:flex;align-items:center;gap:8px;min-width:0;padding:5px;border-bottom:1px solid #8884;}
+.brp-starting-skill input {flex:0 0 auto;}
+.brp-starting-skill span {min-width:0;overflow-wrap:anywhere;}
+.brp-starting-skill small {font-size:.8em;opacity:.78;}

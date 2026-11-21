@@ -36,7 +36,8 @@ export function planMissingBaseSkills(actorSkills,librarySkills) {
 export async function ensureActorFoundationSkills(actor,{sources='all',documents=null}={}) {
   if(!actor||!['character','npc'].includes(actor.type)||actor.pack)return {created:0,available:0,missingSource:false};
   const library=documents??await getLibraryDocuments({types:['skill'],includeWorld:true,includePacks:sources!=='world'});
-  const choices=uniqueSkills(library);
+  const {configuredStartingSkills}=await import('./skill-selection.mjs');
+  const choices=configuredStartingSkills(library);
   if(!choices.length)return {created:0,available:0,missingSource:true};
   const missing=planMissingBaseSkills(actor.items,choices);
   const additions=missing.map(documentToEmbeddedItem).filter(Boolean);

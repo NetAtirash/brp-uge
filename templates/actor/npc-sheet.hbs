@@ -288,7 +288,7 @@
             {{#each skillGroups as |group|}}
               {{#each group.items as |skill|}}
                 <li class="item-row" data-item-id="{{skill.id}}" data-tooltip="{{skill.localizedTooltip}}">
-                  <button type="button" class="link-btn" data-action="shareEntry"><span class="brp-bilingual-display">{{skill.displayName}}{{#if skill.showEnglishName}}<small lang="en">{{skill.englishName}}</small>{{/if}}</span></button>
+                  <button type="button" class="link-btn" data-action="shareEntry"><span class="brp-bilingual-display" title="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.displayName}}{{/if}}" data-tooltip="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.localizedTooltip}}{{/if}}">{{skill.displayName}}</span></button>
                   {{#if @root.editMode}}
                     <span class="skill-training-readonly" data-tooltip="{{#if @root.isTh}}แต้มฝึกฝนอ่านอย่างเดียว แก้ผ่านบันทึกการพัฒนา{{else}}Training is read-only; use Advancement log{{/if}}"><i class="fa-solid fa-lock"></i> {{skill.system.trainingTotal}}</span>
                     <button type="button" class="icon-btn" data-action="createAdvancement" data-item-id="{{skill.id}}" data-tooltip="{{#if @root.isTh}}เพิ่มการพัฒนาทักษะ{{else}}Add advancement{{/if}}"><i class="fa-solid fa-chart-line"></i></button>
