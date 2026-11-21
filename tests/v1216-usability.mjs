@@ -4,8 +4,8 @@ import {filterStartingSkills,decodeStartingSkillKeys,configuredStartingSkills} f
 import {settingsGroupFor,settingPresentation} from '../module/apps/settings-organization.mjs';
 const read=(p)=>readFileSync(new URL('../'+p, import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
-assert.equal(manifest.version,'1.21.8');
-assert.equal(manifest.styles.at(-1),'styles/brp-v1218-specialties.css');
+assert.equal(manifest.version,'1.21.9');
+assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');
 assert.match(manifest.manifest,/releases\/latest\/download\/system\.json/);
 assert.match(manifest.download,/v1\.21\.8\/brp-uge\.zip/);
 const skills=[{type:'skill',name:'A',system:{nameEn:'Spot',referenceKey:'Spot'}}, {type:'skill',name:'B',system:{nameEn:'Dodge',referenceKey:'Dodge'}},{type:'skill',name:'C',system:{nameEn:'Spot',referenceKey:'Spot'}}];

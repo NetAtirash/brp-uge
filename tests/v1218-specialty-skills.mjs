@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
-assert.equal(manifest.version,'1.21.8');
-assert.equal(manifest.styles.at(-1),'styles/brp-v1218-specialties.css');
+assert.equal(manifest.version,'1.21.9');
+assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');
 const {availableSpecialtyFamilies,analyzeSkillFamily,composeSpecialtyItem,readSpecialtyPresets}=await import('../module/skill-specialties.mjs');
 const {canonicalSkillKey,uniqueSkills,sameSkill,planMissingBaseSkills}=await import('../module/skill-foundation.mjs');
 
@@ -63,4 +63,4 @@ assert.ok(entry.includes("registerMenu('brp-uge','manageSpecialties'"));
 assert.ok(entry.includes("register('brp-uge','specialtyPresets'"));
 const manager=read('module/apps/specialty-presets-menu.mjs');
 assert.ok(manager.includes("settings.set('brp-uge','specialtyPresets'"));
-console.log('PASS v1.21.8 dynamic Skill Specialty manager, identity, duplicates, and Science (Astronomy)');
+console.log('PASS v1.21.9 dynamic Skill Specialty manager, identity, duplicates, and Science (Astronomy)');

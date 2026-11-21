@@ -272,6 +272,7 @@
             <h3>{{ui.npcSkills}}</h3>
             <div class="toolbar-btns">
               {{#if editMode}}
+                {{#if canEditSkillPoints}}<button type="button" class="brp-btn brp-open-points" data-action="openSkillPointsEditor" data-tooltip="{{#if isTh}}เปิดหน้าต่างแก้แต้มทักษะเต็มจอ{{else}}Open full-screen Skill point editor{{/if}}"><i class="fa-solid fa-up-right-and-down-left-from-center" aria-hidden="true"></i> {{#if isTh}}แก้แต้มเต็มจอ{{else}}Edit Points Fullscreen{{/if}}</button>{{/if}}
                 <button type="button" class="brp-btn primary" data-action="createItem" data-type="skill">{{ui.addSkill}}</button>
               {{/if}}
             </div>

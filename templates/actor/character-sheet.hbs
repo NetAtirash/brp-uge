@@ -266,11 +266,10 @@
         <div class="skill-sticky-wrap">
         <div class="tab-toolbar">
           <label class="brp-skill-search-field"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" class="skill-search-input" data-skill-filter value="{{skillFilter}}" placeholder="{{ui.skillSearchPlaceholder}}" aria-label="{{ui.skillSearchPlaceholder}}" /></label>
-          {{#if editMode}}
-            <div class="toolbar-btns">
-              <button type="button" class="brp-btn primary" data-action="createItem" data-type="skill">{{ui.newSkill}}</button>
-            </div>
-          {{/if}}
+          <div class="toolbar-btns">
+            {{#if canEditSkillPoints}}<button type="button" class="brp-btn brp-open-points" data-action="openSkillPointsEditor" data-tooltip="{{#if isTh}}เปิดพื้นที่แก้แต้มทักษะขนาดเต็มหน้าจอ{{else}}Open full-screen Skill point editor{{/if}}"><i class="fa-solid fa-up-right-and-down-left-from-center" aria-hidden="true"></i> {{#if isTh}}แก้แต้มเต็มจอ{{else}}Edit Points Fullscreen{{/if}}</button>{{/if}}
+            {{#if editMode}}<button type="button" class="brp-btn primary" data-action="createItem" data-type="skill">{{ui.newSkill}}</button>{{/if}}
+          </div>
         </div>
         {{#if editMode}}
           {{#if skillCatalog.length}}
@@ -297,19 +296,19 @@
           </div>
           {{/if}}
         </div><!-- /skill-sticky-wrap -->
-        <div class="skills-columns {{#if editMode}}is-editing{{else}}is-playing{{/if}}">
+        <div class="skills-columns {{#if editMode}}is-editing{{else}}is-playing{{/if}} {{#unless showSkillCategoryBonusColumn}}without-category{{/unless}}">
           {{#each skillGroups as |group|}}
             {{#if group.items.length}}
               <section class="skill-category-block" data-category="{{group.key}}">
                 <div class="cat-header">
                   <h3><i class="fa-solid fa-folder-open" aria-hidden="true"></i> {{group.label}}</h3>
-                  <span class="cat-bonus">{{@root.ui.catBonusLabel}} {{group.bonus}}%</span>
+                  {{#if @root.showSkillCategoryBonuses}}{{#if group.bonus}}<span class="cat-bonus">{{@root.ui.catBonusLabel}} {{group.bonus}}%</span>{{/if}}{{/if}}
                 </div>
                 {{#if @root.editMode}}
                   <div class="skill-edit-heading" aria-hidden="true">
                     <span>{{#if @root.isTh}}ทักษะ{{else}}Skill{{/if}}</span>
                     <span data-tooltip="{{#if @root.isTh}}ค่าตั้งต้นของทักษะจากคู่มือ หรือคำนวณตามค่าสถานะ{{else}}Base skill rating from rules or characteristics{{/if}}">{{#if @root.isTh}}พื้นฐาน{{else}}Base{{/if}}</span>
-                    <span data-tooltip="{{#if @root.isTh}}โบนัสหมวดทักษะจากค่าสถานะ (ตามกฎแคมเปญ){{else}}Skill category bonus derived from characteristics{{/if}}">{{#if @root.isTh}}หมวด{{else}}Cat.{{/if}}</span>
+                    {{#if @root.showSkillCategoryBonusColumn}}<span data-tooltip="{{#if @root.isTh}}โบนัสหมวดทักษะจากค่าสถานะ (ตามกฎแคมเปญ){{else}}Skill category bonus derived from characteristics{{/if}}">{{#if @root.isTh}}หมวด{{else}}Cat.{{/if}}</span>{{/if}}
                     <span data-tooltip="{{#if @root.isTh}}แต้มอาชีพจากขั้นตอนสร้างตัวละคร และแก้ไขเพิ่มเติมที่นี่{{else}}Points allocated from profession budget{{/if}}">{{#if @root.isTh}}อาชีพ{{else}}Occupation{{/if}}</span>
                     <span data-tooltip="{{#if @root.isTh}}แต้มความสนใจส่วนตัวจากขั้นตอนสร้างตัวละคร{{else}}Points allocated from personal budget{{/if}}">{{#if @root.isTh}}ส่วนตัว{{else}}Personal{{/if}}</span>
                     <span data-tooltip="{{#if @root.isTh}}เพิ่มจากแท็บบันทึกการพัฒนาเท่านั้น (รวมแต้มจากเวอร์ชันเก่า){{else}}Read-only. Changes originate from Advancement log, including legacy points{{/if}}">{{#if @root.isTh}}ฝึกฝน{{else}}Training{{/if}}</span>
@@ -326,7 +325,7 @@
                           <button type="button" class="brp-share-label skill-edit-name" data-action="shareEntry" title="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.displayName}}{{/if}}" data-tooltip="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.localizedTooltip}}{{/if}}"><span class="brp-bilingual-display">{{skill.displayName}}</span></button>
                         </div>
                         <span class="skill-edit-base">{{skill.system.effectiveBase}}%</span>
-                        <span class="skill-edit-cat">{{skill.system.categoryBonus}}%</span>
+                        {{#if @root.showSkillCategoryBonusColumn}}<span class="skill-edit-cat">{{skill.system.categoryBonus}}%</span>{{/if}}
                         <input aria-label="Occupation points" type="number" min="0" class="skill-points-input" data-item-field="system.occupationBonus" value="{{skill.system.occupationBonus}}" />
                         <input aria-label="Personal points" type="number" min="0" class="skill-points-input" data-item-field="system.personalBonus" value="{{skill.system.personalBonus}}" />
                         <span class="skill-training-readonly" data-tooltip="{{#if @root.isTh}}แก้ไขในแท็บบันทึกการพัฒนา{{else}}Edit in the Advancement tab{{/if}}"><i class="fa-solid fa-lock" aria-hidden="true"></i> {{skill.system.trainingTotal}}</span>

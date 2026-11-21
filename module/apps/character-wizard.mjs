@@ -71,6 +71,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       selectedWeaponRefs: [],
       selectedArmorRefs: [],
       skillFilter: "",
+      professionFilter: "",
       powerSystemFilter: "all",
       powerPreviewIndex: null
     };
@@ -379,18 +380,24 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       san: Math.min(99, effectiveCh.pow * 5),
       dm
     };
-    context.professions = await Promise.all(this.#getAvailableProfessions().map(async (p) => ({
+    // Occupations use the same compact catalog/list vocabulary as Skills,
+    // Powers and Inventory. Long rules are previewed ONLY for the chosen item.
+    context.professions = (await Promise.all(this.#getAvailableProfessions().map(async (p) => ({
       ...p,
       title: isTh ? p.nameTh : p.name,
       titleEn:p.name,
-      sub: isTh ? p.descriptionTh : p.description,
+      plainDescription:this.#plainRuleText(isTh ? p.descriptionTh || p.description : p.description || p.descriptionTh),
       wealthLabel: p.wealthEnabled ? wealthDisplayFromItem(await resolveWealthItem(p.wealthRef),isTh?'th':'en') : '',
-      selected: p.id === this.wizardData.professionId
-    })));
+      selected: p.id === this.wizardData.professionId,
+      searchText: `${p.nameTh} ${p.name}`.toLocaleLowerCase(),
+      linkedCount:(p.skillRefs??[]).length
+    })))).sort((a,b)=>a.title.localeCompare(b.title,isTh?'th':'en'));
+    context.professionFilter=this.wizardData.professionFilter;
     context.selectedProfession = {
       ...prof,
-      title: isTh ? prof.nameTh : prof.name,
-      sub: isTh ? prof.descriptionTh : prof.description
+      title: isTh ? prof?.nameTh : prof?.name,
+      titleEn: prof?.name,
+      sub: this.#plainRuleText(isTh ? prof?.descriptionTh || prof?.description : prof?.description || prof?.descriptionTh)
     };
     context.occupationBudgetLabel=rules.useEdu && rules.occupationBudgetMethod==='edu'
       ? `EDU × ${({normal:20,heroic:25,epic:30,superhuman:40})[rules.powerLevel]??20}`
@@ -533,6 +540,23 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         this.render();
       });
     }
+    // Catalog search filters rows in place. Do not rerender on every keystroke:
+    // that would erase Thai IME compositions and cause unnecessary scrolling.
+    const occupationSearch=this.element.querySelector('input[data-wiz-prof-search]');
+    const filterOccupations=()=>{
+      const needle=String(this.wizardData.professionFilter||'').trim().toLocaleLowerCase();
+      for(const row of this.element.querySelectorAll('.wiz-occupation-row')){
+        row.hidden=!!needle && !String(row.dataset.search||'').includes(needle);
+      }
+    };
+    occupationSearch?.addEventListener('input',event=>{
+      this.wizardData.professionFilter=event.currentTarget.value;
+      if(!event.isComposing)filterOccupations();
+    });
+    occupationSearch?.addEventListener('compositionend',event=>{
+      this.wizardData.professionFilter=event.currentTarget.value;filterOccupations();
+    });
+    filterOccupations();
     const skillSearch = this.element.querySelector("input[data-wiz-skill-search]");
     const filterSkillRows = () => {
       const q = String(this.wizardData.skillFilter || "").trim().toLocaleLowerCase();
