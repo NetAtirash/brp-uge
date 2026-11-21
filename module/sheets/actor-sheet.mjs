@@ -350,7 +350,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
 
     context.showSkillCategoryBonuses = rules.categoryBonusMode !== 'none';
-    context.showSkillCategoryBonusColumn = shouldShowCategoryColumn(rules.categoryBonusMode,Object.values(skillsMap));
+    context.showSkillCategoryBonusColumn = shouldShowCategoryColumn(rules.categoryBonusMode,Object.values(skillsMap).filter(group=>group.items.length));
     context.skillGroups = Object.values(skillsMap);
     context.hiddenPowerCount = this.document.items.filter(i=>i.type==="power" && !isPowerSystemEnabled(i.system.system)).length;
     // Keep display budgets identical to the character creation Wizard.
