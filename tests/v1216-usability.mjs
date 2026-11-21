@@ -4,17 +4,17 @@ import {filterStartingSkills,decodeStartingSkillKeys,configuredStartingSkills} f
 import {settingsGroupFor,settingPresentation} from '../module/apps/settings-organization.mjs';
 const read=(p)=>readFileSync(new URL('../'+p, import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
-assert.equal(manifest.version,'1.21.6');
-assert.equal(manifest.styles.at(-1),'styles/brp-v1216-usability.css');
+assert.equal(manifest.version,'1.21.7');
+assert.equal(manifest.styles.at(-1),'styles/brp-v1217-layout.css');
 assert.match(manifest.manifest,/releases\/latest\/download\/system\.json/);
-assert.match(manifest.download,/v1\.21\.6\/brp-uge\.zip/);
+assert.match(manifest.download,/v1\.21\.7\/brp-uge\.zip/);
 const skills=[{type:'skill',name:'A',system:{nameEn:'Spot',referenceKey:'Spot'}}, {type:'skill',name:'B',system:{nameEn:'Dodge',referenceKey:'Dodge'}},{type:'skill',name:'C',system:{nameEn:'Spot',referenceKey:'Spot'}}];
 assert.equal(filterStartingSkills(skills,{mode:'all'}).length,2);
 assert.deepEqual(filterStartingSkills(skills,{mode:'selected',keys:JSON.stringify(['spot|'])}).map(x=>x.name),['A']);
 assert.equal(filterStartingSkills(skills,{mode:'selected',keys:'broken'}).length,0);
 assert.equal(decodeStartingSkillKeys('null').size,0);
 assert.equal(configuredStartingSkills(skills,{get:(_id,key)=>key==='startingSkillsMode'?'selected':'["dodge|"]'}).length,1);
-assert.equal(configuredStartingSkills(skills,{get:(_id,key)=>key==='startingSkillsMode'?'selected':'[]'}).length,2);
+assert.equal(configuredStartingSkills(skills,{get:(_id,key)=>key==='startingSkillsMode'?'selected':'[]'}).length,0);
 assert.equal(settingsGroupFor('startingSkillsMode'),'creation');
 assert.equal(settingPresentation('startingSkillsMode','th').name,'การเลือกทักษะเริ่มต้น');
 assert.equal(settingPresentation('startingSkillsMode','en').name,'Starting skill selection');
@@ -27,8 +27,8 @@ for(const file of ['templates/actor/character-sheet.hbs','templates/actor/npc-sh
  assert.doesNotMatch(template,/\{\{skill\.englishName\}\}<\/small>/);
  assert.match(template,/title="\{\{#if skill\.showEnglishName\}\}\{\{skill\.englishName\}\}/);
 }
-const css=read('styles/brp-v1216-usability.css');
-assert.match(css,/background-image:/);
-assert.match(css,/\.brp-banner::before \{display:none/);
-assert.match(css,/\.brp-header-icon i/);
-console.log('PASS v1.21.6 settings groups, selected baseline Skills, tooltips, and notebook presentation');
+const css=read('styles/brp-v1217-layout.css');
+assert.match(css,/brp-banner-combat-strip/);
+assert.match(css,/grid-template-columns:116px/);
+assert.match(css,/brp-header-utilities/);
+console.log('PASS updated settings groups, selected baseline Skills, tooltips, and notebook presentation');

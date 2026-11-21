@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 const base=new URL('../',import.meta.url);
 const read=file=>readFileSync(new URL(file,base),'utf8');
 const manifest=JSON.parse(read('system.json'));
-assert.ok(['1.18.2','1.18.3','1.19.0','1.20.0','1.21.6'].includes(manifest.version));
+assert.ok(['1.18.2','1.18.3','1.19.0','1.20.0','1.21.7'].includes(manifest.version));
 assert.ok(manifest.styles.includes('styles/brp-thai-readability.css'));
 const type=read('styles/brp-thai-readability.css');
 const google=read('styles/brp.css');

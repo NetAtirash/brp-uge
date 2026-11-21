@@ -75,3 +75,7 @@ GitHub Actions builds a versioned `brp-uge.zip` and matching `system.json` for t
 - The character identity header uses more space for portrait, name and Occupation; notebook lines no longer pass over data; utility icons use readable foreground colors.
 
 For this version, create and merge the GitHub Pull Request, then release using tag `v1.21.6` to trigger the Foundry system packaging workflow.
+
+## v1.21.7 — Header and starting skill configuration
+
+The Actor/NPC header now displays DM, Armor and MOV beside the header controls, while making portrait, name and occupation easier to read. English Skill references are shown on hover. The GM may choose starting Skills using **All available**, **Rulebook-sourced** (records with external book provenance), or **GM-selected**, and can open **Manage Starting Skills** from Game Settings. This selection reads active external content only and never bundles book data.

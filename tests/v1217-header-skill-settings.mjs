@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf-8');
+const manifest=JSON.parse(read('system.json'));
+assert.equal(manifest.version,'1.21.7');
+assert.equal(manifest.styles.at(-1),'styles/brp-v1217-layout.css');
+const css=read('styles/brp-v1217-layout.css');
+for(const match of ['grid-template-columns:116px','brp-banner-combat-strip','brp-header-utilities','brp-manager-controls'])assert.ok(css.includes(match),match);
+for(const kind of ['character','npc']){
+  const t=read(`templates/actor/${kind}-sheet.hbs`);
+  const headerEnd=t.indexOf('</header>');
+  const asideStart=t.indexOf('<aside class="sheet-sidebar">');
+  const combat=t.indexOf('class="sidebar-combat-strip brp-banner-combat-strip"');
+  assert.ok(combat>0&&combat<headerEnd&&headerEnd<asideStart,`${kind}: DM/AP/MOV really moved inside header`);
+  assert.equal(t.match(/class="sidebar-combat-strip/g)?.length,1);
+  const english=t.indexOf('title="{{#if skill.showEnglishName}}{{skill.englishName}}');
+  assert.ok(english>0,`${kind}: English name visible in native HTML tooltip`);
+  assert.ok(!t.includes('data-item-id="{{skill.id}}" data-tooltip="{{skill.localizedTooltip}}"'),`${kind}: avoid long tooltip on entire skill row`);
+}
+const entry=read('brp-uge.mjs');
+assert.ok(entry.includes("registerMenu('brp-uge','manageStartingSkills'"),'native Foundry settings menu');
+assert.ok(entry.includes("book:'Skills identified as rulebook entries'"),'three skill modes');
+const settings=read('module/apps/settings-organization.mjs');
+assert.ok(settings.includes("Hooks.on('renderApplicationV2'"),'V14 SettingsConfig render hook');
+const manager=read('module/apps/starting-skills-menu.mjs');
+assert.ok(manager.includes('data-choose="all"')&&manager.includes('data-choose="none"')&&manager.includes("settings.set('brp-uge','startingSkillsMode','selected')"),'working manager with save');
+const {filterStartingSkills,configuredStartingSkills}=await import('../module/skill-selection.mjs');
+const skill=(name,book=false)=>({name,type:'skill',system:{nameEn:name,referenceKey:name},flags:book?{'brp-uge':{rulebookReference:{book:'Test Book'}}}:{}});
+const catalogue=[skill('Appraise',true),skill('Dodge',true),skill('Homebrew')];
+assert.equal(filterStartingSkills(catalogue,{mode:'all'}).length,3);
+assert.deepEqual(filterStartingSkills(catalogue,{mode:'book'}).map(x=>x.name),['Appraise','Dodge']);
+assert.deepEqual(filterStartingSkills(catalogue,{mode:'selected',keys:'["homebrew|"]'}).map(x=>x.name),['Homebrew']);
+assert.deepEqual(filterStartingSkills(catalogue,{mode:'selected',keys:'[]'}),[],'empty selection must not silently grant all skills');
+const settingsMock={get:(_system,key)=>({startingSkillsMode:'book',startingSkillsKeys:'[]'})[key]};
+assert.equal(configuredStartingSkills(catalogue,settingsMock).length,2);
+console.log('PASS v1.21.7 header, native settings menu, hover labels and three starting skill modes');

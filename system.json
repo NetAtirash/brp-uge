@@ -2,7 +2,7 @@
   "id": "brp-uge",
   "title": "Basic Roleplaying: Universal Game Engine (Thai / EN)",
   "description": "Foundry VTT V14 bilingual BRP UGE engine. Light/Dark paper notebook UI. Optional visual modules provide genres, palettes, and header art; no bundled content packs.",
-  "version": "1.21.6",
+  "version": "1.21.7",
   "compatibility": {
     "minimum": "14",
     "verified": "14"
@@ -29,7 +29,8 @@
     "styles/brp-rulebook-reference.css",
     "styles/brp-fa7-v14.css",
     "styles/brp-paper.css",
-    "styles/brp-v1216-usability.css"
+    "styles/brp-v1216-usability.css",
+    "styles/brp-v1217-layout.css"
   ],
   "languages": [
     {
@@ -138,6 +139,6 @@
   },
   "primaryTokenAttribute": "hp",
   "secondaryTokenAttribute": "pp",
-  "download": "https://github.com/NetAtirash/brp-uge/releases/download/v1.21.6/brp-uge.zip",
+  "download": "https://github.com/NetAtirash/brp-uge/releases/download/v1.21.7/brp-uge.zip",
   "manifest": "https://github.com/NetAtirash/brp-uge/releases/latest/download/system.json"
 }

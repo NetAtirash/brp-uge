@@ -25,7 +25,7 @@ const TEXT = {
   campaignPowerLevel:['ระดับพลังแคมเปญ','Campaign power level','กำหนดแต้มอาชีพและงบสร้างตัวละครตามระดับแคมเปญ','Controls occupation budget and character generation points by campaign level'],
   occupationBudgetMethod:['วิธีคำนวณแต้มอาชีพ','Occupation point calculation','เลือกงบแต้มคงที่หรือวิธีคำนวณโดยใช้ EDU','Choose a fixed point budget or optional EDU-based calculation'],
   startingSkillsSource:['แหล่งข้อมูลทักษะเริ่มต้น','Starting skill sources','อ่านทักษะจากไอเทมใน World และ Compendium ที่ติดตั้ง หรือเฉพาะ World','Read skills from World Items and installed Compendiums, or only World Items'],
-  startingSkillsMode:['การเลือกทักษะเริ่มต้น','Starting skill selection','เพิ่มทุกทักษะที่พบ หรือใช้รายการที่ GM กำหนดด้วยปุ่มจัดการด้านล่าง','Copy every available skill or only those chosen using the selection button below'],
+  startingSkillsMode:['การเลือกทักษะเริ่มต้น','Starting skill selection','เพิ่มทุกทักษะ, เฉพาะทักษะที่มีแหล่งอ้างอิงจากหนังสือ หรือรายการที่ GM เลือกเอง','Copy all skills, provenance-marked rulebook skills, or an explicit GM selection'],
   characteristicMethod:['วิธีสร้างค่าคุณลักษณะ','Characteristic generation','วิธีทอยหรือจัดสรรค่าคุณลักษณะตอนสร้างตัวละคร','How starting characteristics are generated'],
   increasedPersonalSkillPoints:['แต้มทักษะส่วนตัวเพิ่มเติม','Increased personal skill points','เปิดกฎเสริมเพิ่มแต้มทักษะส่วนตัวตามระดับแคมเปญ','Use the optional higher personal skill budgets by campaign level'],
   useEdu:['ใช้ค่าการศึกษา EDU','Enable education (EDU)','แสดง EDU ในชีท โดยไม่เปลี่ยนงบแต้มอาชีพโดยอัตโนมัติ','Enable the EDU characteristic without automatically changing the occupation budget'],
@@ -60,10 +60,14 @@ export function settingPresentation(key,language='th'){
 export function organizeBRPSettings(root,{language='th',onConfigureSkills=null}={}){
   const element=root?.[0]??root;
   if(!element?.querySelectorAll)return 0;
-  const settings=Array.from(element.querySelectorAll('input[name^="brp-uge."], select[name^="brp-uge."], textarea[name^="brp-uge."]'));
+  // SettingsConfig V14 renders native fields in its own category-browser DOM.
+  const settings=Array.from(element.querySelectorAll('input, select, textarea')).filter(field=>
+    String(field.name||field.getAttribute('data-setting-id')||field.id||'').includes('brp-uge.')
+  );
   let lastGroup=''; let count=0;
   for(const field of settings){
-    const key=field.getAttribute('name')?.slice('brp-uge.'.length);const words=settingPresentation(key,language);
+    const identifier=[field.name,field.dataset?.settingId,field.id].find(x=>String(x||'').includes('brp-uge.'))||'';
+    const key=identifier.split('brp-uge.').at(-1);const words=settingPresentation(key,language);
     if(!words)continue;
     const row=field.closest('.form-group, .form-field, .standard-form-field, .setting')||field.parentElement;
     if(!row)continue;
@@ -71,6 +75,18 @@ export function organizeBRPSettings(root,{language='th',onConfigureSkills=null}=
     const label=row.querySelector('label');const hint=row.querySelector('.hint, .form-hint, p.hint');
     if(label)label.textContent=words.name;
     if(hint)hint.textContent=words.hint;
+    if(key==='startingSkillsMode' && field.tagName==='SELECT'){
+      const captions=language==='en'
+        ? {all:'All installed Skills',book:'Rulebook-sourced Skills',selected:'GM-selected Skills'}
+        : {all:'ทักษะทั้งหมดที่ติดตั้ง',book:'เฉพาะทักษะจากหนังสือกฎ',selected:'GM เลือกเอง'};
+      for(const option of field.options){if(captions[option.value])option.textContent=captions[option.value];}
+    }
+    if(key==='startingSkillsSource' && field.tagName==='SELECT'){
+      const captions=language==='en'
+        ? {all:'World Items + Compendiums',world:'World Items only'}
+        : {all:'ไอเทมใน World และ Compendium',world:'เฉพาะไอเทมใน World'};
+      for(const option of field.options){if(captions[option.value])option.textContent=captions[option.value];}
+    }
     if(words.group!==lastGroup){
       lastGroup=words.group;
       if(!row.previousElementSibling?.classList?.contains('brp-settings-group')){
@@ -98,4 +114,11 @@ export function installBRPSettingsUI(){
   };
   Hooks.on('renderSettingsConfig',callback);
   Hooks.on('renderSettingsConfigV2',callback);
+  // V14 guarantees this parent hook for ApplicationV2-based SettingsConfig;
+  // the older specific hook names are not always emitted by category browsers.
+  Hooks.on('renderApplicationV2',(app,element)=>{
+    if(app?.constructor?.name==='SettingsConfig' || app instanceof (globalThis.foundry?.applications?.settings?.SettingsConfig||class {})){
+      callback(app,element);
+    }
+  });
 }
