@@ -63,3 +63,7 @@ Dark Mode has neutral charcoal surfaces rather than red/brown. The Wizard now re
 - Native hover title fallback on controls, plus readable rules text instead of showing raw HTML tags.
 
 **World backup is strongly recommended when upgrading.** Offline tests are not a replacement for real Foundry V14 smoke testing.
+
+## GitHub Releases and Foundry installation
+
+GitHub Actions builds a versioned `brp-uge.zip` and matching `system.json` for tagged releases. See [the release and installation guide](docs/GITHUB-RELEASES.md) for version tagging, verification, and the important Private Repository limitation. **Release URLs do not provide anonymous Foundry installation while the GitHub Repository is Private.**
