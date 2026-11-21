@@ -1,0 +1,59 @@
+name: Release BRP UGE for Foundry VTT
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js for offline tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate JavaScript modules
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -type f -name '*.mjs' -print0)
+
+      - name: Run regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in tests/*.mjs; do
+            node "$test"
+          done
+
+      - name: Build and verify release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release.py --tag "$GITHUB_REF_NAME" --output dist
+
+      - name: Publish versioned ZIP and Foundry manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" \
+            dist/brp-uge.zip \
+            dist/system.json \
+            --verify-tag \
+            --title "BRP UGE $GITHUB_REF_NAME" \
+            --generate-notes \
+            --latest

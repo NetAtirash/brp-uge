@@ -136,5 +136,7 @@
     "units": "m"
   },
   "primaryTokenAttribute": "hp",
-  "secondaryTokenAttribute": "pp"
+  "secondaryTokenAttribute": "pp",
+  "manifest": "https://github.com/NetAtirash/brp-uge/releases/latest/download/system.json",
+  "download": "https://github.com/NetAtirash/brp-uge/releases/download/v1.21.5/brp-uge.zip"
 }

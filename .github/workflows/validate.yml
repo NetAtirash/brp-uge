@@ -27,3 +27,9 @@ jobs:
             echo "Running $test"
             node "$test"
           done
+      - name: Verify Foundry installable ZIP and release manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release.py --output dist
+          python3 -m zipfile -t dist/brp-uge.zip
