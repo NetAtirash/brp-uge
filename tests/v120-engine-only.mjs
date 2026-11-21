@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const m=JSON.parse(read('system.json'));
-assert.equal(m.version,'1.21.7');
+assert.equal(m.version,'1.21.8');
 assert.equal(m.id,'brp-uge');
 assert.ok(!m.packs||m.packs.length===0);
 assert.equal(Object.keys(m.documentTypes.Item).length,10);

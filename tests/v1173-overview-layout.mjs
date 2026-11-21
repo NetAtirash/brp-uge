@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const root=path.resolve(import.meta.dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'system.json'),'utf8'));
-assert.ok(['1.17.3','1.17.4','1.17.5','1.18.0', '1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.7'].includes(manifest.version));
+assert.ok(['1.17.3','1.17.4','1.17.5','1.18.0', '1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.8'].includes(manifest.version));
 assert.ok(manifest.styles.includes('styles/brp-overview.css'));
 const css=fs.readFileSync(path.join(root,'styles/brp-overview.css'),'utf8');
 for(const name of ['character','npc']){

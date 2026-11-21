@@ -280,7 +280,13 @@
             {{#if skillCatalog.length}}
             <div class="skill-add-bar compact">
               <select data-skill-catalog>{{#each skillCatalog as |s|}}<option value="{{s.uuid}}">{{s.label}}</option>{{/each}}</select>
-              <input type="text" data-skill-specialty placeholder="{{ui.customSpecialtyPlaceholder}}" />
+              <div class="brp-specialty-controls" data-specialty-controls hidden>
+              <select data-specialty-choice aria-label="{{#if isTh}}เลือกความเชี่ยวชาญ{{else}}Choose specialty{{/if}}"></select>
+              <div class="brp-specialty-custom" data-specialty-custom hidden>
+                <input type="text" data-custom-specialty-en placeholder="{{#if isTh}}ชื่ออังกฤษ เช่น Astronomy{{else}}English name e.g. Astronomy{{/if}}" maxlength="100" aria-label="English specialty" />
+                <input type="text" data-custom-specialty-th placeholder="{{#if isTh}}ชื่อไทย เช่น ดาราศาสตร์{{else}}Thai name (optional){{/if}}" maxlength="100" aria-label="Thai specialty" />
+              </div>
+            </div>
               <button type="button" class="brp-btn primary" data-action="addCatalogSkill">{{ui.addCatalogSkill}}</button>
             </div>
             {{else}}<p class="brp-library-empty">{{#if isTh}}ยังไม่มีทักษะในคลังที่ติดตั้ง — สร้างทักษะเองได้{{else}}No installed Skill Items — create your own.{{/if}}</p>{{/if}}

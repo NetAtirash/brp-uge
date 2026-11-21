@@ -26,6 +26,7 @@ import { applyStatusTemplate } from "./module/status-template.mjs";
 import { ensureActorFoundationSkills } from "./module/skill-foundation.mjs";
 import { configureStartingSkills } from "./module/skill-selection.mjs";
 import { StartingSkillsMenu } from "./module/apps/starting-skills-menu.mjs";
+import { SpecialtyPresetsMenu } from "./module/apps/specialty-presets-menu.mjs";
 import { installBRPSettingsUI } from "./module/apps/settings-organization.mjs";
 
 function refreshBRPWorldUI() {
@@ -46,7 +47,7 @@ function refreshBRPWorldUI() {
 }
 
 Hooks.once("init", async () => {
-  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.7 (Foundry V14)");
+  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.8 (Foundry V14)");
 
   if (globalThis.Handlebars && !Handlebars.helpers.eq) {
     Handlebars.registerHelper("eq", (a, b) => a === b);
@@ -214,6 +215,17 @@ Hooks.once("init", async () => {
     label:'เปิดตัวเลือกทักษะ / Choose Skills',
     hint:'กำหนดรายการสำหรับโหมด GM เลือกเองจาก Skill Items ที่ติดตั้งจริง',
     icon:'fa-solid fa-list-check',type:StartingSkillsMenu,restricted:true
+  });
+
+  // Specialty definitions are World configuration, not embedded rulebook content.
+  game.settings.register('brp-uge','specialtyPresets',{
+    name:'Specialty preset options',scope:'world',config:false,restricted:true,type:String,default:'{}'
+  });
+  game.settings.registerMenu('brp-uge','manageSpecialties',{
+    name:'ตัวเลือก Specialty / Manage Specialties',
+    label:'จัดการความเชี่ยวชาญ / Specialty Presets',
+    hint:'เลือกความเชี่ยวชาญเสริมให้ผู้เล่นจากกลุ่มทักษะที่ติดตั้งจริง',
+    icon:'fa-solid fa-flask',type:SpecialtyPresetsMenu,restricted:true
   });
 
   installBRPSettingsUI();

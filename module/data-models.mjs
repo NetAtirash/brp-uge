@@ -346,6 +346,9 @@ export class SkillDataModel extends BRPItemDataModel {
         initial: "communication"
       }),
       specialty: new StringField({ required: true, blank: true, initial: "" }),
+      specialtyTh: new StringField({ required: true, blank: true, initial: "" }),
+      specialtyFamily: new StringField({ required: true, blank: true, initial: "" }),
+      specialtyFamilyTh: new StringField({ required: true, blank: true, initial: "" }),
       base: new NumberField({ required: true, integer: true, min: 0, initial: 5 }),
       baseFormula: new StringField({ required: true, blank: true, initial: "" }),
       occupationBonus: new NumberField({ required: true, integer: true, min: 0, initial: 0 }),
