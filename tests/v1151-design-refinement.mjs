@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
 const manifest=JSON.parse(read('../system.json'));
-assert.ok(['1.15.1','1.16.0', '1.17.0', '1.17.1', '1.17.2', '1.17.3', '1.17.4','1.17.5','1.18.0', '1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.8'].includes(manifest.version));
+assert.ok(['1.15.1','1.16.0', '1.17.0', '1.17.1', '1.17.2', '1.17.3', '1.17.4','1.17.5','1.18.0', '1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.9'].includes(manifest.version));
 assert.deepEqual(manifest.styles.slice(0,2),['styles/brp.css','styles/brp-refinement.css']);
 assert.ok(manifest.styles.includes('styles/brp-bold.css'));
 const css=read('../styles/brp-refinement.css');

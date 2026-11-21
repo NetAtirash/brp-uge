@@ -87,3 +87,10 @@ The Actor/NPC header now displays DM, Armor and MOV beside the header controls, 
 - The base percentage, category and rules description are inherited from a real, installed skill of the family. The generated specialty is marked with source-template provenance. GM should review any specialty-specific exceptions in the source material.
 - GM: **Game Settings → BRP UGE → Manage Specialties** to edit the list of options displayed to players. Presets are World settings, not Compendium content.
 - The Game System remains data-free: no rulebook Skill/Science records or preset specialties are hardcoded.
+
+## v1.21.9 — Occupation List & Skill Points Workbench
+
+- Occupation selection in the Wizard uses a searchable, compact list and single rule preview instead of long cards for every occupation.
+- Character and NPC Sheets can launch a full-viewport, draft-first Skill allocation editor with category/search filters and one batch save.
+- Skill Category Bonus calculations remain unchanged. Hide misleading zero-only badges and remove the bonus column when the rule is disabled or all modifiers are zero.
+- The Skill editor never updates Advancement log training, status modifiers, rulebook source records, or Compendium packs.

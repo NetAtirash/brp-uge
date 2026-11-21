@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 const root = new URL('../', import.meta.url);
 const read = (file) => readFileSync(new URL(file, root), 'utf8');
 const pack = JSON.parse(read('system.json'));
-assert.ok(['1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.8'].includes(pack.version));
+assert.ok(['1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.9'].includes(pack.version));
 assert.ok(pack.styles.includes('styles/brp-ui-consistency.css'));
 const template = read('templates/actor/character-sheet.hbs');
 assert.match(template, /class="brp-skill-id-cell"/);

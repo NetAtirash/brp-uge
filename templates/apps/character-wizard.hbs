@@ -167,16 +167,34 @@
       <div class="panel-card wiz-section">
         <h3>{{#if isTh}}เลือกอาชีพและจัดสรรทักษะ{{else}}Occupation & Skills{{/if}}</h3>
         <div class="wiz-drop-hint" data-wiz-drop-item="occupation">{{#if isTh}}ลาก Occupation Item จาก Items Directory / Compendium มาวางที่นี่ได้{{else}}Drop an Occupation Item here from Items Directory / Compendium{{/if}}</div>
-        <div class="wiz-prof-grid">
-          <button type="button" class="wiz-prof-card {{#unless selectedProfession.sourceUuid}}selected{{/unless}}" data-action="selectProfession" data-prof-id=""><div class="wiz-prof-title">{{#if isTh}}ยังไม่เลือกอาชีพ{{else}}No occupation yet{{/if}}</div><div class="wiz-prof-desc">{{#if isTh}}สร้างตัวละครเปล่าก่อน แล้วเพิ่ม Occupation Item ภายหลัง{{else}}Finish a blank character and assign an Occupation Item later.{{/if}}</div></button>
-          {{#each professions as |p|}}
-            <button type="button" class="wiz-prof-card {{#if p.selected}}selected{{/if}}" data-action="selectProfession" data-prof-id="{{p.id}}">
-              <div class="wiz-prof-title">{{p.title}}{{#if @root.isTh}}<small class="wiz-english-ref" lang="en">{{p.titleEn}}</small>{{/if}}</div>
-              <div class="wiz-prof-wealth">{{p.wealthLabel}}</div>
-              <div class="wiz-prof-desc">{{p.sub}}</div>
-            </button>
-          {{/each}}
-          {{#unless professions.length}}<p class="meta-text">{{#if isTh}}ยังไม่มี Occupation Items: GM สามารถสร้างอาชีพใน Items Directory หรือสร้างตัวละครเปล่าแล้วเพิ่มอาชีพทีหลัง{{else}}No Occupation Items available. Create an occupation in Items Directory, or finish a blank character and add it later.{{/if}}</p>{{/unless}}
+        <div class="wiz-occupation-layout">
+          <div class="wiz-occupation-catalog" role="group" aria-label="{{#if isTh}}รายการอาชีพ{{else}}Occupation catalog{{/if}}">
+            <label class="wiz-occupation-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" data-wiz-prof-search value="{{professionFilter}}" autocomplete="off" dir="auto" placeholder="{{#if isTh}}ค้นหาอาชีพ...{{else}}Search occupations...{{/if}}" aria-label="{{#if isTh}}ค้นหาอาชีพ{{else}}Search occupations{{/if}}"></label>
+            <div class="wiz-occupation-list">
+              <button type="button" class="wiz-occupation-row {{#unless selectedProfession.sourceUuid}}selected{{/unless}}" data-action="selectProfession" data-prof-id="" data-search="{{#if isTh}}ไม่เลือกอาชีพ{{else}}no occupation{{/if}}" aria-pressed="{{#unless selectedProfession.sourceUuid}}true{{else}}false{{/unless}}">
+                <i class="fa-regular fa-circle-xmark" aria-hidden="true"></i><span class="wiz-occupation-label">{{#if isTh}}ยังไม่เลือกอาชีพ{{else}}No occupation{{/if}}</span><span class="wiz-occupation-action">{{#unless selectedProfession.sourceUuid}}<i class="fa-solid fa-check" aria-hidden="true"></i>{{/unless}}</span>
+              </button>
+              {{#each professions as |p|}}
+                <button type="button" class="wiz-occupation-row {{#if p.selected}}selected{{/if}}" data-action="selectProfession" data-prof-id="{{p.id}}" data-search="{{p.searchText}}" title="{{p.titleEn}}" aria-pressed="{{#if p.selected}}true{{else}}false{{/if}}">
+                  <i class="fa-solid fa-briefcase" aria-hidden="true"></i>
+                  <span class="wiz-occupation-label">{{p.title}}</span>
+                  {{#if p.wealthLabel}}<small class="wiz-occupation-wealth">{{p.wealthLabel}}</small>{{/if}}
+                  <span class="wiz-occupation-action">{{#if p.selected}}<i class="fa-solid fa-check" aria-hidden="true"></i>{{else}}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>{{/if}}</span>
+                </button>
+              {{/each}}
+              {{#unless professions.length}}<p class="meta-text">{{#if isTh}}ยังไม่มี Occupation Items ในคลังที่ติดตั้ง{{else}}No Occupation Items from installed sources{{/if}}</p>{{/unless}}
+            </div>
+          </div>
+          <section class="wiz-occupation-preview" aria-live="polite">
+            {{#if selectedProfession.sourceUuid}}
+              <div class="wiz-occupation-preview-header"><i class="fa-solid fa-briefcase" aria-hidden="true"></i><h4>{{selectedProfession.title}}</h4></div>
+              {{#if isTh}}{{#if selectedProfession.titleEn}}<small lang="en">{{selectedProfession.titleEn}}</small>{{/if}}{{/if}}
+              <div class="wiz-occupation-preview-meta">{{#if isTh}}ทักษะอ้างอิง{{else}}Linked skill references{{/if}}: {{professionLinkedSkillCount}} {{#if professionMissingSkillCount}}· {{#if isTh}}ขาด{{else}}Missing{{/if}}: {{professionMissingSkillCount}}{{/if}}</div>
+              <div class="wiz-occupation-preview-rule">{{selectedProfession.sub}}</div>
+            {{else}}
+              <p class="meta-text">{{#if isTh}}เลือกอาชีพจากรายการด้านซ้ายเพื่ออ่านคำอธิบาย หรือสร้างตัวละครโดยยังไม่กำหนดอาชีพ{{else}}Choose an occupation to inspect its rules, or proceed without one{{/if}}</p>
+            {{/if}}
+          </section>
         </div>
       </div>
       <div class="panel-card wiz-section">

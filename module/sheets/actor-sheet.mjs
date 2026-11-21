@@ -9,6 +9,8 @@ import { getBRPIcon, getThemedBRPIcon } from "../library-taxonomy.mjs";
 import { statusSkillAdjustment, characteristicAdjustments, agePenalties, agePenaltyBreakdown } from "../status-effects.mjs";
 import { escapeForChat, getItemTooltip, getTooltipLanguage, getLocalizedName, getNameLanguage, getSkillNameMatches, powerMode, powerChance } from "../character-tools.mjs";
 import { creationBudgets } from "../rules/character-creation.mjs";
+import { BRPSkillPointsEditor } from "../apps/skill-points-editor.mjs";
+import { shouldShowCategoryColumn } from "../skill-points-utils.mjs";
 import { sameSkill } from "../skill-foundation.mjs";
 import { availableSpecialtyFamilies, readSpecialtyPresets, composeSpecialtyItem } from "../skill-specialties.mjs";
 
@@ -44,6 +46,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     actions: {
       switchTab: BRPActorSheet.#onSwitchTab,
       toggleEdit: BRPActorSheet.#onToggleEdit,
+      openSkillPointsEditor: BRPActorSheet.#onOpenSkillPointsEditor,
       togglePaperTheme: BRPActorSheet.#onTogglePaperTheme,
       openWizard: BRPActorSheet.#onOpenWizard,
       toggleResistance: BRPActorSheet.#onToggleResistance,
@@ -159,6 +162,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.canUseWizard = Boolean(game.user?.isGM || rules.allowPlayerCharacterWizard);
     context.campaignRules = rules;
     context.editMode = this.#editMode;
+    context.canEditSkillPoints = Boolean(this.document.isOwner);
     context.resistanceOpen = this.#resistanceOpen;
     context.skillFilter = this.#skillFilter;
     context.resistActiveStat = this.#resistActiveStat;
@@ -345,6 +349,8 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       group.items.sort((a, b) => a.displayName.localeCompare(b.displayName));
     }
 
+    context.showSkillCategoryBonuses = rules.categoryBonusMode !== 'none';
+    context.showSkillCategoryBonusColumn = shouldShowCategoryColumn(rules.categoryBonusMode,Object.values(skillsMap).filter(group=>group.items.length));
     context.skillGroups = Object.values(skillsMap);
     context.hiddenPowerCount = this.document.items.filter(i=>i.type==="power" && !isPowerSystemEnabled(i.system.system)).length;
     // Keep display budgets identical to the character creation Wizard.
@@ -529,6 +535,12 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     event.preventDefault();
     this.tabGroups.primary = target.dataset.tab;
     this.render();
+  }
+
+  static #onOpenSkillPointsEditor(event) {
+    event.preventDefault();
+    if(!this.document.isOwner){ui.notifications.warn('You do not have permission to edit this Actor');return;}
+    new BRPSkillPointsEditor({actor:this.document}).render(true);
   }
 
   static #onToggleEdit(event) {
