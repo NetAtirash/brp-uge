@@ -79,3 +79,11 @@ For this version, create and merge the GitHub Pull Request, then release using t
 ## v1.21.7 — Header and starting skill configuration
 
 The Actor/NPC header now displays DM, Armor and MOV beside the header controls, while making portrait, name and occupation easier to read. English Skill references are shown on hover. The GM may choose starting Skills using **All available**, **Rulebook-sourced** (records with external book provenance), or **GM-selected**, and can open **Manage Starting Skills** from Game Settings. This selection reads active external content only and never bundles book data.
+
+## v1.21.8 — Dynamic skill specialties
+
+- For specializable skill families, choose a family like **Science** even when only specialized example items exist in a Compendium. Choose a GM-defined specialty, or enter English and Thai labels for a custom one (e.g. **Science (Astronomy)** / **วิทยาศาสตร์ (ดาราศาสตร์)**).
+- A newly added specialty is its own embedded Skill Item and receives a new Foundry ID. Other specialties stay independent, and exact duplicates are rejected.
+- The base percentage, category and rules description are inherited from a real, installed skill of the family. The generated specialty is marked with source-template provenance. GM should review any specialty-specific exceptions in the source material.
+- GM: **Game Settings → BRP UGE → Manage Specialties** to edit the list of options displayed to players. Presets are World settings, not Compendium content.
+- The Game System remains data-free: no rulebook Skill/Science records or preset specialties are hardcoded.

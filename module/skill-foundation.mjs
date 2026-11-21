@@ -5,12 +5,19 @@
 import { getLibraryDocuments, documentToEmbeddedItem } from './library-provider.mjs';
 import { linkedOccupationSkill } from './occupation-skill-linking.mjs';
 import { normalizedText } from './reference-utils.mjs';
+import { analyzeSkillFamily } from './skill-specialties.mjs';
 
 export function canonicalSkillKey(item) {
-  const s=item?.system??{};
-  const key=normalizedText(s.referenceKey||s.nameEn||s.nameTh||item?.name);
-  const specialty=normalizedText(s.specialty);
-  return key ? `${key}|${specialty}` : '';
+  if(item?.type!=='skill')return '';
+  const sys=item.system??{};
+  const parsed=analyzeSkillFamily(item);
+  // Normalize old Compendium names (Science (Astronomy)) and newer structured
+  // specialty records to the same family+specialty key.
+  if(parsed?.supportsSpecialty && parsed.enSpecialty){
+    return `${parsed.key}|${normalizedText(parsed.enSpecialty)}`;
+  }
+  const key=normalizedText(sys.referenceKey||sys.nameEn||sys.nameTh||item.name);
+  return key ? `${key}|` : '';
 }
 export function uniqueSkills(documents) {
   const seen=new Map();
@@ -24,7 +31,8 @@ export function uniqueSkills(documents) {
 export function sameSkill(left,right) {
   if(!left||!right||left.type!=='skill'||right.type!=='skill')return false;
   const key=canonicalSkillKey(left);
-  if(key&&key===canonicalSkillKey(right))return true;
+  const otherKey=canonicalSkillKey(right);
+  if(key&&otherKey)return key===otherKey;
   const refs=[right.uuid,right.flags?.core?.sourceId,right.flags?.['brp-uge']?.sourceUuid,
     right.flags?.['brp-uge']?.originalSourceUuid].filter(Boolean);
   return refs.some(ref=>linkedOccupationSkill(left,ref));

@@ -10,6 +10,7 @@ import { statusSkillAdjustment, characteristicAdjustments, agePenalties, agePena
 import { escapeForChat, getItemTooltip, getTooltipLanguage, getLocalizedName, getNameLanguage, getSkillNameMatches, powerMode, powerChance } from "../character-tools.mjs";
 import { creationBudgets } from "../rules/character-creation.mjs";
 import { sameSkill } from "../skill-foundation.mjs";
+import { availableSpecialtyFamilies, readSpecialtyPresets, composeSpecialtyItem } from "../skill-specialties.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -367,10 +368,20 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.equippedArmor = context.armor.filter(a => a.system.equipped);
     context.occOverBudget = context.occRemaining < 0;
     context.persOverBudget = context.persRemaining < 0;
-    context.skillCatalog = (context.editMode && (context.isSkillsTab || this.document.type==='npc')
-      ? await getLibraryDocuments({types:['skill']}) : []).map(s => ({
-        uuid:s.uuid,label:`${getLocalizedName(s,uiLang)} — ${s.system.baseFormula || `${s.system.base??0}%`}`
-      }));
+    const sourceSkills=context.editMode && (context.isSkillsTab || this.document.type==='npc')
+      ? await getLibraryDocuments({types:['skill']}) : [];
+    const families=availableSpecialtyFamilies(sourceSkills);
+    const familyChoices=families.map(f=>({
+      uuid:`family:${encodeURIComponent(f.key)}`,
+      familyKey:f.key,
+      label:`${isTh?f.thFamily:f.enFamily} — ${isTh?'เพิ่ม Specialty':'New Specialty'} (${f.enFamily})`
+    }));
+    const exactChoices=sourceSkills.map(skill=>({
+      uuid:skill.uuid,
+      label:`${getLocalizedName(skill,uiLang)} — ${skill.system.baseFormula || `${skill.system.base??0}%`}`
+    }));
+    context.skillCatalog=[...familyChoices,...exactChoices];
+    context.hasSpecialtyFamilies=families.length>0;
     context.checkedCount = checkedCount;
     context.hasSkills = this.document.items.some((i) => i.type === "skill");
     return context;
@@ -380,6 +391,34 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   _onRender(context, options) {
     super._onRender(context, options);
     applyBRPControlLanguage(this.element);
+    // Specialty-specific controls are shown only after a family is chosen.
+    for(const bar of this.element.querySelectorAll('.skill-add-bar')){
+      const source=bar.querySelector('select[data-skill-catalog]');
+      const specialtyUI=bar.querySelector('[data-specialty-controls]');
+      const choice=bar.querySelector('select[data-specialty-choice]');
+      const customInputs=bar.querySelector('[data-specialty-custom]');
+      if(!source||!specialtyUI||!choice)continue;
+      const presets=readSpecialtyPresets(game.settings.get('brp-uge','specialtyPresets'));
+      const isTh=game.settings.get('brp-uge','uiLanguage')!=='en';
+      const toggleCustom=()=>{if(customInputs)customInputs.hidden=choice.value!=='custom';};
+      source.addEventListener('change',()=>{
+        const raw=source.value;
+        const familyKey=raw.startsWith('family:')?decodeURIComponent(raw.slice(7)):'';
+        specialtyUI.hidden=!familyKey;
+        choice.replaceChildren();
+        if(!familyKey)return;
+        choice.add(new Option(isTh?'เลือก Specialty…':'Choose Specialty…',''));
+        for(const p of presets[familyKey]??[]){
+          const option=new Option(isTh?(p.th||p.en):p.en,p.en);
+          option.dataset.th=p.th||p.en;
+          choice.add(option);
+        }
+        choice.add(new Option(isTh?'+ ระบุเอง':'+ Custom specialty','custom'));
+        choice.value='';toggleCustom();
+      });
+      choice.addEventListener('change',toggleCustom);
+      source.dispatchEvent(new Event('change'));
+    }
     // Inline editing for embedded items (skill rank, armor AP, passion %, gear qty)
     this.element.querySelectorAll("[data-item-field]").forEach((input) => {
       input.addEventListener("change", async (ev) => {
@@ -767,21 +806,37 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     event.preventDefault();
     const bar=target.closest('.skill-add-bar')??this.element;
     const ref=bar.querySelector('select[data-skill-catalog]')?.value;
-    if(!ref)return ui.notifications.warn('Select a Skill from World Items or an installed Compendium first');
-    const item=await fromUuid(ref).catch(()=>null);
-    if(item?.type!=='skill')return ui.notifications.warn('The selected Skill is no longer available');
-    const data=documentToEmbeddedItem(item);
-    const customSpec=String(bar.querySelector('input[data-skill-specialty]')?.value??'').trim();
-    if(customSpec){
-      data.name=`${data.name} (${customSpec})`;
-      if(data.system.nameTh)data.system.nameTh=`${data.system.nameTh} (${customSpec})`;
-      if(data.system.nameEn)data.system.nameEn=`${data.system.nameEn} (${customSpec})`;
-      data.system.specialty=customSpec;
+    const th=game.settings.get('brp-uge','uiLanguage')!=='en';
+    if(!ref)return ui.notifications.warn(th?'เลือกทักษะจากคลังข้อมูลก่อน':'Select an installed Skill first');
+    let data;
+    if(ref.startsWith('family:')){
+      const familyKey=decodeURIComponent(ref.slice(7));
+      const families=availableSpecialtyFamilies(await getLibraryDocuments({types:['skill']}));
+      const family=families.find(f=>f.key===familyKey);
+      if(!family)return ui.notifications.warn(th?'ไม่พบกลุ่มทักษะจากคลัง':'Skill family is unavailable');
+      const select=bar.querySelector('select[data-specialty-choice]');
+      const value=select?.value||'';
+      if(!value)return ui.notifications.warn(th?'กรุณาเลือกหรือกรอก Specialty':'Choose or enter a specialty');
+      const english=value==='custom'
+        ? bar.querySelector('[data-custom-specialty-en]')?.value?.trim() : value;
+      const thai=value==='custom'
+        ? bar.querySelector('[data-custom-specialty-th]')?.value?.trim() : select.selectedOptions?.[0]?.dataset.th;
+      if(!english)return ui.notifications.warn(th?'กรอกชื่ออังกฤษอ้างอิงของ Specialty':'An English reference is required');
+      const source=await fromUuid(family.templateUuid).catch(()=>null);
+      if(!source || source.type!=='skill')return ui.notifications.warn('Source Skill not available');
+      try {data=composeSpecialtyItem(source,family,{en:english,th:thai});}
+      catch(error){return ui.notifications.warn(error.message);}
+    } else {
+      const item=await fromUuid(ref).catch(()=>null);
+      if(item?.type!=='skill')return ui.notifications.warn('Selected Skill is unavailable');
+      data=documentToEmbeddedItem(item);
     }
     if(this.document.items.some(existing=>sameSkill(existing,data)))
-      return ui.notifications.warn('This Skill is already on the character sheet.');
-    await this.document.createEmbeddedDocuments('Item',[data]);
-    ui.notifications.info(`Added ${data.name} to ${this.document.name}`);
+      return ui.notifications.warn(th?'มีทักษะและ Specialty นี้แล้ว':'This Skill and Specialty already exists');
+    // Never keep a template's ID: each specialty is its own embedded document.
+    delete data._id;
+    const [created]=await this.document.createEmbeddedDocuments('Item',[data]);
+    if(created)ui.notifications.info(`${th?'เพิ่มทักษะแล้ว':'Added'}: ${getLocalizedName(created,th?'th':'en')}`);
   }
 
   static async #onRunExp(event) {
