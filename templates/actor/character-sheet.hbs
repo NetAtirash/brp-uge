@@ -39,6 +39,29 @@
     <button type="button" class="brp-header-icon" data-action="toggleResistance" data-tooltip="{{ui.resistTitle}}" aria-label="{{ui.resistTitle}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i></button>
     <button type="button" class="brp-header-icon brp-exp-utility" data-action="runExp" data-tooltip="{{#if isTh}}ทดสอบการพัฒนาทักษะที่ทำเครื่องหมาย{{else}}Test checked skill improvements{{/if}}" aria-label="EXP ({{checkedCount}})"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i>{{#if checkedCount}}<span class="brp-utility-count">{{checkedCount}}</span>{{/if}}</button>
   </div>
+    <!-- Derived values live beside the utility controls, not below HP/PP. -->
+    <div class="sidebar-combat-strip brp-banner-combat-strip">
+      <div class="strip-metric" data-tooltip="{{derivedTips.dm}}">
+        <span>DM</span>
+        <strong class="accent">{{system.derived.damageModifier}}</strong>
+      </div>
+      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
+        <span>{{#if isTh}}เกราะ{{else}}Armor{{/if}}</span>
+        <strong>{{equippedAp}} AP</strong>
+      </div>
+      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
+        <span>MOV</span>
+        <div class="step-group compact-step">
+          {{#if editMode}}
+            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="-1" data-min="0" data-max="30">−</button>
+          {{/if}}
+          <input class="strip-num" name="system.mov" type="number" value="{{system.mov}}" {{#unless editMode}}readonly{{/unless}} />
+          {{#if editMode}}
+            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="1" data-min="0" data-max="30">+</button>
+          {{/if}}
+        </div>
+      </div>
+    </div>
   </header>
   <aside class="sheet-sidebar">
 
@@ -138,30 +161,6 @@
         <progress class="brp-resource-meter" aria-label="FP" value="{{system.fp.value}}" max="{{system.fp.max}}"></progress>
         </div>
       {{/if}}
-    </div>
-
-    <!-- Single-line Derived Combat Strip -->
-    <div class="sidebar-combat-strip">
-      <div class="strip-metric" data-tooltip="{{derivedTips.dm}}">
-        <span>DM</span>
-        <strong class="accent">{{system.derived.damageModifier}}</strong>
-      </div>
-      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
-        <span>เกราะ</span>
-        <strong>{{equippedAp}} AP</strong>
-      </div>
-      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
-        <span>MOV</span>
-        <div class="step-group compact-step">
-          {{#if editMode}}
-            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="-1" data-min="0" data-max="30">−</button>
-          {{/if}}
-          <input class="strip-num" name="system.mov" type="number" value="{{system.mov}}" {{#unless editMode}}readonly{{/unless}} />
-          {{#if editMode}}
-            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="1" data-min="0" data-max="30">+</button>
-          {{/if}}
-        </div>
-      </div>
     </div>
 
     <!-- Compact 2-Column Characteristics Block -->
@@ -315,10 +314,10 @@
                 <ul class="item-list">
                   {{#each group.items as |skill|}}
                     {{#if @root.editMode}}
-                      <li class="item-row skill-edit-row" data-item-id="{{skill.id}}" data-skill-name="{{skill.displayName}}" data-skill-desc="{{skill.localizedTooltip}}" data-tooltip="{{skill.localizedTooltip}}">
+                      <li class="item-row skill-edit-row" data-item-id="{{skill.id}}" data-skill-name="{{skill.displayName}}" data-skill-desc="{{skill.localizedTooltip}}">
                         <div class="brp-skill-id-cell">
                           <button type="button" class="exp-toggle {{#if skill.system.checked}}checked{{/if}}" data-action="toggleExp" data-tooltip="{{#if @root.isTh}}ทำเครื่องหมายพัฒนาทักษะ{{else}}Mark for improvement{{/if}}" aria-label="Experience check">{{#if skill.system.checked}}<i class="fa-solid fa-check" aria-hidden="true"></i>{{else}}<i class="fa-regular fa-square" aria-hidden="true"></i>{{/if}}</button>
-                          <button type="button" class="brp-share-label skill-edit-name" data-action="shareEntry" title="Share {{skill.displayName}}"><span class="brp-bilingual-display" title="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.displayName}}{{/if}}" data-tooltip="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.localizedTooltip}}{{/if}}">{{skill.displayName}}</span></button>
+                          <button type="button" class="brp-share-label skill-edit-name" data-action="shareEntry" title="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.displayName}}{{/if}}" data-tooltip="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.localizedTooltip}}{{/if}}"><span class="brp-bilingual-display">{{skill.displayName}}</span></button>
                         </div>
                         <span class="skill-edit-base">{{skill.system.effectiveBase}}%</span>
                         <span class="skill-edit-cat">{{skill.system.categoryBonus}}%</span>
@@ -332,9 +331,9 @@
                         </span>
                       </li>
                     {{else}}
-                      <li class="item-row skill-play-row" data-item-id="{{skill.id}}" data-skill-name="{{skill.displayName}}" data-skill-desc="{{skill.localizedTooltip}}" data-tooltip="{{skill.localizedTooltip}}">
+                      <li class="item-row skill-play-row" data-item-id="{{skill.id}}" data-skill-name="{{skill.displayName}}" data-skill-desc="{{skill.localizedTooltip}}">
                         <button type="button" class="exp-toggle {{#if skill.system.checked}}checked{{/if}}" data-action="toggleExp" data-tooltip="{{#if @root.isTh}}ทำเครื่องหมายพัฒนาทักษะ{{else}}Mark for improvement{{/if}}" aria-label="Experience check">{{#if skill.system.checked}}<i class="fa-solid fa-check" aria-hidden="true"></i>{{else}}<i class="fa-regular fa-square" aria-hidden="true"></i>{{/if}}</button>
-                        <button type="button" class="link-btn" data-action="shareEntry" title="{{skill.displayName}}"><span class="brp-bilingual-display" title="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.displayName}}{{/if}}" data-tooltip="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.localizedTooltip}}{{/if}}">{{skill.displayName}}</span></button>
+                        <button type="button" class="link-btn" data-action="shareEntry" title="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.displayName}}{{/if}}" data-tooltip="{{#if skill.showEnglishName}}{{skill.englishName}}{{else}}{{skill.localizedTooltip}}{{/if}}"><span class="brp-bilingual-display">{{skill.displayName}}</span></button>
                         <button type="button" class="brp-roll-value skill-total" data-action="rollSkill" aria-label="Roll {{skill.displayName}}">{{skill.system.total}}%</button>
                         <button type="button" class="icon-btn skill-roll-icon" data-action="rollSkill" data-tooltip="Roll d100"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i></button>
                       </li>

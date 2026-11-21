@@ -1,0 +1,214 @@
+/* v1.21.7 — structural actor header and V14 SettingsConfig accessibility.
+ * Keep this stylesheet AFTER brp-v1216-usability.css; no rule data here. */
+html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell.brp-sheet-v1175 {
+  grid-template-rows:auto minmax(0,1fr)!important;
+  gap:3px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-persistent-top {
+  gap:0!important;
+  padding:0!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  flex:0 0 auto!important;
+}
+/* Fixed source hierarchy: logo / identity / personal information / utilities + DM, AP, MOV. */
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {
+  display:grid!important;
+  grid-template-columns:168px minmax(320px,350px) minmax(325px,1fr) 260px!important;
+  grid-template-rows:auto auto!important;
+  gap:5px 7px!important;
+  align-items:stretch!important;
+  padding:8px 10px!important;
+  min-height:151px!important;
+  max-height:none!important;
+  overflow:visible!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy {
+  grid-column:1!important;grid-row:1/3!important;
+  padding:5px 8px!important;min-width:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity {
+  grid-column:2!important;grid-row:1/3!important;
+  display:flex!important;align-items:center!important;align-self:stretch!important;
+  width:auto!important;min-width:0!important;max-width:none!important;
+  padding:6px!important;margin:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity .id-top-row {
+  width:100%!important;min-width:0!important;display:grid!important;
+  grid-template-columns:116px minmax(0,1fr)!important;
+  gap:9px!important;align-items:center!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .profile-img.compact-img {
+  width:116px!important;height:116px!important;
+  min-width:116px!important;max-width:116px!important;
+  flex:0 0 116px!important;aspect-ratio:1!important;
+  object-fit:cover!important;align-self:center!important;
+  border-radius:5px!important;
+  background:var(--brp-surface)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity .id-name-col {
+  min-width:0!important;max-width:100%!important;
+  display:flex!important;flex-direction:column!important;gap:7px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity .char-name-input {
+  display:block!important;width:100%!important;max-width:none!important;min-width:0!important;
+  text-overflow:ellipsis!important;white-space:nowrap!important;overflow:hidden!important;
+  font-size:clamp(19px,1.75vw,25px)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity :is(.brp-occupation-name,.brp-readonly-value) {
+  max-width:100%!important;min-width:0!important;width:100%!important;
+  margin:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details {
+  grid-column:3!important;grid-row:1/3!important;
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  align-content:center!important;align-self:stretch!important;
+  min-width:0!important;max-width:none!important;
+  gap:2px 7px!important;padding:6px 9px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities {
+  grid-column:4!important;grid-row:1!important;
+  position:static!important;inset:auto!important;
+  align-self:start!important;justify-self:stretch!important;
+  display:flex!important;flex-wrap:wrap!important;
+  gap:4px!important;align-items:center!important;justify-content:flex-end!important;
+  width:100%!important;max-width:none!important;
+  padding:1px!important;margin:0!important;
+}
+/* Derived metrics have moved into the banner in BOTH Character/NPC HBS files. */
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-combat-strip.brp-banner-combat-strip {
+  grid-column:4!important;grid-row:2!important;
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  justify-self:stretch!important;align-self:end!important;
+  width:100%!important;min-width:0!important;min-height:66px!important;
+  border:1px solid var(--brp-border)!important;border-radius:4px!important;
+  padding:8px 4px!important;margin:0!important;gap:0!important;
+  background:var(--brp-surface)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip .strip-metric {
+  min-width:0!important;min-height:50px!important;
+  margin:0!important;padding:1px 4px!important;
+  border-right:1px solid var(--brp-border)!important;
+  display:flex!important;flex-direction:column!important;gap:2px!important;
+  justify-content:center!important;align-items:center!important;
+  text-align:center!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip .strip-metric:last-child {
+  border:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip .strip-metric :is(span,strong,input) {
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip .strip-metric strong.accent {
+  color:var(--brp-accent)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip .strip-metric .step-group {
+  display:flex!important;align-items:center!important;gap:1px!important;justify-content:center!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip .strip-num {
+  max-width:34px!important;min-width:28px!important;height:27px!important;
+  padding:1px 2px!important;font-size:14px!important;text-align:center!important;
+  color:var(--brp-text)!important;background:var(--brp-panel)!important;
+}
+/* Once derived metrics leave, the toolbar immediately follows HP / PP. */
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .sheet-sidebar {
+  grid-template-areas:'chars' 'pools'!important;
+  grid-template-rows:auto auto!important;
+  padding:0 9px 2px!important;gap:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .sidebar-pools {margin:0!important;}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .sheet-main {
+  margin:0!important;padding:0!important;gap:0!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .sheet-navigation {
+  margin-top:0!important;margin-bottom:2px!important;padding:1px 0 5px!important;
+}
+/* Intentional contrast and accessible iconography in the utility row. */
+html[data-brp-theme="light"] .brp-uge .brp-sheet-v1175 .brp-header-utilities .brp-header-icon {
+  color:#282321!important;background:#f4e9d8!important;border-color:#8e775f!important;
+  opacity:1!important;filter:none!important;
+}
+html[data-brp-theme="light"] .brp-uge .brp-sheet-v1175 .brp-header-utilities .brp-header-icon :is(i,svg) {
+  color:#282321!important;fill:currentColor!important;opacity:1!important;filter:none!important;
+}
+html[data-brp-theme="dark"] .brp-uge .brp-sheet-v1175 .brp-header-utilities .brp-header-icon {
+  color:#f4e9d8!important;background:#19191c!important;border-color:#b2a39b!important;
+  opacity:1!important;filter:none!important;
+}
+html[data-brp-theme="dark"] .brp-uge .brp-sheet-v1175 .brp-header-utilities .brp-header-icon :is(i,svg) {
+  color:#f4e9d8!important;fill:currentColor!important;opacity:1!important;filter:none!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities :is(.brp-header-icon,.brp-edit-switch):hover {
+  outline:1px solid var(--brp-accent)!important;
+  filter:brightness(1.08)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-bilingual-display {
+  display:inline!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .skill-play-row .link-btn {
+  overflow:hidden!important;text-overflow:ellipsis!important;
+  min-width:0!important;
+}
+/* This menu lives in Foundry's native SettingsConfig, not the actor window. */
+.brp-settings-group {
+  display:block;flex:0 0 100%;width:100%;margin:20px 0 8px!important;
+  padding:7px 12px!important;background:rgba(128,110,90,.1)!important;
+  color:var(--color-text-primary,#e7e3e0)!important;
+  border-left:3px solid #b03a3d!important;border-bottom:1px solid #7b726e!important;
+  font-weight:800;font-size:14px;
+}
+.brp-configure-starting-skills {padding:7px 12px!important;background:#423338!important;color:#fff2e9!important;border-color:#be9490!important;}
+.brp-starting-skills-app .window-content {padding:12px!important;overflow:auto!important;}
+.brp-manager-content {display:flex;flex-direction:column;gap:10px;height:100%;min-height:0;color:var(--color-text-primary,#eae8e5);}
+.brp-manager-content > p {margin:0;}
+.brp-manager-controls {display:flex;align-items:end;flex-wrap:wrap;gap:8px;}
+.brp-manager-controls label{flex:1 1 260px;}
+.brp-manager-controls input{width:100%;min-height:30px;}
+.brp-manager-controls button{flex:0 0 auto;min-height:30px;}
+.brp-starting-skills-app .brp-starting-skill-list {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px;
+  flex:1;min-height:140px;max-height:none;overflow-y:auto;
+  border:1px solid #665c56;padding:8px;
+}
+.brp-starting-skills-app .brp-starting-skill {
+  display:flex;gap:8px;align-items:center;min-width:0;padding:5px 7px;
+}
+.brp-starting-skills-app .brp-starting-skill[hidden]{display:none!important;}
+.brp-starting-skills-app .brp-starting-skill input {flex:0 0 auto;}
+.brp-starting-skills-app .brp-starting-skill span {min-width:0;overflow-wrap:anywhere;}
+.brp-starting-skills-app .brp-manager-actions {display:flex;gap:8px;justify-content:flex-end;}
+.brp-starting-skills-app .brp-manager-actions button {min-height:34px;padding:5px 14px;}
+@media(max-width:1150px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {
+    grid-template-columns:140px minmax(290px,1fr) 255px!important;
+    grid-template-rows:auto auto!important;
+  }
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy{grid-column:1!important;grid-row:1/3!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity{grid-column:2!important;grid-row:1!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-details{grid-column:2!important;grid-row:2!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities{grid-column:3!important;grid-row:1!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip{grid-column:3!important;grid-row:2!important;}
+}
+@media(max-width:790px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {
+    grid-template-columns:minmax(0,1fr) minmax(180px,250px)!important;
+    grid-template-rows:auto auto auto!important;
+  }
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy{display:none!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity{grid-column:1!important;grid-row:1!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities{grid-column:2!important;grid-row:1!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip{grid-column:2!important;grid-row:2!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-details{grid-column:1!important;grid-row:2/4!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .profile-img.compact-img{width:90px!important;height:90px!important;min-width:90px!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity .id-top-row{grid-template-columns:90px minmax(0,1fr)!important;}
+}
+@media(max-width:540px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {
+    display:flex!important;flex-direction:column!important;
+  }
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities{order:1!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity{order:2!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-details{order:3!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-banner-combat-strip{order:4!important;}
+  .brp-starting-skills-app .brp-starting-skill-list{grid-template-columns:1fr;}
+}

@@ -25,6 +25,7 @@ import { BRPCombatPhases } from "./module/combat/combat-phases.mjs";
 import { applyStatusTemplate } from "./module/status-template.mjs";
 import { ensureActorFoundationSkills } from "./module/skill-foundation.mjs";
 import { configureStartingSkills } from "./module/skill-selection.mjs";
+import { StartingSkillsMenu } from "./module/apps/starting-skills-menu.mjs";
 import { installBRPSettingsUI } from "./module/apps/settings-organization.mjs";
 
 function refreshBRPWorldUI() {
@@ -45,7 +46,7 @@ function refreshBRPWorldUI() {
 }
 
 Hooks.once("init", async () => {
-  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.6 (Foundry V14)");
+  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.7 (Foundry V14)");
 
   if (globalThis.Handlebars && !Handlebars.helpers.eq) {
     Handlebars.registerHelper("eq", (a, b) => a === b);
@@ -201,10 +202,18 @@ Hooks.once("init", async () => {
     name:'รายการทักษะตั้งต้น / Starting Skill Selection',
     hint:'เลือกใช้ทักษะทุกชนิดที่พบ หรือเฉพาะรายการที่ GM เลือกผ่านตัวจัดการทักษะตั้งต้น',
     scope:'world',config:true,restricted:true,type:String,
-    choices:{all:'All available Skills',selected:'GM selected Skills'},default:'all'
+    choices:{all:'All available Skills',book:'Skills identified as rulebook entries',selected:'GM selected Skills'},default:'all'
   });
   game.settings.register('brp-uge','startingSkillsKeys',{
     name:'Selected starting skill keys',scope:'world',config:false,restricted:true,type:String,default:'[]'
+  });
+
+  // Native V14 settings submenu: visible even when SettingsConfig DOM changes.
+  game.settings.registerMenu('brp-uge','manageStartingSkills',{
+    name:'จัดการทักษะตั้งต้น / Manage Starting Skills',
+    label:'เปิดตัวเลือกทักษะ / Choose Skills',
+    hint:'กำหนดรายการสำหรับโหมด GM เลือกเองจาก Skill Items ที่ติดตั้งจริง',
+    icon:'fa-solid fa-list-check',type:StartingSkillsMenu,restricted:true
   });
 
   installBRPSettingsUI();

@@ -7,8 +7,18 @@ export function decodeStartingSkillKeys(value) {
   try {const parsed=JSON.parse(String(value||'[]'));return new Set(Array.isArray(parsed)?parsed.filter(x=>typeof x==='string'&&x):[]);}
   catch {return new Set();}
 }
+/** Rulebook mode is provenance-based; the engine never contains a hidden list of BRP Skills. */
+export function isRulebookSkill(item) {
+  const brp=item?.flags?.['brp-uge']??{};
+  return item?.type==='skill' && !!(
+    brp.rulebookReference?.book ||
+    item?.system?.rulebookReference?.book ||
+    item?.flags?.['brp-uge-compendium']?.bookVerified && brp.rulebookReference
+  );
+}
 export function filterStartingSkills(skills,{mode='all',keys='[]'}={}) {
   const unique=uniqueSkills(skills);
+  if(mode==='book')return unique.filter(isRulebookSkill);
   if(mode!=='selected')return unique;
   const allowed=decodeStartingSkillKeys(keys);
   return unique.filter(skill=>allowed.has(canonicalSkillKey(skill)));
@@ -16,8 +26,9 @@ export function filterStartingSkills(skills,{mode='all',keys='[]'}={}) {
 export function configuredStartingSkills(skills,settings=globalThis.game?.settings) {
   const get=(key,fallback)=>{try{return settings?.get?.('brp-uge',key)??fallback;}catch{return fallback;}};
   const result=filterStartingSkills(skills,{mode:get('startingSkillsMode','all'),keys:get('startingSkillsKeys','[]')});
-  // An empty/stale GM selection must never create an Actor with no baseline Skills.
-  return result.length ? result : uniqueSkills(skills);
+  // Do not silently replace an empty GM or rulebook selection with ALL Skills.
+  // The Actor/Wizard will report a missing source so the GM can correct it.
+  return result;
 }
 function escapeHTML(value) {
   return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
