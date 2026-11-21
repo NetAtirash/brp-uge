@@ -1,6 +1,6 @@
 /** Full-viewport Skill point workbench. Edit a draft; save all Items in a single batch. */
 import { BRP_CONFIG, getCampaignRules } from '../config.mjs';
-import { getLocalizedName } from '../character-tools.mjs';
+import { getLocalizedName, powerMode } from '../character-tools.mjs';
 import { creationBudgets } from '../rules/character-creation.mjs';
 import { buildSkillPointUpdates, previewSkillTotal, shouldShowCategoryColumn, validateSkillPointValue } from '../skill-points-utils.mjs';
 
@@ -50,7 +50,8 @@ export class BRPSkillPointsEditor extends APP {
     const skills=this.#skills().sort((a,b)=>getLocalizedName(a,isTh?'th':'en').localeCompare(getLocalizedName(b,isTh?'th':'en'),isTh?'th':'en'));
     const rules=getCampaignRules();
     const categories=BRP_CONFIG.skillCategories;
-    const bonusRows=categories.map(key=>({key,bonus:Number(this.actor.system.derived?.categoryBonuses?.[key]??0)}));
+    const present=new Set(skills.map(item=>item.system.category||'communication'));
+    const bonusRows=categories.filter(key=>present.has(key)).map(key=>({key,bonus:Number(this.actor.system.derived?.categoryBonuses?.[key]??0)}));
     const showCategory=shouldShowCategoryColumn(rules.categoryBonusMode,bonusRows);
     const catLabels=BRP_CONFIG.ui[isTh?'th':'en'].catLabels||{};
     const dropdown=categories.map(key=>`<option value="${esc(key)}" ${key===this.#category?'selected':''}>${esc(catLabels[key]||key)}</option>`).join('');
@@ -91,6 +92,12 @@ export class BRPSkillPointsEditor extends APP {
     const rows=[...root.querySelectorAll('.brp-points-row')];
     const refresh=()=>{
       let occ=0,pers=0,changed=0,invalid=false;
+      // Skill-mode Powers also consume occupation/personal creation pools,
+      // but their values are read-only here and must be included in totals.
+      for(const power of this.actor.items.filter(i=>i.type==='power'&&powerMode(i.system)==='skill')){
+        occ+=Number(power.system.occupationBonus||0);
+        pers+=Number(power.system.personalBonus||0);
+      }
       for(const item of this.#skills()){
         const data=this.#draft.get(item.id);if(!data)continue;
         const baseline=this.#baseline.get(item.id);
