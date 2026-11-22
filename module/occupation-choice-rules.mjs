@@ -2,6 +2,7 @@
 import { analyzeSkillFamily, specialtyFamilyKey } from './skill-specialties.mjs';
 import { canonicalSkillKey } from './skill-foundation.mjs';
 import { linkedOccupationSkill } from './occupation-skill-linking.mjs';
+import {isSkillFamilyTemplate} from './skill-family-templates.mjs';
 
 const str=v=>String(v??'').trim();
 export function normalizeOccupationChoiceGroups(value) {
@@ -17,6 +18,35 @@ export function normalizeOccupationChoiceGroups(value) {
     })).filter(opt=>opt.kind==='family'?!!opt.familyKey:!!opt.ref)
   })).filter(g=>g.options.length>0);
 }
+/**
+ * A fixed Occupation ref to Language (...) means the player MUST resolve the
+ * Specialty before allocating points. Derive a count-1 Family choice group
+ * rather than adding the generic template as a character Skill.
+ *
+ * Explicit book Choose-N clauses remain content-author responsibilities.
+ */
+export function resolveOccupationTemplateGroups(occupation={},librarySkills=[]) {
+  const groups=normalizeOccupationChoiceGroups(occupation?.skillChoiceGroups);
+  const known=new Set(groups.map(g=>g.id));
+  for(const ref of occupation?.skillRefs||[]){
+    const doc=librarySkills.find(skill=>isSkillFamilyTemplate(skill)&&
+      linkedOccupationSkill(skill,ref));
+    if(!doc)continue;
+    const info=analyzeSkillFamily(doc);
+    if(!info?.key)continue;
+    const id='required-family-'+info.key;
+    if(known.has(id))continue;
+    known.add(id);
+    groups.push({
+      id,labelTh:info.thFamily+' — เลือก Specialty',
+      labelEn:info.enFamily+' — choose a Specialty',
+      count:1,distinct:true,
+      options:[{kind:'family',familyKey:info.key,ref:''}]
+    });
+  }
+  return groups;
+}
+
 export function occupationGroupAllowsSkill(group,skill) {
   if(skill?.type!=='skill')return false;
   return (group.options||[]).some(option=>{
@@ -44,7 +74,9 @@ export function validateOccupationChoices(groups,selections,catalog) {
   return {valid:errors.length===0,errors};
 }
 export function occupationSkillEligible(skill,occupation,selections=[],catalog=[]) {
-  if(skill?.type!=='skill')return false;
+  if(skill?.type!=='skill'||isSkillFamilyTemplate(skill))return false;
+  // A plain Skill can satisfy an exact fixed reference. A template Family
+  // reference requires a recorded concrete specialty selection instead.
   if((occupation?.skillRefs||[]).some(ref=>linkedOccupationSkill(skill,ref)))return true;
   const key=canonicalSkillKey(skill);
   const selected=selections&&typeof selections==='object'?selections:{};
