@@ -30,3 +30,7 @@ https://github.com/NetAtirash/brp-uge/releases/download/v1.21.11-rc.6/system.jso
 ~~~
 
 This is a preview prerelease. It is not stable /latest/. RC5 manifest is pinned to RC5; to upgrade RC6 in a testing installation use the versioned RC6 manifest. Both versions use the same system ID and cannot coexist within one Foundry User Data directory. The offline suite cannot replace live Foundry UI testing.
+
+## RC6 publication checkpoint
+
+This release commit has passed the offline JavaScript syntax, regression test suite and package-structure validation. Publishes only a v1.21.11-rc.6 prerelease with clickable Specialty selection, non-sticky Wizard headers, and the README personal-use/ChatGPT-assisted disclaimer. The separate Compendium RC5 and World files are not modified.
