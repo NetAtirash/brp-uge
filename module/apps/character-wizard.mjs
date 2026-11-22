@@ -540,6 +540,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         key:group.key+'|'+option.key,
         label:(isTh?group.thFamily:group.enFamily)+' ('+(isTh?(option.th||option.en):option.en)+')'
       }))).sort((a,b)=>a.label.localeCompare(b.label));
+    context.professionFixedSkillNames=professionSkillCoverage.linked.map(index=>getDisplayItemName(this.skillCatalog[index],uiLang));
     context.professionLinkedSkillCount=professionSkillCoverage.linked.length;
     context.professionMissingSkillCount=professionSkillCoverage.missing.length;
     context.professionHasLinkedSkills=Boolean(prof?.sourceUuid && professionSkillCoverage.linked.length);
