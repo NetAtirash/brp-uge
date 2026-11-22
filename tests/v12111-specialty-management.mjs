@@ -96,6 +96,10 @@ assert.match(wizard,/validateOccupationChoices/);
 assert.match(wizard,/professionDrafts/);
 assert.match(wizard,/creationOccupationChoices/);
 assert.match(wizard,/allowRebuild/);
+assert.ok(wizard.indexOf('const resolvedOccupation=')<wizard.indexOf('await actorDoc.update({'),
+  'Occupation source must resolve before mutating Actor');
+assert.ok(wizard.indexOf('const unresolvedGear=[]')<wizard.indexOf('await actorDoc.update({'),
+  'Starter equipment must preflight before mutating Actor');
 assert.match(wizard,/if\(creationCompleted\)\{/);
 const template=read('templates/apps/character-wizard.hbs');
 assert.match(template,/data-occupation-choice-picker/);
