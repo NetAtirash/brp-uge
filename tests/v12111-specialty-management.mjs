@@ -5,7 +5,7 @@ import {buildSpecialtyRegistry,readSpecialtyRegistry,eligibleSpecialtyOptions,
 import {composeSpecialtyItem} from '../module/skill-specialties.mjs';
 import {canonicalSkillKey,sameSkill} from '../module/skill-foundation.mjs';
 import {normalizeOccupationChoiceGroups,occupationGroupAllowsSkill,
-  occupationSkillEligible,validateOccupationChoices} from '../module/occupation-choice-rules.mjs';
+  occupationSkillEligible,validateOccupationChoices,occupationChoiceMetadataMissing} from '../module/occupation-choice-rules.mjs';
 import {filterStartingSkills} from '../module/skill-selection.mjs';
 import {validateSkillPointDraft} from '../module/skill-points-utils.mjs';
 
@@ -75,6 +75,12 @@ assert.ok(validateOccupationChoices(groups,selections,[astronomy,biology]).valid
 assert.ok(!validateOccupationChoices(groups,{fields:['science|astronomy']},[astronomy,biology]).valid);
 assert.ok(!validateOccupationChoices(groups,{fields:['science|astronomy','science|astronomy']},[astronomy,biology]).valid);
 assert.ok(!validateOccupationChoices(groups,{fields:['science|astronomy','bad']},[astronomy,biology]).valid);
+assert.equal(occupationChoiceMetadataMissing({skillChoiceGroups:[]},
+  'Choose three skills from the following list.'),true);
+assert.equal(occupationChoiceMetadataMissing({skillChoiceGroups:groups},
+  'Choose three skills from the following list.'),false);
+assert.equal(occupationChoiceMetadataMissing({skillChoiceGroups:[]},
+  'This occupation has no extra selections.'),false);
 const occupation={skillRefs:[],skillChoiceGroups:groups};
 assert.ok(occupationSkillEligible(astronomy,occupation,selections,[astronomy,biology]));
 assert.ok(!occupationSkillEligible(noSpecialty,occupation,selections,[astronomy,biology]));
@@ -114,6 +120,9 @@ assert.ok(wizard.indexOf('const resolvedOccupation=')<wizard.indexOf('await acto
 assert.ok(wizard.indexOf('const unresolvedGear=[]')<wizard.indexOf('await actorDoc.update({'),
   'Starter equipment must preflight before mutating Actor');
 assert.match(wizard,/if\(creationCompleted\)\{/);
+assert.match(wizard,/occupationChoiceMetadataMissing\(prof,occupationText\)/);
+assert.match(wizard,/data-occupation-kind-radio/);
+assert.match(wizard,/personalSpecialtyKeys/);
 const template=read('templates/apps/character-wizard.hbs');
 assert.match(template,/data-occupation-kind-radio/);
 assert.match(template,/data-occupation-skill-options/);
@@ -128,6 +137,10 @@ assert.ok(!manager.includes("readonly'),"), 'all source names should be editable
 assert.match(manager,/settings.set\('brp-uge','specialtyRegistry'/);
 const app=read('module/apps/occupation-choice-editor.mjs');
 assert.match(app,/system.skillChoiceGroups/);
+const css=read('styles/brp-v12111-specialty-management.css');
+assert.match(css,/\.brp-specialty-manager-v3/);
+assert.match(css,/\.wiz-skill-row/);
+assert.match(css,/\.brp-wiz-choice-radio-list/);
 const manifest=JSON.parse(read('system.json'));
 assert.equal(manifest.version,'1.21.11');
 assert.equal(manifest.styles.at(-1),'styles/brp-v12111-specialty-management.css');
