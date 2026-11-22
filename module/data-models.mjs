@@ -352,6 +352,18 @@ export class SkillDataModel extends BRPItemDataModel {
       specialtyTh: new StringField({ required: true, blank: true, initial: "" }),
       specialtyFamily: new StringField({ required: true, blank: true, initial: "" }),
       specialtyFamilyTh: new StringField({ required: true, blank: true, initial: "" }),
+      // One Compendium source per Skill Family. Characters receive separate
+      // Actor-owned instantiated specialties with independent allocations.
+      isSpecialtyTemplate: new BooleanField({initial:false}),
+      specialtyDefaults: new ArrayField(new SchemaField({
+        key: new StringField({required:true,blank:true,initial:""}),
+        en: new StringField({required:true,blank:false}),
+        th: new StringField({required:true,blank:true,initial:""}),
+        base: new NumberField({required:false,nullable:true,integer:true,min:0,initial:null}),
+        baseFormula: new StringField({required:true,blank:true,initial:""}),
+        ruleNote: new StringField({required:true,blank:true,initial:""}),
+        enabled: new BooleanField({initial:true})
+      }),{initial:[]}),
       base: new NumberField({ required: true, integer: true, min: 0, initial: 5 }),
       baseFormula: new StringField({ required: true, blank: true, initial: "" }),
       occupationBonus: new NumberField({ required: true, integer: true, min: 0, initial: 0 }),
