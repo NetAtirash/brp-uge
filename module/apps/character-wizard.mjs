@@ -744,7 +744,14 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         ?'Choose a Specialty…':'เลือก Specialty…';
       select.add(new Option(label,''));
       const group=this.specialtyRegistry.find(g=>g.key===family);
-      for(const item of group?.options.filter(o=>!o.hidden)??[]){
+      const enabled=group?.options.filter(o=>!o.hidden)??[];
+      if(family && !enabled.length){
+        select.options[0].textContent=game.settings.get('brp-uge','uiLanguage')==='en'
+          ?'No approved Specialties — ask your GM'
+          :'ยังไม่มี Specialty ที่ GM เปิดใช้';
+        select.title=select.options[0].textContent;
+      } else select.title='';
+      for(const item of enabled){
         const text=game.settings.get('brp-uge','uiLanguage')==='en'
           ?item.en:(item.th||item.en);
         select.add(new Option(text,item.key));
