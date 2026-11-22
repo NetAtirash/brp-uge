@@ -1,0 +1,93 @@
+name: Publish BRP UGE v1.21.11 Stable
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  stable-release:
+    if: contains(github.event.head_commit.message, '[publish-v1.21.11-stable]')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: brp-uge-v1.21.11-stable-release
+      cancel-in-progress: false
+    steps:
+      - name: Check out exact main source commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify this is main and stable tag is unused
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = "refs/heads/main"
+          test "$GITHUB_REPOSITORY" = "NetAtirash/brp-uge"
+          TAG=v1.21.11
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists. Refusing to move or overwrite a published tag."
+            exit 1
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::Release $TAG already exists. Refusing duplicate release."
+            exit 1
+          fi
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check all JavaScript module syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -type f -name '*.mjs' -print0)
+
+      - name: Run all offline regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in tests/*.mjs; do
+            echo "Running $test"
+            node "$test"
+          done
+
+      - name: Build and verify stable Foundry VTT package and manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release.py --tag v1.21.11 --output dist
+          python3 -m zipfile -t dist/brp-uge.zip
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path("dist/system.json").read_text(encoding="utf-8"))
+          assert m["id"]=="brp-uge"
+          assert m["version"]=="1.21.11"
+          assert m["manifest"]=="https://github.com/NetAtirash/brp-uge/releases/latest/download/system.json"
+          assert m["download"]=="https://github.com/NetAtirash/brp-uge/releases/download/v1.21.11/brp-uge.zip"
+          assert m["compatibility"]["minimum"]=="14"
+          print("Stable release manifest and ZIP valid")
+          PY
+
+      - name: Publish v1.21.11 Stable and update GitHub Latest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create v1.21.11 \
+            dist/brp-uge.zip \
+            dist/system.json \
+            --target "$GITHUB_SHA" \
+            --title "BRP UGE v1.21.11 — Specialty Management & Character Wizard" \
+            --latest \
+            --notes "Stable Foundry VTT v14 Game System based on merged PR #8 and RC6: one Skill Family Template per specialized Skill, GM-managed bilingual Specialty choices, Occupation choice rules, player Character Wizard allocation, accessible radio Specialty picker, and Wizard layout fixes.\n\nRequires separately installed updated BRP UGE Compendium content module; no rules/content packs are bundled in this system ZIP.\n\nPersonal-use hobby project developed with assistance from ChatGPT (OpenAI). Unofficial; not endorsed by Chaosium, Foundry Gaming, or OpenAI. Back up Worlds before upgrading."
