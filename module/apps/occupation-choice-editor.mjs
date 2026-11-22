@@ -1,6 +1,8 @@
 /** GM-only Occupation choice builder; keeps existing exact skillRefs untouched. */
 import { getLibraryDocuments } from '../library-provider.mjs';
 import { availableSpecialtyFamilies } from '../skill-specialties.mjs';
+import {buildSpecialtyRegistry} from '../specialty-registry.mjs';
+import {isSkillFamilyTemplate} from '../skill-family-templates.mjs';
 import { normalizeOccupationChoiceGroups } from '../occupation-choice-rules.mjs';
 import { getLocalizedName } from '../character-tools.mjs';
 
@@ -16,6 +18,7 @@ export class BRPOccupationChoiceEditor extends App {
   #baseline='';
   #skills=[];
   #families=[];
+  #registry=[];
   #loaded=false;
   constructor({item,...options}={}){
     super(options);
@@ -29,14 +32,26 @@ export class BRPOccupationChoiceEditor extends App {
     if(this.#loaded)return;
     this.#skills=await getLibraryDocuments({types:['skill']});
     this.#families=availableSpecialtyFamilies(this.#skills);
+    this.#registry=buildSpecialtyRegistry(this.#skills,
+      game.settings.get('brp-uge','specialtyRegistry'),
+      game.settings.get('brp-uge','specialtyPresets'));
     this.#loaded=true;
   }
   #optionList(selected){
     const lang=game.settings.get('brp-uge','uiLanguage')==='en'?'en':'th';
-    const current=selected?.kind==='family'?'family:'+selected.familyKey:'skill:'+(selected?.ref||'');
+    const current=selected?.kind==='family'?'family:'+selected.familyKey:
+      selected?.kind==='specialty'?'specialty:'+selected.familyKey+'|'+selected.specialtyKey:
+      'skill:'+(selected?.ref||'');
     const options=[
-      ...this.#families.map(f=>({value:'family:'+f.key,label:this.#tr('ทุก Specialty จาก ','Any Specialty from ')+(lang==='th'?f.thFamily:f.enFamily)})),
-      ...this.#skills.map(s=>({value:'skill:'+s.uuid,label:getLocalizedName(s,lang)}))
+      ...this.#families.map(f=>({value:'family:'+f.key,label:this.#tr('เลือก Specialty ใดก็ได้จาก ','Any Specialty from ')+(lang==='th'?f.thFamily:f.enFamily)})),
+      ...this.#registry.flatMap(f=>f.options.filter(o=>!o.hidden).map(o=>({
+        value:'specialty:'+f.key+'|'+o.key,
+        label:(lang==='th'?f.thFamily:f.enFamily)+' ('+(lang==='th'?(o.th||o.en):o.en)+')'
+      }))),
+      ...this.#skills.filter(s=>!isSkillFamilyTemplate(s)&&
+        !this.#families.some(f=>f.legacyExamples?.some(x=>x.uuid===s.uuid))).map(s=>({
+        value:'skill:'+s.uuid,label:getLocalizedName(s,lang)
+      }))
     ];
     if(current && !options.some(x=>x.value===current))
       options.unshift({value:current,label:this.#tr('ไม่พบต้นฉบับ: ','Missing source: ')+current});
@@ -77,8 +92,12 @@ export class BRPOccupationChoiceEditor extends App {
       if(!Number.isSafeInteger(count)||count<1||count>50)throw new Error('Choose count must be between 1 and 50');
       const options=[...el.querySelectorAll('[data-option]')].map(select=>{
         const value=select.value;
-        return value.startsWith('family:')?{kind:'family',familyKey:value.slice(7),ref:''}:
-          {kind:'skill',familyKey:'',ref:value.slice(6)};
+        if(value.startsWith('family:'))return {kind:'family',familyKey:value.slice(7),specialtyKey:'',ref:''};
+        if(value.startsWith('specialty:')){
+          const [familyKey,specialtyKey]=value.slice(10).split('|');
+          return {kind:'specialty',familyKey,specialtyKey,ref:''};
+        }
+        return {kind:'skill',familyKey:'',specialtyKey:'',ref:value.slice(6)};
       });
       // Keep an empty in-progress group editable; validate it only at Save.
       return {id:g.id,labelEn:el.querySelector('[data-label-en]').value.trim(),
@@ -121,6 +140,9 @@ export class BRPOccupationChoiceEditor extends App {
             throw new Error('Missing Skill Family: '+option.familyKey);
           if(option.kind==='skill'&&!this.#skills.some(item=>item.uuid===option.ref))
             throw new Error('Missing linked Skill Item: '+option.ref);
+          if(option.kind==='specialty' && !this.#registry.some(f=>f.key===option.familyKey&&
+            f.options.some(o=>o.key===option.specialtyKey&&!o.hidden)))
+            throw new Error('Unapproved or missing Specialty: '+option.familyKey+'|'+option.specialtyKey);
         }
         const ids=this.#draft.map(g=>g.id);
         if(new Set(ids).size!==ids.length)throw new Error('Duplicate choice group identifiers');
