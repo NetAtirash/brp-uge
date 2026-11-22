@@ -236,15 +236,17 @@
               </div>
               <div class="brp-wiz-choice-picker">
                 {{#each g.familySpecialtyOptions as |f|}}
-                  <label class="brp-wiz-choice-field" data-occupation-specialty-field="{{g.id}}" data-family-key="{{f.key}}" hidden>
-                    <span>{{#if @root.isTh}}2. เลือก Specialty ({{f.count}} รายการ){{else}}2. Choose Specialty ({{f.count}} available){{/if}}</span>
-                    <select data-occupation-specialty-picker="{{g.id}}" data-family-key="{{f.key}}" aria-label="{{f.label}} Specialty" disabled>
-                      <option value="">{{#if @root.isTh}}เลือก Specialty…{{else}}Choose a Specialty…{{/if}}</option>
+                  <fieldset class="brp-wiz-specialty-group" data-occupation-specialty-field="{{g.id}}" data-family-key="{{f.key}}" hidden>
+                    <legend>{{#if @root.isTh}}2. เลือก Specialty ของ {{f.label}} ({{f.count}}){{else}}2. Choose {{f.label}} Specialty ({{f.count}}){{/if}}</legend>
+                    <div class="brp-wiz-specialty-options">
                       {{#each f.specialties as |specialty|}}
-                        <option value="{{specialty.key}}">{{specialty.label}}</option>
+                        <label class="brp-wiz-specialty-option">
+                          <input type="radio" name="wiz-occupation-specialty-{{g.id}}-{{f.key}}" value="{{specialty.key}}" data-occupation-specialty-option="{{g.id}}" data-family-key="{{f.key}}">
+                          <span>{{specialty.label}}</span>
+                        </label>
                       {{/each}}
-                    </select>
-                  </label>
+                    </div>
+                  </fieldset>
                 {{/each}}
                 <button type="button" class="brp-btn" data-action="selectOccupationChoice" data-group-id="{{g.id}}">
                   <i class="fa-solid fa-check"></i> {{#if @root.isTh}}ยืนยัน / เพิ่มตัวเลือก{{else}}Confirm this choice{{/if}}
@@ -300,15 +302,17 @@
                   {{#each personalFamilyOptions as |f|}}<option value="{{f.key}}">{{f.label}} ({{f.count}})</option>{{/each}}
                 </select></label>
               {{#each personalFamilyOptions as |f|}}
-                <label class="brp-wiz-choice-field" data-personal-family-specialties="{{f.key}}" hidden>
-                  <span>Specialty ({{f.count}})</span>
-                  <select data-personal-specialty-picker data-family-key="{{f.key}}" aria-label="{{f.label}} Specialty" disabled>
-                    <option value="">{{#if @root.isTh}}เลือก Specialty…{{else}}Choose a Specialty…{{/if}}</option>
+                <fieldset class="brp-wiz-specialty-group" data-personal-family-specialties="{{f.key}}" hidden>
+                  <legend>{{#if @root.isTh}}เลือก Specialty ของ {{f.label}} ({{f.count}}){{else}}Choose {{f.label}} Specialty ({{f.count}}){{/if}}</legend>
+                  <div class="brp-wiz-specialty-options">
                     {{#each f.specialties as |specialty|}}
-                      <option value="{{specialty.key}}">{{specialty.label}}</option>
+                      <label class="brp-wiz-specialty-option">
+                        <input type="radio" name="wiz-personal-specialty-{{f.key}}" value="{{specialty.key}}" data-personal-specialty-option="{{f.key}}">
+                        <span>{{specialty.label}}</span>
+                      </label>
                     {{/each}}
-                  </select>
-                </label>
+                  </div>
+                </fieldset>
               {{/each}}
               <button type="button" class="brp-btn" data-action="addPersonalSpecialty"><i class="fa-solid fa-plus"></i> {{#if isTh}}เพิ่มทักษะ{{else}}Add Skill{{/if}}</button>
             </div>
