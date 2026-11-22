@@ -45,7 +45,9 @@ export async function ensureActorFoundationSkills(actor,{sources='all',documents
   if(!actor||!['character','npc'].includes(actor.type)||actor.pack)return {created:0,available:0,missingSource:false};
   const library=documents??await getLibraryDocuments({types:['skill'],includeWorld:true,includePacks:sources!=='world'});
   const {configuredStartingSkills}=await import('./skill-selection.mjs');
-  const choices=configuredStartingSkills(library);
+  // Compendium Family Templates and old subtype examples are selection
+  // sources, not automatic Actor skills. Existing Actor-owned Skills are never removed.
+  const choices=configuredStartingSkills(library).filter(item=>!analyzeSkillFamily(item)?.supportsSpecialty);
   if(!choices.length)return {created:0,available:0,missingSource:true};
   const missing=planMissingBaseSkills(actor.items,choices);
   const additions=missing.map(documentToEmbeddedItem).filter(Boolean);
