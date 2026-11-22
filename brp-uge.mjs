@@ -227,7 +227,7 @@ Hooks.once("init", async () => {
     name:'New Specialty policy / นโยบายสร้างความเชี่ยวชาญใหม่',
     hint:'Restrict player-created specialties to approved World and Compendium choices, or allow requests for GM review.',
     scope:'world',config:true,restricted:true,type:String,
-    choices:{restricted:'GM-managed choices only',approval:'Player request (GM approval required)'},
+    choices:{restricted:'GM-managed choices only',approval:'Show custom entry; players must ask GM for approval'},
     default:'restricted'
   });
   game.settings.register('brp-uge','specialtyPresets',{
