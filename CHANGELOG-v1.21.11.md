@@ -1,3 +1,37 @@
+## RC3 architecture correction — one source Item per Skill Family
+
+The earlier RC1/RC2 model inferred each Compendium Skill (Art (Drawing), Science
+(Biology), Language (Other), etc.) as a distinct Skill source, which is NOT the
+desired publishing structure. RC3 corrects this:
+
+- The external Compendium publishes only ONE Skill Item per specialty-capable
+  Family, e.g. Language (...). Its system.isSpecialtyTemplate=true and
+  system.specialtyDefaults contain only verified book-starter options.
+- "Language (Own)" is a selectable **default metadata entry**, NOT a second
+  Compendium Item. Other languages are absent until the GM adds them.
+  The engine does not invent numerical book rules or seed names.
+- GM World Specialty Management edits the verified defaults, adds
+  specializations, and optionally supplies different bases/formulas without
+  changing a source Item. The Actor gets a distinct Skill instance only AFTER
+  a real Specialty has been chosen; multiple learned specialties retain
+  independent rolls, occupation/personal points, advancement and Flavor Names.
+- Wizard supports fixed Occupation family references, requiring a subtype before
+  allocation. Occupation choiceGroups support kind=family (any approved choice)
+  and kind=specialty (a particular authorized subtype), as well as ordinary
+  exact Skill refs.
+- Generic Family templates and legacy specialty-specific source records are
+  not auto-copied into freshly created Actors.
+- Old multiple-Item Skill packs are read as migration inputs, NOT automatic
+  official defaults. Already-owned Actor Skills are never deleted or merged.
+
+**Content blocker:** The Game System cannot replace actual Items from an
+independent Compendium pack. That publisher must rebuild Skills into one
+family template per Skill and update affected Occupation UUID references.
+See docs/COMPENDIUM-SPECIALTY-CHOICE-GUIDE.md.
+
+**QA:** Unit tests run on GitHub Actions. Foundry v14 live-world verification
+and an actual migrated Compendium pack are still required before release.
+
 # BRP UGE v1.21.11 — Specialty Management and Occupation Choices
 
 - Source-aware GM Specialty Management combines read-only installed World/Compendium examples with separate World overlays, including add, hide and bilingual labels.
