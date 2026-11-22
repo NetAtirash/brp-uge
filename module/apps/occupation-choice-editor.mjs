@@ -80,7 +80,7 @@ export class BRPOccupationChoiceEditor extends App {
         return value.startsWith('family:')?{kind:'family',familyKey:value.slice(7),ref:''}:
           {kind:'skill',familyKey:'',ref:value.slice(6)};
       });
-      if(!options.length)throw new Error('Each group needs at least one Skill or Family option');
+      // Keep an empty in-progress group editable; validate it only at Save.
       return {id:g.id,labelEn:el.querySelector('[data-label-en]').value.trim(),
         labelTh:el.querySelector('[data-label-th]').value.trim(),count,
         distinct:el.querySelector('[data-distinct]').checked,options};
@@ -114,6 +114,14 @@ export class BRPOccupationChoiceEditor extends App {
       if(!game.user?.isGM || !this.item.isOwner)return;
       try{
         this.#store();
+        if(this.#draft.some(group=>!group.options.length))
+          throw new Error('Each choice group needs at least one Skill or Family option');
+        for(const group of this.#draft)for(const option of group.options){
+          if(option.kind==='family'&&!this.#families.some(f=>f.key===option.familyKey))
+            throw new Error('Missing Skill Family: '+option.familyKey);
+          if(option.kind==='skill'&&!this.#skills.some(item=>item.uuid===option.ref))
+            throw new Error('Missing linked Skill Item: '+option.ref);
+        }
         const ids=this.#draft.map(g=>g.id);
         if(new Set(ids).size!==ids.length)throw new Error('Duplicate choice group identifiers');
         if(JSON.stringify(this.item.system.skillChoiceGroups??[])!==this.#baseline)
