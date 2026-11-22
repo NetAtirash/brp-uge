@@ -202,6 +202,13 @@
           </section>
         </div>
       </div>
+      {{#if occupationMetadataMissing}}
+      <div class="panel-card wiz-occupation-setup-warning" role="alert">
+        <strong><i class="fa-solid fa-triangle-exclamation"></i> {{#if isTh}}อาชีพนี้ยังไม่ได้กำหนดเงื่อนไขการเลือกทักษะ{{else}}Occupation choice rules are not configured{{/if}}</strong>
+        <p>{{#if isTh}}คำอธิบายอาชีพมีเงื่อนไขให้เลือกทักษะ แต่ Compendium ยังไม่มี Choice Groups ที่ Wizard ใช้อ่านได้ กรุณาให้ GM ตั้งค่าก่อน เพื่อไม่ให้เสียสิทธิ์เลือกทักษะตามกฎ{{else}}The occupation description mentions choices, but its Compendium Item has no structured Choice Groups. Ask the GM to configure them so all choices are honored.{{/if}}</p>
+        {{#if isGM}}<button type="button" class="brp-btn" data-action="openOccupationChoiceSetup"><i class="fa-solid fa-gear"></i> {{#if isTh}}เปิดอาชีพเพื่อกำหนดทางเลือก{{else}}Configure this Occupation{{/if}}</button>{{/if}}
+      </div>
+      {{/if}}
       {{#if professionChoiceGroups.length}}
       <div class="panel-card wiz-section brp-wiz-occupation-choices">
         <h3>{{#if isTh}}เลือกทักษะและ Specialty ของอาชีพก่อนแบ่งแต้ม{{else}}Resolve Occupation Skill Choices before allocating points{{/if}}</h3>
@@ -213,14 +220,21 @@
               <span class="{{#if g.complete}}is-complete{{else}}is-pending{{/if}}">{{g.selectedCount}} / {{g.count}}</span>
             </header>
             <div class="brp-wiz-choice-picker">
-              <select data-occupation-choice-picker="{{g.id}}" aria-label="{{g.label}}">
-                <option value="">{{#if @root.isTh}}เลือกทักษะหรือ Specialty…{{else}}Choose a Skill or Specialty…{{/if}}</option>
-                {{#each g.candidates as |c|}}
-                  <option value="{{c.key}}">{{c.label}}</option>
-                {{/each}}
-              </select>
+              <label class="brp-wiz-choice-field">
+                <span>{{#if @root.isTh}}1. เลือกทักษะ{{else}}1. Choose Skill{{/if}}</span>
+                <select data-occupation-skill-picker="{{g.id}}" aria-label="{{g.label}}">
+                  <option value="">{{#if @root.isTh}}เลือกทักษะ / Skill Family…{{else}}Choose a Skill Family…{{/if}}</option>
+                  {{#each g.pickerChoices as |c|}}
+                    <option value="{{c.value}}">{{c.label}}</option>
+                  {{/each}}
+                </select>
+              </label>
+              <label class="brp-wiz-choice-field">
+                <span>{{#if @root.isTh}}2. เลือก Specialty{{else}}2. Choose Specialty{{/if}}</span>
+                <select data-occupation-specialty-picker="{{g.id}}" aria-label="Specialty" disabled hidden></select>
+              </label>
               <button type="button" class="brp-btn" data-action="selectOccupationChoice" data-group-id="{{g.id}}">
-                <i class="fa-solid fa-plus"></i> {{#if @root.isTh}}เพิ่ม{{else}}Add{{/if}}
+                <i class="fa-solid fa-check"></i> {{#if @root.isTh}}ยืนยันตัวเลือก{{else}}Add chosen Skill{{/if}}
               </button>
             </div>
             {{#if g.selected.length}}
@@ -255,15 +269,18 @@
             {{#if professionMissingSkillCount}}<strong class="wiz-link-warning">{{#if isTh}}ไม่พบลิงก์ทักษะ {{professionMissingSkillCount}} รายการ — ตรวจ Skills Compendium และเปิด Wizard ใหม่{{else}}Missing {{professionMissingSkillCount}} skill links — check the Skills Compendium and reopen the Wizard{{/if}}</strong>{{/if}}
           </p>
         {{/if}}
-        {{#if personalSpecialtyOptions.length}}
+        {{#if personalFamilyOptions.length}}
           <section class="brp-wiz-personal-specialty">
-            <strong>{{#if isTh}}เลือกเพิ่ม Specialty สำหรับแต้มส่วนตัว{{else}}Add a personal-interest Specialty{{/if}}</strong>
-            <p class="meta-text">{{#if isTh}}ตัวเลือกนี้ไม่ทำให้ใช้แต้มอาชีพได้โดยอัตโนมัติ แต่สามารถแบ่งแต้มส่วนตัวตามกฎและ GM อนุญาต{{else}}This does not grant occupation eligibility. Personal points can be spent on a permitted specialty.{{/if}}</p>
+            <strong>{{#if isTh}}เลือก Specialty เพิ่มสำหรับแต้มส่วนตัว{{else}}Add a Specialty for Personal Points{{/if}}</strong>
+            <p class="meta-text">{{#if isTh}}เลือก Skill Family ก่อน จากนั้นเลือก Specialty ที่ GM เปิดใช้ การเลือกยังไม่ใช้แต้ม และไม่ได้ให้สิทธิ์ใช้แต้มอาชีพ{{else}}Choose the Skill Family first, then its GM-approved Specialty. This does not spend points or grant occupation eligibility.{{/if}}</p>
             <div class="brp-wiz-choice-picker">
-              <select data-personal-specialty-picker aria-label="{{#if isTh}}เพิ่ม Specialty ส่วนตัว{{else}}Personal Specialty{{/if}}">
-                <option value="">{{#if isTh}}เลือก Specialty…{{else}}Select a Specialty…{{/if}}</option>
-                {{#each personalSpecialtyOptions as |o|}}<option value="{{o.key}}">{{o.label}}</option>{{/each}}
-              </select>
+              <label class="brp-wiz-choice-field"><span>{{#if isTh}}ทักษะ{{else}}Skill Family{{/if}}</span>
+                <select data-personal-family-picker aria-label="Personal Skill Family">
+                  <option value="">{{#if isTh}}เลือกทักษะ…{{else}}Select Skill…{{/if}}</option>
+                  {{#each personalFamilyOptions as |f|}}<option value="{{f.key}}">{{f.label}}</option>{{/each}}
+                </select></label>
+              <label class="brp-wiz-choice-field"><span>Specialty</span>
+                <select data-personal-specialty-picker aria-label="Personal Specialty" disabled hidden></select></label>
               <button type="button" class="brp-btn" data-action="addPersonalSpecialty"><i class="fa-solid fa-plus"></i> {{#if isTh}}เพิ่มทักษะ{{else}}Add Skill{{/if}}</button>
             </div>
           </section>
@@ -272,6 +289,7 @@
         <div class="wiz-search-row">
           <input type="search" dir="auto" autocomplete="off" data-wiz-skill-search value="{{wizardData.skillFilter}}" placeholder="{{#if isTh}}ค้นหาทักษะ...{{else}}Filter skills...{{/if}}" />
         </div>
+        <p class="brp-wiz-allocation-guidance">{{#if isTh}}<strong>วิธีจัดสรรแต้ม:</strong> ทักษะอาชีพที่เลือกไว้จะมีป้าย “อาชีพ” และใช้แต้มจากช่องอาชีพได้ ส่วนทักษะอื่นใช้แต้มส่วนตัวตามกฎ หากยังไม่เห็นทักษะที่ต้องการ ให้เลือก Family และ Specialty ด้านบนก่อน{{else}}<strong>How to allocate:</strong> Occupation-tagged skills can receive professional points; other permitted skills use personal points. Add a Skill Family and Specialty above if you do not see the one you need.{{/if}}</p>
         <div class="wiz-skill-header" aria-hidden="true">
           <span>{{#if isTh}}ทักษะ / พื้นฐาน{{else}}Skill / Base{{/if}}</span>
           <span data-tooltip="{{#if isTh}}แต้มทักษะจากอาชีพ{{else}}Occupation allocation{{/if}}">{{#if isTh}}อาชีพ{{else}}Occupation{{/if}}</span>
