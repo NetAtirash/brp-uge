@@ -221,7 +221,8 @@ Hooks.once("init", async () => {
   // Versioned overlay: source Compendium Skill Items are never mutated by GM choices.
   game.settings.register('brp-uge','specialtyRegistry',{
     name:'Specialty registry / World overrides',
-    scope:'world',config:false,restricted:true,type:String,default:'{"schemaVersion":1,"families":{}}'
+    scope:'world',config:false,restricted:true,type:String,default:'{"schemaVersion":3,"families":{}}',
+    onChange: refreshBRPWorldUI
   });
   game.settings.register('brp-uge','specialtyCustomPolicy',{
     name:'New Specialty policy / นโยบายสร้างความเชี่ยวชาญใหม่',
@@ -231,7 +232,8 @@ Hooks.once("init", async () => {
     default:'restricted'
   });
   game.settings.register('brp-uge','specialtyPresets',{
-    name:'Specialty preset options',scope:'world',config:false,restricted:true,type:String,default:'{}'
+    name:'Specialty preset options',scope:'world',config:false,restricted:true,type:String,default:'{}',
+    onChange: refreshBRPWorldUI
   });
   game.settings.registerMenu('brp-uge','manageSpecialties',{
     name:'ตัวเลือก Specialty / Manage Specialties',
