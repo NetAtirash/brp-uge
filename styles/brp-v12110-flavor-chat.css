@@ -58,7 +58,9 @@ html[data-brp-theme] .brp-uge .brp-flavor-intro {display:grid;gap:4px;}
 html[data-brp-theme] .brp-uge .brp-flavor-intro strong {font-size:13px;color:var(--brp-accent, #953336);}
 html[data-brp-theme] .brp-uge .brp-flavor-intro small,
 html[data-brp-theme] .brp-uge .brp-flavor-reference {color:var(--brp-secondary-text, #49382d);font-size:11px;}
-html[data-brp-theme] .brp-uge .brp-flavor-inputs {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+html[data-brp-theme] .brp-uge .brp-flavor-inputs {display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
+html[data-brp-theme] .brp-uge.brp-show-all-languages .brp-flavor-inputs {grid-template-columns:repeat(2,minmax(0,1fr));}
+html[data-brp-theme] .brp-uge.brp-show-all-languages .brp-flavor-inputs label.brp-language-secondary {display:grid!important;}
 html[data-brp-theme] .brp-uge .brp-flavor-inputs label {display:grid;gap:4px;min-width:0;font-size:11px;}
 html[data-brp-theme] .brp-uge .brp-flavor-inputs input {min-width:0;width:100%;}
 html[data-brp-theme] .brp-uge .brp-flavor-reference strong {color:var(--brp-text,#30251e);}
