@@ -224,23 +224,25 @@
               <strong>{{g.label}}</strong>
               <span class="{{#if g.complete}}is-complete{{else}}is-pending{{/if}}">{{g.selectedCount}} / {{g.count}}</span>
             </header>
-            <div class="brp-wiz-choice-picker">
-              <label class="brp-wiz-choice-field">
-                <span>{{#if @root.isTh}}1. เลือกทักษะ{{else}}1. Choose Skill{{/if}}</span>
-                <select data-occupation-skill-picker="{{g.id}}" aria-label="{{g.label}}">
-                  <option value="">{{#if @root.isTh}}เลือกทักษะ / Skill Family…{{else}}Choose a Skill Family…{{/if}}</option>
-                  {{#each g.pickerChoices as |c|}}
-                    <option value="{{c.value}}">{{c.label}}</option>
-                  {{/each}}
-                </select>
-              </label>
-              <label class="brp-wiz-choice-field">
-                <span>{{#if @root.isTh}}2. เลือก Specialty{{else}}2. Choose Specialty{{/if}}</span>
-                <select data-occupation-specialty-picker="{{g.id}}" aria-label="Specialty" disabled hidden></select>
-              </label>
-              <button type="button" class="brp-btn" data-action="selectOccupationChoice" data-group-id="{{g.id}}">
-                <i class="fa-solid fa-check"></i> {{#if @root.isTh}}ยืนยันตัวเลือก{{else}}Add chosen Skill{{/if}}
-              </button>
+            <div class="brp-wiz-choice-workflow" data-occupation-skill-options="{{g.id}}">
+              <strong class="brp-wiz-choose-label">{{#if @root.isTh}}1. ติ๊กเลือกทักษะที่ต้องการ{{else}}1. Select an allowed Skill{{/if}}</strong>
+              <div class="brp-wiz-choice-radio-list" role="radiogroup" aria-label="{{g.label}}">
+                {{#each g.pickerChoices as |c|}}
+                  <label class="brp-wiz-choice-radio">
+                    <input type="radio" name="wiz-choice-{{g.id}}" data-occupation-kind-radio="{{g.id}}" value="{{c.value}}">
+                    <span>{{c.label}}</span>
+                  </label>
+                {{/each}}
+              </div>
+              <div class="brp-wiz-choice-picker">
+                <label class="brp-wiz-choice-field" data-occupation-specialty-field="{{g.id}}" hidden>
+                  <span>{{#if @root.isTh}}2. เลือก Specialty ของทักษะนี้{{else}}2. Choose this Skill's Specialty{{/if}}</span>
+                  <select data-occupation-specialty-picker="{{g.id}}" aria-label="Specialty" disabled></select>
+                </label>
+                <button type="button" class="brp-btn" data-action="selectOccupationChoice" data-group-id="{{g.id}}">
+                  <i class="fa-solid fa-check"></i> {{#if @root.isTh}}ยืนยัน / เพิ่มตัวเลือก{{else}}Confirm this choice{{/if}}
+                </button>
+              </div>
             </div>
             {{#if g.selected.length}}
               <div class="brp-wiz-choice-chips">
