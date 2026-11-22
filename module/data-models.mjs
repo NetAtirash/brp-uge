@@ -484,6 +484,19 @@ export class OccupationDataModel extends BRPItemDataModel {
       wealthEnabled: new BooleanField({initial: true}),
       wealthRef: new StringField({required:true, blank:true, initial:""}),
       skillRefs: new ArrayField(new StringField({required:true, blank:false}), {initial:[]}),
+      // Optional choice clauses; old Occupations still resolve skillRefs without migration.
+      skillChoiceGroups: new ArrayField(new SchemaField({
+        id: new StringField({required:true,blank:false}),
+        labelTh: new StringField({required:true,blank:true,initial:""}),
+        labelEn: new StringField({required:true,blank:true,initial:""}),
+        count: new NumberField({required:true,integer:true,min:1,initial:1}),
+        distinct: new BooleanField({initial:true}),
+        options: new ArrayField(new SchemaField({
+          kind: new StringField({required:true,blank:false,options:["family","skill"],initial:"family"}),
+          familyKey: new StringField({required:true,blank:true,initial:""}),
+          ref: new StringField({required:true,blank:true,initial:""})
+        }),{initial:[]})
+      }),{initial:[]}),
       starterWeaponRefs: new ArrayField(new StringField({required:true, blank:false}), {initial:[]}),
       starterArmorRefs: new ArrayField(new StringField({required:true, blank:false}), {initial:[]}),
     };
