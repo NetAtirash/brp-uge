@@ -383,7 +383,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const families=availableSpecialtyFamilies(sourceSkills);
     this._specialtyRegistry=buildSpecialtyRegistry(sourceSkills,
       game.settings.get("brp-uge","specialtyRegistry"),game.settings.get("brp-uge","specialtyPresets"));
-    const familyChoices=families.map(f=>({
+    const familyChoices=families.filter(f=>game.user?.isGM || this._specialtyRegistry.some(group=>group.key===f.key && group.options.some(option=>!option.hidden))).map(f=>({
       uuid:`family:${encodeURIComponent(f.key)}`,
       familyKey:f.key,
       label:`${isTh?f.thFamily:f.enFamily} — ${isTh?'เพิ่ม Specialty':'New Specialty'} (${f.enFamily})`
@@ -854,7 +854,8 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if(value!=='custom'&&!existing)
         return ui.notifications.warn(th?'ตัวเลือกนี้ไม่มีอยู่หรือถูกซ่อนแล้ว':'This Specialty is no longer available');
       const sourceItems=await getLibraryDocuments({types:['skill']});
-      const template=(existing?specialtyTemplateFor(group,existing,sourceItems):sourceItems.find(d=>d.uuid===family.templateUuid));
+      const template=existing?specialtyTemplateFor(group,existing,sourceItems):
+        specialtyTemplateFor(group,{sourceUuid:'',templateUuid:''},sourceItems);
       if(!template || template.type!=='skill')return ui.notifications.warn('A matching source Skill template is required');
       try {
         if(existing?.sourceUuid) data=documentToEmbeddedItem(template);
