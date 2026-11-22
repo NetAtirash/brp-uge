@@ -125,8 +125,9 @@ export class SpecialtyPresetsMenu extends BaseApp {
       const original=group.options.find(o=>o.key===key);
       const templateUuid=row.querySelector('[data-template]').value;
       const isSource=row.dataset.source==='compendium';
-      if(!isSource && !templateUuid && group.fingerprintConflict)
-        throw new Error('Select a specific source template for '+en);
+      if(!isSource && !templateUuid && (
+        group.fingerprintConflict || group.ambiguous.some(a=>a.sourceUuid===group.templateUuid)))
+        throw new Error('Select a specific rules template for '+en+'; automatic source inference is unsafe');
       if(!isSource && !templateUuid && !group.templateUuid)
         throw new Error('A real source template is required for '+en);
       // Keep existing Compendium names immutable. A changed translated label
