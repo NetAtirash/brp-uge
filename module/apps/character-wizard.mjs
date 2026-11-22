@@ -12,6 +12,10 @@ import { resolveWealthItem, wealthDisplayFromItem } from "../wealth-utils.mjs";
 import { agePenalties } from "../status-effects.mjs";
 import { uniqueSkills, sameSkill, planMissingBaseSkills } from "../skill-foundation.mjs";
 import { configuredStartingSkills } from "../skill-selection.mjs";
+import { availableSpecialtyFamilies, composeSpecialtyItem } from "../skill-specialties.mjs";
+import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor } from "../specialty-registry.mjs";
+import { normalizeOccupationChoiceGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill } from "../occupation-choice-rules.mjs";
+import { canonicalSkillKey } from "../skill-foundation.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -21,6 +25,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     this.targetActor = options.actor;
     this.step = 1;
     this.skillCatalog = [];
+    this.librarySkillDocs = [];
+    this.specialtyRegistry = [];
     this.powerCatalog = [];
     this.libraryProfessions = [];
     this.catalogLoaded = false;
@@ -57,6 +63,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         edu: Number(c.edu?.value ?? 12) || 12
       },
       professionId: this.targetActor?.items?.find?.(i=>i.type==="occupation")?.uuid || "",
+      choiceSelections: structuredClone(this.targetActor?.getFlag?.('brp-uge','creationOccupationChoices')||{}),
+      professionDrafts: {},
+      allowRebuild: false,
       rolledBasis: null,
       hasGeneratedCharacteristics: false,
       generatedKeys: [],
@@ -99,6 +108,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       rollSingleChar: BRPCharacterWizard.#onRollSingleChar,
       stepChar: BRPCharacterWizard.#onStepChar,
       selectProfession: BRPCharacterWizard.#onSelectProfession,
+      selectOccupationChoice: BRPCharacterWizard.#onSelectOccupationChoice,
+      removeOccupationChoice: BRPCharacterWizard.#onRemoveOccupationChoice,
+      unlockRebuild: BRPCharacterWizard.#onUnlockRebuild,
       allocateSkill: BRPCharacterWizard.#onAllocateSkill,
       addWizardPower: BRPCharacterWizard.#onAddWizardPower,
       viewWizardPower: BRPCharacterWizard.#onViewWizardPower,
@@ -167,6 +179,10 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       data.flags??={};data.flags.core??={};data.flags.core.sourceId ||= d.uuid;
       return data;
     });
+    this.librarySkillDocs=docs.filter(d=>d.type==='skill');
+    this.specialtyRegistry=buildSpecialtyRegistry(this.librarySkillDocs,
+      game.settings.get('brp-uge','specialtyRegistry'),
+      game.settings.get('brp-uge','specialtyPresets'));
     this.skillCatalog=uniqueSkills(byType('skill'));
     this.powerCatalog=byType('power');
     this.libraryProfessions=docs.filter(d=>d.type==='occupation');
@@ -200,6 +216,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         wealthEnabled:Boolean(item.system.wealthEnabled),wealthRef:String(item.system.wealthRef||''),
         description:item.system.descriptionEn||'',descriptionTh:item.system.descriptionTh||'',
         skillRefs:[...(item.system.skillRefs??[])],
+        skillChoiceGroups:normalizeOccupationChoiceGroups(item.system.skillChoiceGroups),
         starterWeaponRefs:[...(item.system.starterWeaponRefs??[])],
         starterArmorRefs:[...(item.system.starterArmorRefs??[])]
       });
@@ -249,9 +266,28 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   }
 
   #isOccupationalSkill(skillEntry,prof) {
-    // Only explicitly linked Skill Item references qualify; never infer by a
-    // translated label, description substring, or bundled preset name.
-    return Boolean(skillEntry && prof?.skillRefs?.some(ref=>linkedOccupationSkill(skillEntry,ref)));
+    return occupationSkillEligible(skillEntry,prof,this.wizardData.choiceSelections,this.skillCatalog);
+  }
+
+  #occupationChoiceStatus(prof=this.#getProfession()){
+    return validateOccupationChoices(prof?.skillChoiceGroups,this.wizardData.choiceSelections,this.skillCatalog);
+  }
+
+  #changeProfession(profId){
+    if(profId===this.wizardData.professionId)return;
+    const prev=this.wizardData.professionId||'none';
+    this.wizardData.professionDrafts[prev]={
+      occRanks:structuredClone(this.wizardData.occRanks),
+      occPowerRanks:structuredClone(this.wizardData.occPowerRanks),
+      choiceSelections:structuredClone(this.wizardData.choiceSelections)
+    };
+    const restore=this.wizardData.professionDrafts[profId||'none'];
+    this.wizardData.professionId=profId;
+    this.wizardData.professionChanged=true;
+    this.wizardData.occRanks=structuredClone(restore?.occRanks||{});
+    this.wizardData.occPowerRanks=structuredClone(restore?.occPowerRanks||{});
+    this.wizardData.choiceSelections=structuredClone(restore?.choiceSelections||{});
+    this.#syncStarterGear();
   }
 
   #computeDynamicBase(skillEntry) {
@@ -443,6 +479,36 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         description:powerText(src),type,base,occPts,persPts,total:base+occPts+persPts,allocated};
     }).filter(Boolean);
     const professionSkillCoverage=occupationSkillCoverage(this.skillCatalog,prof?.skillRefs??[]);
+    // Resolve optional or required choice clauses before profession allocations.
+    const choiceGroups=normalizeOccupationChoiceGroups(prof.skillChoiceGroups);
+    const uiChoices=this.wizardData.choiceSelections;
+    context.professionChoiceGroups=choiceGroups.map(group=>{
+      const candidates=new Map();
+      for(const option of group.options){
+        if(option.kind==='skill'){
+          const skill=this.skillCatalog.find(s=>linkedOccupationSkill(s,option.ref));
+          if(skill)candidates.set(canonicalSkillKey(skill),{
+            key:canonicalSkillKey(skill),label:getDisplayItemName(skill,uiLang)});
+        } else {
+          const family=this.specialtyRegistry.find(f=>f.key===option.familyKey);
+          for(const candidate of family?.options||[]){
+            if(candidate.hidden)continue;
+            const key=option.familyKey+'|'+candidate.key;
+            candidates.set(key,{key,label:(isTh?family.thFamily:family.enFamily)+
+              ' ('+(isTh?(candidate.th||candidate.en):candidate.en)+')'});
+          }
+        }
+      }
+      const selected=uiChoices[group.id]||[];
+      return {...group,label:isTh?(group.labelTh||group.labelEn):(group.labelEn||group.labelTh),
+        selected:selected.map(key=>({key,label:candidates.get(key)?.label||key})),
+        candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label)),
+        complete:selected.length===group.count,selectedCount:selected.length};
+    });
+    const choiceStatus=this.#occupationChoiceStatus(prof);
+    context.occupationChoicesValid=choiceStatus.valid;
+    context.isCompletedActor=Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));
+    context.allowRebuild=this.wizardData.allowRebuild;
     context.professionLinkedSkillCount=professionSkillCoverage.linked.length;
     context.professionMissingSkillCount=professionSkillCoverage.missing.length;
     context.professionHasLinkedSkills=Boolean(prof?.sourceUuid && professionSkillCoverage.linked.length);
@@ -527,7 +593,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         const entry=documentToEmbeddedItem(doc);
         if(doc.type==='occupation'){
           if(!this.libraryProfessions.some(i=>i.uuid===doc.uuid))this.libraryProfessions.push(doc);
-          this.wizardData.professionId=doc.uuid;this.wizardData.occRanks={};this.#syncStarterGear();
+          this.#changeProfession(doc.uuid);
         } else if(doc.type==='power'){
           if(!isPowerSystemEnabled(doc.system?.system))return ui.notifications.warn('This power family is disabled by the GM.');
           const index=this.powerCatalog.findIndex(i=>i.flags?.['brp-uge']?.sourceUuid===doc.uuid);
