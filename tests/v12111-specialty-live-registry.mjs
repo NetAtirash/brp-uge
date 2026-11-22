@@ -43,6 +43,8 @@ assert.match(wiz,/this\.wizardData\.personalFamilyDraft/);
 assert.match(wiz,/this\.wizardData\.personalSpecialtyDraft/);
 assert.match(wiz,/this\.wizardData\.occupationFamilyDrafts/);
 assert.match(wiz,/this\.wizardData\.occupationSpecialtyDrafts/);
+assert.match(wiz,/No approved Specialties — ask your GM/);
+assert.match(wiz,/ยังไม่มี Specialty ที่ GM เปิดใช้/);
 const init=read('brp-uge.mjs');
 assert.match(init,/specialtyRegistry',[\s\S]*?onChange:\s*refreshBRPWorldUI/);
 assert.match(init,/specialtyPresets',[\s\S]*?onChange:\s*refreshBRPWorldUI/);
