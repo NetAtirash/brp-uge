@@ -712,11 +712,18 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       select.hidden=!family;
       select.disabled=!family||select.options.length<2;
     };
-    for(const skillPicker of this.element.querySelectorAll('[data-occupation-skill-picker]')){
-      const id=skillPicker.dataset.occupationSkillPicker;
+    for(const choices of this.element.querySelectorAll('[data-occupation-skill-options]')){
+      const id=choices.dataset.occupationSkillOptions;
       const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
-      const update=()=>fillSpecialties(skillPicker.value.startsWith('family:')?skillPicker.value.slice(7):'',subtype);
-      skillPicker.addEventListener('change',update);
+      const field=this.element.querySelector('[data-occupation-specialty-field="'+CSS.escape(id)+'"]');
+      const radios=[...choices.querySelectorAll('[data-occupation-kind-radio]')];
+      const update=()=>{
+        const selected=radios.find(r=>r.checked)?.value||'';
+        const family=selected.startsWith('family:')?selected.slice(7):'';
+        fillSpecialties(family,subtype);
+        if(field)field.hidden=!family;
+      };
+      for(const radio of radios)radio.addEventListener('change',update);
       update();
     }
     const personalFamily=this.element.querySelector('[data-personal-family-picker]');
@@ -903,7 +910,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const prof=this.#getProfession();
     const group=normalizeOccupationChoiceGroups(prof?.skillChoiceGroups).find(g=>g.id===id);
     if(!group)return;
-    const picker=this.element.querySelector('[data-occupation-skill-picker="'+CSS.escape(id)+'"]');
+    const picker=this.element.querySelector('[data-occupation-kind-radio="'+CSS.escape(id)+'"]:checked');
     const choice=String(picker?.value||'');
     const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
     const key=choice.startsWith('family:')?choice.slice(7)+'|'+String(subtype?.value||''):
