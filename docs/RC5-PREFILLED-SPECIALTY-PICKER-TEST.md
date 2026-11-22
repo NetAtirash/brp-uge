@@ -51,3 +51,7 @@ These checks only print World configuration and rendered labels. They do not mut
 ## Limitations
 
 GitHub Actions verify syntax, offline regression and package manifest, not Foundry's live DOM rendering. RC5 remains a prerelease and stable Latest stays unchanged until real Foundry v14 checks pass.
+
+## RC5 publication checkpoint
+
+This publication source commit includes the tested native pre-rendered Specialty option lists, GM Art World changes, per-family occupation/personal selectors, safe reload controls, and regression coverage. GitHub Action publishes prerelease only; stable Latest is unchanged.
