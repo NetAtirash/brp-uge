@@ -115,7 +115,8 @@ assert.ok(wizard.indexOf('const unresolvedGear=[]')<wizard.indexOf('await actorD
   'Starter equipment must preflight before mutating Actor');
 assert.match(wizard,/if\(creationCompleted\)\{/);
 const template=read('templates/apps/character-wizard.hbs');
-assert.match(template,/data-occupation-skill-picker/);
+assert.match(template,/data-occupation-kind-radio/);
+assert.match(template,/data-occupation-skill-options/);
 assert.match(template,/data-occupation-specialty-picker/);
 assert.match(template,/data-personal-family-picker/);
 assert.match(template,/occupationMetadataMissing/);
