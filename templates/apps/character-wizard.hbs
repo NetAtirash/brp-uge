@@ -190,6 +190,11 @@
               <div class="wiz-occupation-preview-header"><i class="fa-solid fa-briefcase" aria-hidden="true"></i><h4>{{selectedProfession.title}}</h4></div>
               {{#if isTh}}{{#if selectedProfession.titleEn}}<small lang="en">{{selectedProfession.titleEn}}</small>{{/if}}{{/if}}
               <div class="wiz-occupation-preview-meta">{{#if isTh}}ทักษะอ้างอิง{{else}}Linked skill references{{/if}}: {{professionLinkedSkillCount}} {{#if professionMissingSkillCount}}· {{#if isTh}}ขาด{{else}}Missing{{/if}}: {{professionMissingSkillCount}}{{/if}}</div>
+              {{#if professionFixedSkillNames.length}}
+                <div class="brp-wiz-fixed-skills"><strong>{{#if isTh}}ทักษะที่อาชีพกำหนด{{else}}Required occupational Skills{{/if}}</strong>
+                  <div class="brp-wiz-choice-chips">{{#each professionFixedSkillNames as |name|}}<span class="brp-wiz-choice-chip">{{name}}</span>{{/each}}</div>
+                </div>
+              {{/if}}
               <div class="wiz-occupation-preview-rule">{{selectedProfession.sub}}</div>
             {{else}}
               <p class="meta-text">{{#if isTh}}เลือกอาชีพจากรายการด้านซ้ายเพื่ออ่านคำอธิบาย หรือสร้างตัวละครโดยยังไม่กำหนดอาชีพ{{else}}Choose an occupation to inspect its rules, or proceed without one{{/if}}</p>
