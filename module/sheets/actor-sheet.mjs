@@ -867,7 +867,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         // compound source record copied with its old name.
         if(existing?.sourceUuid && canonicalSkillKey(template)===canonical)
           data=documentToEmbeddedItem(template);
-        else data=composeSpecialtyItem(template,family,{en:english,th:thai});
+        else data=composeSpecialtyItem(template,family,existing||{en:english,th:thai});
       } catch(error){return ui.notifications.warn(error.message);}
     } else {
       const item=await fromUuid(ref).catch(()=>null);
