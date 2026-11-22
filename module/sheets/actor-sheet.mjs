@@ -236,7 +236,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const scopeLabel = e.skillScope === "category"
         ? (ui.catLabels?.[e.skillCategory] ?? e.skillCategory ?? "—")
         : e.skillScope === "specific"
-          ? affectedSkillItems.map(i=>getLocalizedName(i,uiLang)).join(", ") || "—"
+          ? affectedSkillItems.map(i=>getDisplayItemName(i,uiLang)).join(", ") || "—"
           : ({none:"—",all:isTh?"ทุกทักษะ":"All skills",visual:isTh?"ทักษะการมองเห็น":"Visual skills"})[e.skillScope] ?? "—";
       return {...e, name:uiLang==='en'?(e.nameEn||e.name):(e.nameTh||e.name), scopeLabel,
         characteristicLabel:e.characteristic?.toUpperCase() || "—",
@@ -387,7 +387,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }));
     const exactChoices=sourceSkills.map(skill=>({
       uuid:skill.uuid,
-      label:`${getLocalizedName(skill,uiLang)} — ${skill.system.baseFormula || `${skill.system.base??0}%`}`
+      label:`${getDisplayItemName(skill,uiLang)} — ${skill.system.baseFormula || `${skill.system.base??0}%`}`
     }));
     context.skillCatalog=[...familyChoices,...exactChoices];
     context.hasSpecialtyFamilies=families.length>0;
@@ -705,7 +705,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const skill = healer.items.find(s => s.type === "skill" && matchNames[method].some(k => getSkillNameMatches(s,k) || String(s.system.description??"").includes(k)));
       const baseTarget = skill ? Number(skill.system.total ?? skill.system.base ?? 0) : ({firstAid:30,medicine:5,psychotherapy:1})[method];
       result = await BRPRolls.rollSkill({ actor: healer, skillId: skill?.id,
-        title: `${esc(getLocalizedName(skill, getNameLanguage()) || method)} → ${esc(actor.name)}`,
+        title: `${esc(getDisplayItemName(skill, getNameLanguage()) || method)} → ${esc(actor.name)}`,
         subtitle: details, baseTarget });
       if (!result) return;
     }
@@ -868,7 +868,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const item = itemId ? actor.items.get(itemId) : null;
     let card;
     if (item) {
-      const name = getLocalizedName(item, lang);
+      const name = getDisplayItemName(item, lang);
       const description = getItemTooltip(item.system, lang);
       let value = "";
       if (item.type === "skill") value = `${item.system.total ?? item.system.base ?? "—"}%`;
@@ -1092,10 +1092,10 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const categoryOptions = options(existing.skillCategory || "combat", categories.map(k=>[k,categoryLabel(k,getNameLanguage())]));
     const skillChecks = categories.map(cat => {
       const matches = allSkills.filter(item => (item.system.category || "communication") === cat)
-        .sort((a,b)=>getLocalizedName(a,getNameLanguage()).localeCompare(getLocalizedName(b,getNameLanguage())));
+        .sort((a,b)=>getDisplayItemName(a,getNameLanguage()).localeCompare(getDisplayItemName(b,getNameLanguage())));
       if (!matches.length) return "";
       return `<fieldset class="brp-status-check-group"><legend>${esc(labels[cat] || cat)}</legend>${matches.map(item=>
-        `<label class="brp-status-skill-option"><input type="checkbox" name="skillChoice_${item.id}" ${selectedIds.has(item.id)?"checked":""}> <span>${esc(getLocalizedName(item,getNameLanguage()))}</span></label>`
+        `<label class="brp-status-skill-option"><input type="checkbox" name="skillChoice_${item.id}" ${selectedIds.has(item.id)?"checked":""}> <span>${esc(getDisplayItemName(item,getNameLanguage()))}</span></label>`
       ).join("")}</fieldset>`;
     }).join("");
     const f=await foundry.applications.api.DialogV2.input({
