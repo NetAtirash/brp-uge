@@ -147,3 +147,12 @@ html[data-brp-theme] .brp-uge :is(.brp-choice-editor,.brp-specialty-manager-v2,.
   html[data-brp-theme] .brp-uge .brp-choice-fields {grid-template-columns:1fr;}
   html[data-brp-theme] .brp-uge .brp-wiz-choice-picker {flex-wrap:wrap;}
 }
+
+html[data-brp-theme] .brp-uge .brp-wiz-personal-specialty {
+  background:var(--brp-panel);border:1px solid var(--brp-border);border-radius:5px;
+  padding:10px;margin:10px 0;
+}
+html[data-brp-theme] .brp-uge .brp-points-validation {
+  color:var(--brp-danger);font-weight:600;margin:6px 12px;
+}
+html[data-brp-theme] .brp-uge .brp-points-validation[hidden]{display:none;}
