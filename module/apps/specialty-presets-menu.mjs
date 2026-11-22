@@ -62,7 +62,8 @@ export class SpecialtyPresetsMenu extends App {
       '" data-source-uuid="'+esc(entry.sourceUuid||'')+'" data-original-en="'+esc(entry.originalEn||entry.en||'')+
       '" data-original-th="'+esc(entry.originalTh||entry.th||'')+'" data-is-new="'+(newRow?'true':'false')+'">'+
       '<div class="brp-specialty-row-head"><span class="brp-specialty-source-kind">'+esc(origin)+'</span>'+
-      (entry.sourceAmbiguous||entry.review?'<span class="brp-specialty-review-note">'+this.#tr('ต้องตรวจสอบ','Needs review')+'</span>':'')+
+      (entry.review?'<span class="brp-specialty-review-note">'+this.#tr('ต้องตรวจสอบ','Needs review')+'</span>':
+        entry.sourceAmbiguous?'<span class="brp-specialty-review-note">'+this.#tr('GM กำหนดแล้ว','GM curated')+'</span>':'')+
       (source?'<button type="button" data-open-source="'+esc(entry.sourceUuid)+'">'+this.#tr('เปิด Item ต้นฉบับ','Open source Item')+'</button>':'')+
       (!source?'<button type="button" data-archive>'+this.#tr('ซ่อน','Archive')+'</button>':'')+
       (newRow?'<button type="button" data-remove-draft>'+this.#tr('ยกเลิกรายการใหม่','Remove draft')+'</button>':'')+'</div>'+
@@ -80,7 +81,7 @@ export class SpecialtyPresetsMenu extends App {
           this.#templateOptions(group,entry.templateUuid||'')+
         '</select></label>'+
       '</div>'+
-      (entry.sourceAmbiguous?'<small class="brp-manager-note">'+statusText+'</small>':'')+
+      (entry.review?'<small class="brp-manager-note">'+statusText+'</small>':'')+
       (source?'<small class="brp-manager-uuid">'+esc(entry.sourceUuid)+'</small>':'')+
       '</article>';
   }
