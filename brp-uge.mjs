@@ -218,6 +218,18 @@ Hooks.once("init", async () => {
   });
 
   // Specialty definitions are World configuration, not embedded rulebook content.
+  // Versioned overlay: source Compendium Skill Items are never mutated by GM choices.
+  game.settings.register('brp-uge','specialtyRegistry',{
+    name:'Specialty registry / World overrides',
+    scope:'world',config:false,restricted:true,type:String,default:'{"schemaVersion":1,"families":{}}'
+  });
+  game.settings.register('brp-uge','specialtyCustomPolicy',{
+    name:'New Specialty policy / นโยบายสร้างความเชี่ยวชาญใหม่',
+    hint:'Restrict player-created specialties to approved World and Compendium choices, or allow requests for GM review.',
+    scope:'world',config:true,restricted:true,type:String,
+    choices:{restricted:'GM-managed choices only',approval:'Player request (GM approval required)'},
+    default:'restricted'
+  });
   game.settings.register('brp-uge','specialtyPresets',{
     name:'Specialty preset options',scope:'world',config:false,restricted:true,type:String,default:'{}'
   });
