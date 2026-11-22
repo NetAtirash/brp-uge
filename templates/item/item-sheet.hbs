@@ -76,6 +76,21 @@
         </select>
         <small>{{#if isTh}}ลาก Wealth Item จาก Items Directory หรือ Compendium มาใส่ได้ หรือเลือกจากรายการ{{else}}Select a Wealth Item or drop one from Items/Compendium{{/if}}</small>
       </div>
+      <section class="full-row brp-occupation-choices-preview">
+        <div class="brp-occupation-choice-heading">
+          <strong>{{#if isTh}}เงื่อนไขเลือกทักษะตามอาชีพ{{else}}Occupational Skill Choices{{/if}}</strong>
+          {{#if item.isOwner}}<button type="button" class="brp-btn" data-action="editOccupationChoices">
+            <i class="fa-solid fa-list-check"></i> {{#if isTh}}จัดการทางเลือก{{else}}Manage Choices{{/if}}
+          </button>{{/if}}
+        </div>
+        {{#each occupationChoiceGroups as |g|}}
+          <div class="brp-choice-summary">{{g.label}} · {{#if @root.isTh}}เลือก{{else}}Choose{{/if}}
+            <strong>{{g.count}}</strong> {{#if @root.isTh}}รายการ{{else}}skill(s){{/if}}
+            <small>({{g.countOptions}} {{#if @root.isTh}}เงื่อนไข{{else}}options{{/if}})</small></div>
+        {{else}}
+          <p class="brp-item-help">{{#if isTh}}อาชีพนี้ยังไม่มี Choice Groups; รายการ Skill UUID ด้านล่างยังใช้งานได้ตามเดิม{{else}}No choice groups; existing fixed Skill UUIDs below still work.{{/if}}</p>
+        {{/each}}
+      </section>
       <div class="full-row brp-reference-panels">
         {{#each referenceGroups as |g|}}
           <div class="brp-reference-panel" data-ref-drop="{{g.field}}">
