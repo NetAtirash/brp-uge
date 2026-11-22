@@ -40,3 +40,7 @@ Use the separately produced `BRP-UGE-Compendium-v1.0.0-RC5-v1.21.11-Specialty-Fa
 - Compendium RC5 reportedly has 44 Occupation choice groups pending verification and 37 weapon Specialty mappings pending live inspection. A successful engine CI does not certify those content records.
 - Existing older Worlds can contain legacy specialty Items; use a copied new World. The system deliberately does not merge or delete existing Actor Items.
 - The 1.21.11 RC3 package does not update stable /releases/latest/ and does not merge PR #8.
+
+## Preview publication checkpoint
+
+This specific publish commit passed the automated system regression suite and publishes **only** the v1.21.11-rc.3 preview assets. It does not change stable /latest/ or publish the external Compendium file. Any subsequent fixes must use a new RC number and a new explicit publication workflow.
