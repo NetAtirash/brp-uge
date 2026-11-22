@@ -3,6 +3,7 @@ import {readFileSync} from 'node:fs';
 import {buildSpecialtyRegistry,eligibleSpecialtyOptions,findSpecialtyCandidate} from '../module/specialty-registry.mjs';
 import {composeSpecialtyItem} from '../module/skill-specialties.mjs';
 import {canonicalSkillKey} from '../module/skill-foundation.mjs';
+import {wizardSpecialtyFamilies,wizardOccupationFamilyChoices} from '../module/wizard-specialty-choices.mjs';
 
 globalThis.foundry={utils:{deepClone:structuredClone}};
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
@@ -25,6 +26,17 @@ assert.equal(eligibleSpecialtyOptions(before,'art').length,0,
   'no GM options should be fabricated before settings save');
 const updated=buildSpecialtyRegistry([art],saved(['Writing','Songwriting']),'{}');
 assert.deepEqual(eligibleSpecialtyOptions(updated,'art').map(x=>x.en),['Writing','Songwriting']);
+assert.deepEqual(wizardSpecialtyFamilies(updated,'th').find(f=>f.key==='art'),{
+  key:'art',label:'ศิลปะ',count:2,
+  specialties:[{key:'writing',label:'การเขียน'},{key:'songwriting',label:'ประพันธ์เพลง'}]
+},'the same saved GM World options must render as native dropdown choices');
+assert.deepEqual(wizardOccupationFamilyChoices(updated,{
+  options:[{kind:'family',familyKey:'art'}]
+},'en').map(f=>f.specialties.map(o=>o.label)),[['Writing','Songwriting']],
+  'occupation and personal pickers share one effective Registry');
+assert.deepEqual(wizardOccupationFamilyChoices(updated,{
+  options:[{kind:'family',familyKey:'science'}]
+},'en'),[],'unrelated families cannot leak into occupational choice lists');
 assert.deepEqual(eligibleSpecialtyOptions(updated,'ศิลปะ').map(x=>x.en),[],
   'registry keys are canonical English Family keys used by the Wizard selector');
 const first=findSpecialtyCandidate(updated,'art|writing');
@@ -43,6 +55,8 @@ assert.match(wiz,/this\.wizardData\.personalFamilyDraft/);
 assert.match(wiz,/this\.wizardData\.personalSpecialtyDraft/);
 assert.match(wiz,/this\.wizardData\.occupationFamilyDrafts/);
 assert.match(wiz,/this\.wizardData\.occupationSpecialtyDrafts/);
+assert.match(wiz,/wizardSpecialtyFamilies\(this\.specialtyRegistry,uiLang\)/);
+assert.match(wiz,/wizardOccupationFamilyChoices\(/);
 assert.doesNotMatch(wiz,/select\.add\(new Option\(/,
   'Wizard must not dynamically inject choices into otherwise-empty selects');
 assert.match(wiz,/querySelectorAll\('\[data-personal-family-specialties\]'\)/);
