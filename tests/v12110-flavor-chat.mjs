@@ -38,5 +38,5 @@ assert.match(css,/#chat-log/);
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version,/^1\.21\.(?:10|11)$/);
 assert.ok(manifest.styles.includes('styles/brp-v12110-flavor-chat.css'));
-assert.match(manifest.download,/v1\.21\.10\/brp-uge\.zip/);
+assert.match(manifest.download,/v1\.21\.(?:10|11)\/brp-uge\.zip/);
 console.log('PASS v1.21.10 flavor names, non-destructive identity and light/dark advancement chat');
