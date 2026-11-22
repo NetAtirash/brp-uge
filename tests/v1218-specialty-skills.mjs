@@ -21,7 +21,8 @@ const biology=raw('Science (Natural / Biology)','วิทยาศาสตร�
 const persuasion=raw('Persuade','โน้มน้าวใจ',15,'persuade');
 const families=availableSpecialtyFamilies([chemistry,biology,persuasion]);
 assert.deepEqual(families.map(x=>x.enFamily),['Science'],'derive Science family without generic record');
-assert.ok(families[0].templateUuid,'real source template is required');
+assert.equal(families[0].templateUuid,'','legacy examples cannot pretend to be a canonical Family Template');
+assert.equal(families[0].requiresContentMigration,true);
 const astronomy=composeSpecialtyItem(chemistry,families[0],{en:'Astronomy',th:'ดาราศาสตร์'});
 assert.equal(astronomy.name,'Science (Astronomy)');
 assert.equal(astronomy.system.nameTh,'วิทยาศาสตร์ (ดาราศาสตร์)');
