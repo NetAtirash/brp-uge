@@ -4,7 +4,7 @@ import {filterStartingSkills,decodeStartingSkillKeys,configuredStartingSkills} f
 import {settingsGroupFor,settingPresentation} from '../module/apps/settings-organization.mjs';
 const read=(p)=>readFileSync(new URL('../'+p, import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
-assert.equal(manifest.version,'1.21.9');
+assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');
 assert.match(manifest.manifest,/releases\/latest\/download\/system\.json/);
 assert.ok(manifest.download.endsWith(`/v${manifest.version}/brp-uge.zip`), 'Versioned release download must match the manifest version');

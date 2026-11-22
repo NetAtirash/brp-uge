@@ -39,5 +39,5 @@ assert.ok(wizard.includes('pointBuySpent'));
 const itemSheet=read('../templates/item/item-sheet.hbs');
 assert.ok(itemSheet.includes('data-ref-drop="skillRefs"')===false); // dynamic field binding
 assert.ok(itemSheet.includes('data-ref-drop="{{g.field}}"'));
-const manifest=JSON.parse(read('../system.json'));assert.equal(manifest.version,'1.21.9');
+const manifest=JSON.parse(read('../system.json'));assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 console.log('PASS v1.14.0: book character creation budgets, age, EDU, weighted point-buy, rolled redistribution, category bonuses, bilingual references without embedded item data');

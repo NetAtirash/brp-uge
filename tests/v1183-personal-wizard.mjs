@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read = p => readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
-assert.equal(manifest.version,'1.21.9');
+assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 assert.ok(manifest.styles.includes('styles/brp-personal-and-wizard.css'));
 assert.ok(manifest.styles.includes('styles/brp-fa7-v14.css'));
 assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');

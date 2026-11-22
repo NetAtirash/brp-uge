@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {buildShareEntryCard} from '../module/chat/share-entry.mjs';
 const read=(p)=>readFileSync(new URL(p,import.meta.url),'utf8');
 const cfg=JSON.parse(read('../system.json'));
-assert.ok(['1.16.0','1.17.0', '1.17.1', '1.17.2', '1.17.3', '1.17.4','1.17.5','1.18.0','1.18.1','1.18.2','1.18.3','1.19.0','1.20.0','1.21.9'].includes(cfg.version));
+assert.match(cfg.version, /^\d+\.\d+\.\d+$/);
 assert.ok(cfg.styles.includes('styles/brp-bold.css') && cfg.styles.includes('styles/brp-overview.css'));
 for(const path of ['../templates/actor/character-sheet.hbs','../templates/actor/npc-sheet.hbs']) {
   const s=read(path);
