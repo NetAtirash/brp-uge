@@ -477,3 +477,83 @@ html[data-brp-theme] .brp-uge .brp-wiz-specialty-status > button {
   background:var(--brp-surface)!important;color:var(--brp-text)!important;
   border:1px solid var(--brp-border-strong)!important;
 }
+
+
+/* RC6: Native radio choices avoid Foundry/Firefox dropdown interaction issues. */
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-group {
+  flex:1 1 100%;min-width:0;max-width:100%;
+  margin:8px 0;padding:10px 12px 12px;
+  border:1px solid var(--brp-border-strong);
+  border-radius:6px;background:var(--brp-surface)!important;
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-group[hidden] {
+  display:none!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-group legend {
+  float:none;width:auto;max-width:100%;padding:0 6px;
+  color:var(--brp-text)!important;font-size:12px;font-weight:700;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-options {
+  display:grid!important;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))!important;
+  gap:7px;max-height:208px;overflow-y:auto;overflow-x:hidden;
+  padding:5px 2px;overscroll-behavior:contain;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-option {
+  display:flex!important;align-items:center;gap:8px;
+  min-width:0;min-height:38px;padding:7px 9px!important;
+  background:var(--brp-panel)!important;border:1px solid var(--brp-border)!important;
+  border-radius:5px;color:var(--brp-text)!important;
+  font-size:12px!important;line-height:1.4;cursor:pointer;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-option input[type="radio"] {
+  appearance:auto!important;accent-color:var(--brp-accent)!important;
+  width:16px!important;height:16px!important;min-width:16px!important;
+  flex:0 0 16px;margin:0!important;cursor:pointer;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-option span {
+  display:block;min-width:0;overflow-wrap:anywhere;color:var(--brp-text)!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-option:has(input:checked) {
+  border-color:var(--brp-accent)!important;background:var(--brp-highlight)!important;
+  box-shadow:inset 3px 0 0 var(--brp-accent);
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-option:focus-within {
+  outline:2px solid var(--brp-focus)!important;outline-offset:2px;
+}
+
+/* RC6: both previous sticky headers shared top:0 within one scroll pane,
+ * causing the occupation rule card and budget note to overlap on scrolling. */
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-step4-progress,
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .wiz-budget-bar {
+  position:static!important;top:auto!important;z-index:auto!important;
+  transform:none!important;box-shadow:none!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-step4-progress {
+  margin:0 0 10px!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .wiz-budget-bar {
+  display:flex!important;flex-wrap:wrap!important;align-items:center!important;
+  gap:7px 10px!important;min-height:0!important;
+  margin:0 0 10px!important;padding:9px 11px!important;
+  border:1px solid var(--brp-border)!important;
+  background:var(--brp-panel)!important;color:var(--brp-text)!important;
+  line-height:1.45!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .wiz-budget-bar > span {
+  display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;
+  min-width:0;white-space:normal;overflow-wrap:anywhere;
+  color:var(--brp-text)!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .wiz-linked-skills-note {
+  position:static!important;display:block!important;
+  margin:9px 0!important;padding:8px 10px!important;
+  line-height:1.5!important;overflow-wrap:anywhere;
+  background:var(--brp-surface)!important;color:var(--brp-text)!important;
+  border-left:3px solid var(--brp-accent);
+}
+@media(max-width:600px){
+  html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-specialty-options {
+    grid-template-columns:1fr!important;max-height:240px;
+  }
+}
