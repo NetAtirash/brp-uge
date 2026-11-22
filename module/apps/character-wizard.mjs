@@ -28,6 +28,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     this.skillCatalog = [];
     this.librarySkillDocs = [];
     this.specialtyRegistry = [];
+    this.specialtyRegistrySnapshot = null;
     this.powerCatalog = [];
     this.libraryProfessions = [];
     this.catalogLoaded = false;
@@ -175,8 +176,25 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     return true;
   }
 
+  #refreshSpecialtyRegistry() {
+    // Game Settings can change while the Wizard stays open. Keep the expensive
+    // Compendium catalog cached, but ALWAYS refresh the World-side overlay
+    // when its registered value changes. Do not alter any draft allocations.
+    if(!this.catalogLoaded && !this.librarySkillDocs.length)return false;
+    const raw=game.settings.get('brp-uge','specialtyRegistry');
+    const legacy=game.settings.get('brp-uge','specialtyPresets');
+    const snapshot=JSON.stringify([raw,legacy]);
+    if(snapshot===this.specialtyRegistrySnapshot)return false;
+    this.specialtyRegistry=buildSpecialtyRegistry(this.librarySkillDocs,raw,legacy);
+    this.specialtyRegistrySnapshot=snapshot;
+    return true;
+  }
+
   async #loadCatalog() {
-    if(this.catalogLoaded)return;
+    if(this.catalogLoaded){
+      this.#refreshSpecialtyRegistry();
+      return;
+    }
     const docs=await getLibraryDocuments();
     const byType=(type)=>docs.filter(d=>d.type===type).map(d=>{
       const data=documentToEmbeddedItem(d);
@@ -184,9 +202,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       return data;
     });
     this.librarySkillDocs=docs.filter(d=>d.type==='skill');
-    this.specialtyRegistry=buildSpecialtyRegistry(this.librarySkillDocs,
-      game.settings.get('brp-uge','specialtyRegistry'),
-      game.settings.get('brp-uge','specialtyPresets'));
+    this.#refreshSpecialtyRegistry();
     this.skillCatalog=uniqueSkills(byType('skill'));
     this.powerCatalog=byType('power');
     this.libraryProfessions=docs.filter(d=>d.type==='occupation');
@@ -294,6 +310,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   }
 
   async #ensureSkillCandidate(key){
+    this.#refreshSpecialtyRegistry();
     const index=this.skillCatalog.findIndex(s=>canonicalSkillKey(s)===key);
     const existing=index>=0?this.skillCatalog[index]:null;
     // Non-specialty exact choices are valid independent Skills.
@@ -925,6 +942,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   static async #onSelectOccupationChoice(event,target) {
     event.preventDefault();
+    this.#refreshSpecialtyRegistry();
     const id=String(target.dataset.groupId||'');
     const prof=this.#getProfession();
     const group=resolveOccupationTemplateGroups(prof,this.librarySkillDocs).find(g=>g.id===id);
@@ -952,6 +970,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   static async #onAddPersonalSpecialty(event){
     event.preventDefault();
+    this.#refreshSpecialtyRegistry();
     const family=this.element.querySelector('[data-personal-family-picker]')?.value||'';
     const choice=this.element.querySelector('[data-personal-specialty-picker]')?.value||'';
     const key=family&&choice?family+'|'+choice:'';
