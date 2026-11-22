@@ -86,7 +86,7 @@ jobs:
             dist/brp-uge.zip \
             dist/system.json \
             --target "$GITHUB_SHA" \
-            --title "BRP UGE v1.21.11-rc.6 — Prefilled Specialty Pickers (Preview)" \
+            --title "BRP UGE v1.21.11-rc.6 — Clickable Specialty Choices & Wizard Layout Fix" \
             --prerelease \
             --latest=false \
-            --notes "Preview of one-Item-per-Skill-Family architecture for Foundry VTT v14. Requires the separately updated brp-uge-compendium RC6 package. Test in a copied World; not a stable release."
+            --notes "Foundry v14 preview: replace non-opening Specialty dropdowns with clickable radio-choice grids, remove overlapping Wizard progress and budget bars, and disclose personal-use ChatGPT-assisted project in README. Pair with separately updated RC5 Specialty-Families Compendium; test in a copied World. Not stable."
