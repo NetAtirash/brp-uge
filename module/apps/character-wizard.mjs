@@ -678,6 +678,37 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         this.render();
       });
     }
+    // Two-step selection: pick the Skill Family, then a *single* concrete
+    // Specialty. Do not expose the full Compendium's "(...)" list as Skills.
+    const fillSpecialties=(family,select)=>{
+      if(!select)return;
+      select.replaceChildren();
+      const label=game.settings.get('brp-uge','uiLanguage')==='en'
+        ?'Choose a Specialty…':'เลือก Specialty…';
+      select.add(new Option(label,''));
+      const group=this.specialtyRegistry.find(g=>g.key===family);
+      for(const item of group?.options.filter(o=>!o.hidden)??[]){
+        const text=game.settings.get('brp-uge','uiLanguage')==='en'
+          ?item.en:(item.th||item.en);
+        select.add(new Option(text,item.key));
+      }
+      select.hidden=!family;
+      select.disabled=!family||select.options.length<2;
+    };
+    for(const skillPicker of this.element.querySelectorAll('[data-occupation-skill-picker]')){
+      const id=skillPicker.dataset.occupationSkillPicker;
+      const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
+      const update=()=>fillSpecialties(skillPicker.value.startsWith('family:')?skillPicker.value.slice(7):'',subtype);
+      skillPicker.addEventListener('change',update);
+      update();
+    }
+    const personalFamily=this.element.querySelector('[data-personal-family-picker]');
+    const personalSpecialty=this.element.querySelector('[data-personal-specialty-picker]');
+    if(personalFamily){
+      const update=()=>fillSpecialties(personalFamily.value,personalSpecialty);
+      personalFamily.addEventListener('change',update);
+      update();
+    }
     // Catalog search filters rows in place. Do not rerender on every keystroke:
     // that would erase Thai IME compositions and cause unnecessary scrolling.
     const occupationSearch=this.element.querySelector('input[data-wiz-prof-search]');
@@ -824,9 +855,13 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const prof=this.#getProfession();
     const group=normalizeOccupationChoiceGroups(prof?.skillChoiceGroups).find(g=>g.id===id);
     if(!group)return;
-    const picker=this.element.querySelector('[data-occupation-choice-picker="'+CSS.escape(id)+'"]');
-    const key=String(picker?.value||'');
-    if(!key)return;
+    const picker=this.element.querySelector('[data-occupation-skill-picker="'+CSS.escape(id)+'"]');
+    const choice=String(picker?.value||'');
+    const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
+    const key=choice.startsWith('family:')?choice.slice(7)+'|'+String(subtype?.value||''):
+      choice.startsWith('skill:')?choice.slice(6):'';
+    if(!key||key.endsWith('|'))return ui.notifications.warn(
+      'Select a Skill Family and concrete Specialty before confirming your occupation choice');
     const previous=this.wizardData.choiceSelections[id]||[];
     if(previous.includes(key))return ui.notifications.warn('This Skill was already selected');
     if(previous.length>=group.count)return ui.notifications.warn('This occupation choice group is already full');
@@ -842,13 +877,14 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   static async #onAddPersonalSpecialty(event){
     event.preventDefault();
-    const picker=this.element.querySelector('[data-personal-specialty-picker]');
-    const key=String(picker?.value||'');
-    if(!key)return;
-    const already=this.skillCatalog.some(skill=>canonicalSkillKey(skill)===key);
-    if(already)return ui.notifications.info('This Specialty is already available in Skill allocation');
+    const family=this.element.querySelector('[data-personal-family-picker]')?.value||'';
+    const choice=this.element.querySelector('[data-personal-specialty-picker]')?.value||'';
+    const key=family&&choice?family+'|'+choice:'';
+    if(!key)return ui.notifications.warn('Choose a Skill Family and Specialty');
     try{await this.#ensureSkillCandidate(key);}
     catch(error){return ui.notifications.warn(error.message);}
+    if(!this.wizardData.personalSpecialtyKeys.includes(key))
+      this.wizardData.personalSpecialtyKeys.push(key);
     this.render();
   }
 
@@ -890,6 +926,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(!this.#occupationChoiceStatus().valid){
       return ui.notifications.warn('Complete occupation Skill choices before allocating points');
     }
+    const info=analyzeSkillFamily(tpl);
+    if(info?.supportsSpecialty && specialtyNeedsReview(info.enSpecialty) && delta>0)
+      return ui.notifications.warn('GM must curate a concrete Specialty before assigning points');
     if(pool==='occ'&&!this.#isOccupationalSkill(tpl,this.#getProfession())) {
       return ui.notifications.warn('Occupation points must be spent on skills allowed by the selected occupation');
     }
@@ -1153,7 +1192,10 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       // Reopening the Wizard must never duplicate or reset existing skills.
       const skillUpdates = [];
       const skillsToCreate = [];
-      const selectedFoundation=new Set(configuredStartingSkills(this.skillCatalog));
+      // A Skill Family is a selectable group, not an order to copy all
+      // published examples into every new Actor. Explicit selections remain.
+      const selectedFoundation=new Set(configuredStartingSkills(this.skillCatalog).filter(
+        item=>!analyzeSkillFamily(item)?.supportsSpecialty));
       this.skillCatalog.forEach((tpl, idx) => {
         const occupationBonus = Number(this.wizardData.occRanks[idx] ?? 0);
         const personalBonus = Number(this.wizardData.persRanks[idx] ?? 0);
@@ -1162,7 +1204,14 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         const rank = occupationBonus + personalBonus + personalityBonus;
         // Keep occupation-linked or allocated Skills even if the GM excluded
         // them from the automatic baseline selection.
-        if(!selectedFoundation.has(tpl) && rank===0 && !this.#isOccupationalSkill(tpl,prof))return;
+        const explicitlyChosen=Object.values(this.wizardData.choiceSelections).flat().includes(canonicalSkillKey(tpl))
+          ||this.wizardData.personalSpecialtyKeys.includes(canonicalSkillKey(tpl));
+        const info=analyzeSkillFamily(tpl);
+        // An unreviewed "(various)" or slash-compound source is not a
+        // concrete character skill unless the Actor already owned it.
+        const actorAlreadyHas=actorDoc.items.some(item=>item.type==='skill'&&sameSkill(item,tpl));
+        if(info?.supportsSpecialty&&specialtyNeedsReview(info.enSpecialty)&&!actorAlreadyHas)return;
+        if(!selectedFoundation.has(tpl) && rank===0 && !this.#isOccupationalSkill(tpl,prof)&&!explicitlyChosen)return;
         const existing = actorDoc.items.find(i=>i.type==='skill'&&sameSkill(i,tpl));
         if (existing) {
           // Reopening an already completed character must not wipe skills just
