@@ -753,35 +753,13 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         this.render();
       });
     }
-    // Two-step selection: pick the Skill Family, then a *single* concrete
-    // Specialty. Do not expose the full Compendium's "(...)" list as Skills.
-    const fillSpecialties=(family,select)=>{
-      if(!select)return;
-      select.replaceChildren();
-      const label=game.settings.get('brp-uge','uiLanguage')==='en'
-        ?'Choose a Specialty…':'เลือก Specialty…';
-      select.add(new Option(label,''));
-      const group=this.specialtyRegistry.find(g=>g.key===family);
-      const enabled=group?.options.filter(o=>!o.hidden)??[];
-      if(family && !enabled.length){
-        select.options[0].textContent=game.settings.get('brp-uge','uiLanguage')==='en'
-          ?'No approved Specialties — ask your GM'
-          :'ยังไม่มี Specialty ที่ GM เปิดใช้';
-        select.title=select.options[0].textContent;
-      } else select.title='';
-      for(const item of enabled){
-        const text=game.settings.get('brp-uge','uiLanguage')==='en'
-          ?item.en:(item.th||item.en);
-        select.add(new Option(text,item.key));
-      }
-      select.hidden=!family;
-      select.disabled=!family||select.options.length<2;
-    };
+    // Server-rendered Specialty options. The Handlebars DOM already contains
+    // the current GM-approved choices, so a failed JS injection can never
+    // leave an otherwise populated Registry with an empty <select>.
     for(const choices of this.element.querySelectorAll('[data-occupation-skill-options]')){
       const id=choices.dataset.occupationSkillOptions;
-      const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
-      const field=this.element.querySelector('[data-occupation-specialty-field="'+CSS.escape(id)+'"]');
       const radios=[...choices.querySelectorAll('[data-occupation-kind-radio]')];
+      const fields=[...choices.querySelectorAll('[data-occupation-specialty-field]')];
       const update=(persist=false)=>{
         const selected=radios.find(r=>r.checked)?.value||'';
         if(persist){
@@ -789,25 +767,33 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
           this.wizardData.occupationSpecialtyDrafts[id]='';
         }
         const family=selected.startsWith('family:')?selected.slice(7):'';
-        fillSpecialties(family,subtype);
-        if(subtype){
-          const saved=this.wizardData.occupationSpecialtyDrafts[id]||'';
-          if([...subtype.options].some(o=>o.value===saved))subtype.value=saved;
-          subtype.addEventListener('change',e=>{
-            this.wizardData.occupationSpecialtyDrafts[id]=e.target.value;
-          });
+        for(const field of fields){
+          const active=!!family&&field.dataset.familyKey===family;
+          field.hidden=!active;
+          const picker=field.querySelector('[data-occupation-specialty-picker]');
+          if(!picker)continue;
+          picker.disabled=!active;
+          if(active){
+            const draft=this.wizardData.occupationSpecialtyDrafts[id]||'';
+            if([...picker.options].some(o=>o.value===draft))picker.value=draft;
+            else picker.value='';
+          }
         }
-        if(field)field.hidden=!family;
       };
       const previous=this.wizardData.occupationFamilyDrafts[id]||'';
-      const prevRadio=radios.find(r=>r.value===previous);
-      if(prevRadio)prevRadio.checked=true;
+      const saved=radios.find(r=>r.value===previous);
+      if(saved)saved.checked=true;
       for(const radio of radios)radio.addEventListener('change',()=>update(true));
+      for(const field of fields){
+        field.querySelector('[data-occupation-specialty-picker]')?.addEventListener('change',e=>{
+          this.wizardData.occupationSpecialtyDrafts[id]=e.target.value;
+        });
+      }
       update();
     }
     const personalFamily=this.element.querySelector('[data-personal-family-picker]');
-    const personalSpecialty=this.element.querySelector('[data-personal-specialty-picker]');
     if(personalFamily){
+      const fields=[...this.element.querySelectorAll('[data-personal-family-specialties]')];
       const previous=this.wizardData.personalFamilyDraft;
       if([...personalFamily.options].some(o=>o.value===previous))personalFamily.value=previous;
       const update=(persist=false)=>{
@@ -815,17 +801,24 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
           this.wizardData.personalFamilyDraft=personalFamily.value;
           this.wizardData.personalSpecialtyDraft='';
         }
-        fillSpecialties(personalFamily.value,personalSpecialty);
-        if(personalSpecialty){
-          const chosen=this.wizardData.personalSpecialtyDraft;
-          if([...personalSpecialty.options].some(o=>o.value===chosen))
-            personalSpecialty.value=chosen;
+        for(const field of fields){
+          const active=!!personalFamily.value&&field.dataset.personalFamilySpecialties===personalFamily.value;
+          field.hidden=!active;
+          const picker=field.querySelector('[data-personal-specialty-picker]');
+          if(!picker)continue;
+          picker.disabled=!active;
+          if(active){
+            const chosen=this.wizardData.personalSpecialtyDraft;
+            picker.value=[...picker.options].some(o=>o.value===chosen)?chosen:'';
+          }
         }
       };
       personalFamily.addEventListener('change',()=>update(true));
-      personalSpecialty?.addEventListener('change',e=>{
-        this.wizardData.personalSpecialtyDraft=e.target.value;
-      });
+      for(const field of fields){
+        field.querySelector('[data-personal-specialty-picker]')?.addEventListener('change',e=>{
+          this.wizardData.personalSpecialtyDraft=e.target.value;
+        });
+      }
       update();
     }
     // Catalog search filters rows in place. Do not rerender on every keystroke:
@@ -1008,8 +1001,10 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(!group)return;
     const picker=this.element.querySelector('[data-occupation-kind-radio="'+CSS.escape(id)+'"]:checked');
     const choice=String(picker?.value||'');
-    const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
-    const key=choice.startsWith('family:')?choice.slice(7)+'|'+String(subtype?.value||''):
+    const family=choice.startsWith('family:')?choice.slice(7):'';
+    const subtype=[...this.element.querySelectorAll('[data-occupation-specialty-picker]')]
+      .find(select=>select.dataset.occupationSpecialtyPicker===id&&select.dataset.familyKey===family);
+    const key=family?family+'|'+String(subtype?.value||''):
       choice.startsWith('specialty:')?choice.slice(10):
       choice.startsWith('skill:')?choice.slice(6):'';
     if(!key||key.endsWith('|'))return ui.notifications.warn(
@@ -1031,7 +1026,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     event.preventDefault();
     this.#refreshSpecialtyRegistry();
     const family=this.element.querySelector('[data-personal-family-picker]')?.value||'';
-    const choice=this.element.querySelector('[data-personal-specialty-picker]')?.value||'';
+    const picker=[...this.element.querySelectorAll('[data-personal-specialty-picker]')]
+      .find(select=>select.dataset.familyKey===family);
+    const choice=picker?.value||'';
     const key=family&&choice?family+'|'+choice:'';
     if(!key)return ui.notifications.warn('Choose a Skill Family and Specialty');
     try{await this.#ensureSkillCandidate(key);}
