@@ -1035,6 +1035,21 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         ui.notifications.error('Selected Occupation Item is unavailable. No changes were saved.');
         this.step=4;this.render();return;
       }
+      // Starter equipment is part of the Occupation benefit. A missing pack
+      // should be visible before writing to Actor documents, not silently skipped.
+      const requiredGear=[
+        ...this.wizardData.selectedWeaponRefs.map(ref=>({ref,type:'weapon'})),
+        ...this.wizardData.selectedArmorRefs.map(ref=>({ref,type:'armor'}))
+      ];
+      const unresolvedGear=[];
+      for(const entry of requiredGear){
+        const source=await fromUuid(entry.ref).catch(()=>null);
+        if(!source || source.type!==entry.type)unresolvedGear.push(entry.ref);
+      }
+      if(unresolvedGear.length){
+        ui.notifications.error('Missing Occupation equipment sources: '+unresolvedGear.join(', ')+'. No changes were saved.');
+        this.step=5;this.render();return;
+      }
       const ch = this.wizardData.characteristics;
       const effective=this.#getCreationCharacteristics(rules);
       const maxHp = rules.heroicHitPoints ? effective.con + effective.siz : Math.ceil((effective.con + effective.siz) / 2);
