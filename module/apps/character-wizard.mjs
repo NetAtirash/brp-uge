@@ -17,6 +17,7 @@ import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor, s
 import { normalizeOccupationChoiceGroups, resolveOccupationTemplateGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill, occupationChoiceMetadataMissing } from "../occupation-choice-rules.mjs";
 import { canonicalSkillKey } from "../skill-foundation.mjs";
 import {isSkillFamilyTemplate} from "../skill-family-templates.mjs";
+import {wizardSpecialtyFamilies,wizardOccupationFamilyChoices} from "../wizard-specialty-choices.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -605,16 +606,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       // Render concrete Specialty options server-side with the Handlebars
       // template. Do not rely on DOM-generated Option() nodes in _onRender:
       // this previously produced an empty picker on some Foundry screens.
-      const familySpecialtyOptions=[...new Set(group.options
-        .filter(opt=>opt.kind==='family').map(opt=>opt.familyKey))]
-        .map(key=>{
-          const family=this.specialtyRegistry.find(f=>f.key===key);
-          const specialties=(family?.options||[]).filter(opt=>!opt.hidden).map(opt=>({
-            key:opt.key,label:isTh?(opt.th||opt.en):opt.en
-          }));
-          return {key,label:isTh?(family?.thFamily||key):(family?.enFamily||key),
-            specialties,count:specialties.length};
-        });
+      const familySpecialtyOptions=wizardOccupationFamilyChoices(
+        this.specialtyRegistry,group,uiLang);
       return {...group,label:isTh?(group.labelTh||group.labelEn):(group.labelEn||group.labelTh),
         familySpecialtyOptions,
         selected:selected.map(key=>({key,label:candidates.get(key)?.label||key})),
@@ -630,14 +623,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.occupationHasChoiceGroups=choiceGroups.length>0;
     context.isCompletedActor=Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));
     context.allowRebuild=this.wizardData.allowRebuild;
-    context.personalFamilyOptions=this.specialtyRegistry.filter(group=>
-      group.options?.some(option=>!option.hidden)).map(group=>{
-        const specialties=group.options.filter(option=>!option.hidden).map(option=>({
-          key:option.key,label:isTh?(option.th||option.en):option.en
-        }));
-        return {key:group.key,label:isTh?group.thFamily:group.enFamily,
-          count:specialties.length,specialties};
-      });
+    context.personalFamilyOptions=wizardSpecialtyFamilies(this.specialtyRegistry,uiLang);
+    context.availableSpecialtyCount=context.personalFamilyOptions.reduce((sum,f)=>sum+f.count,0);
     context.personalSpecialtyOptions=this.specialtyRegistry.flatMap(group=>
       (group.options||[]).filter(option=>!option.hidden).map(option=>({
         key:group.key+'|'+option.key,
