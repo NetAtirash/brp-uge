@@ -11,6 +11,8 @@ export function canonicalSkillKey(item) {
   if(item?.type!=='skill')return '';
   const sys=item.system??{};
   const parsed=analyzeSkillFamily(item);
+  // Family Template is a source blueprint, never a concrete Specialty.
+  if(parsed?.isTemplate)return parsed.key+'|';
   // Normalize old Compendium names (Science (Astronomy)) and newer structured
   // specialty records to the same family+specialty key.
   if(parsed?.supportsSpecialty && parsed.enSpecialty){
