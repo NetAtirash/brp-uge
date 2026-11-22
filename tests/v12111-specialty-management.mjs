@@ -7,6 +7,7 @@ import {canonicalSkillKey,sameSkill} from '../module/skill-foundation.mjs';
 import {normalizeOccupationChoiceGroups,occupationGroupAllowsSkill,
   occupationSkillEligible,validateOccupationChoices} from '../module/occupation-choice-rules.mjs';
 import {filterStartingSkills} from '../module/skill-selection.mjs';
+import {validateSkillPointDraft} from '../module/skill-points-utils.mjs';
 
 globalThis.foundry={utils:{deepClone:structuredClone}};
 const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
@@ -42,6 +43,10 @@ const astronomy=composeSpecialtyItem(combined,science,{en:'Astronomy',th:'ดา
 assert.equal(canonicalSkillKey(astronomy),'science|astronomy');
 assert.ok(!sameSkill(astronomy,biology),'different specialties have independent identities');
 assert.equal(astronomy._id,undefined);
+const noTemplate=buildSpecialtyRegistry([combined],{},{}).find(g=>g.key==='science');
+assert.equal(specialtyTemplateFor(noTemplate,{sourceUuid:'',templateUuid:''},[combined]),null,
+  'ambiguous composite source cannot serve as implicit template');
+
 
 const exact={
   ...biology,flags:{core:{sourceId:biology.uuid},'brp-uge':{sourceUuid:biology.uuid}}
@@ -61,6 +66,27 @@ const occupation={skillRefs:[],skillChoiceGroups:groups};
 assert.ok(occupationSkillEligible(astronomy,occupation,selections,[astronomy,biology]));
 assert.ok(!occupationSkillEligible(noSpecialty,occupation,selections,[astronomy,biology]));
 assert.equal(filterStartingSkills([combined,biology,noSpecialty],{mode:'baseline'}).length,1);
+const actorSkills=[
+  {...astronomy,id:'astro',system:{...astronomy.system,total:1,occupationBonus:0,personalBonus:0}},
+  {...biology,id:'bio',system:{...biology.system,total:1,occupationBonus:0,personalBonus:0}},
+  {...noSpecialty,id:'persuade',system:{...noSpecialty.system,total:15,occupationBonus:0,personalBonus:0}}
+];
+const actor={
+  items:[...actorSkills,{type:'occupation',system:{skillRefs:[],skillChoiceGroups:groups}}],
+  getFlag(_scope,key){if(key==='creationCompleted')return false;
+    if(key==='creationOccupationChoices')return selections;return null;}
+};
+const invalidDraft=new Map([
+  ['astro',{occupation:10,personal:0}],
+  ['bio',{occupation:0,personal:0}],
+  ['persuade',{occupation:8,personal:0}]
+]);
+assert.equal(validateSkillPointDraft(actor,invalidDraft,{budget:{profession:250,personal:120},cap:75}).valid,false,
+  'point workbench must reject non-occupational creation points');
+invalidDraft.set('persuade',{occupation:0,personal:5});
+assert.ok(validateSkillPointDraft(actor,invalidDraft,{budget:{profession:250,personal:120},cap:75}).valid,
+  'personal points remain available for non-occupation Skills');
+
 
 const schema=read('module/data-models.mjs');
 assert.match(schema,/skillChoiceGroups: new ArrayField/);
