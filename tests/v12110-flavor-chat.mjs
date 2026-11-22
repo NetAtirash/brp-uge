@@ -25,6 +25,8 @@ const sheet=read('templates/item/item-sheet.hbs');
 assert.match(sheet,/name="system\.flavorNameTh"/);
 assert.match(sheet,/name="system\.flavorNameEn"/);
 assert.match(sheet,/\{\{rulesDisplay\}\}/);
+assert.ok(sheet.includes('class="{{#if isTh}}brp-language-primary{{else}}brp-language-secondary{{/if}}"'));
+assert.ok(sheet.includes('class="{{#if isTh}}brp-language-secondary{{else}}brp-language-primary{{/if}}"'));
 for(const f of ['module/sheets/actor-sheet.mjs','module/macros/brp-macros.mjs','module/rolls/brp-rolls.mjs'])
  assert.match(read(f),/getDisplayItemName/);
 const macro=read('module/macros/brp-macros.mjs');
