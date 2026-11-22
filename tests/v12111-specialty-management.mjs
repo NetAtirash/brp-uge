@@ -49,6 +49,26 @@ assert.equal(cur.hidden,false);
 assert.equal(cur.templateUuid,combined.uuid,'source provenance remains stable');
 assert.equal(findSpecialtyCandidate(curated,'science|astronomy').option.sourceUuid,combined.uuid);
 assert.equal(combined.system.nameEn,'Science (Chemistry / Physics)','source document must remain untouched');
+
+const art={
+  ...source('Art (Drawing / Painting)','artcompound',5),
+  system:{...source('Art (Drawing / Painting)','artcompound',5).system,
+    nameTh:'ศิลปะ (วาดภาพ/ระบายสี)',category:'manipulation'}
+};
+const artRegistry=buildSpecialtyRegistry([art],{
+  families:{art:{
+    sourceOverrides:{[art.uuid]:{en:'Drawing',th:'วาดภาพ',state:'enabled'}},
+    additions:[{en:'Painting',th:'จิตรกรรม',templateUuid:art.uuid,state:'enabled'}]
+  }}
+},'{}');
+const artGroup=artRegistry.find(group=>group.key==='art');
+assert.deepEqual(eligibleSpecialtyOptions(artRegistry,'art').map(o=>o.en),['Drawing','Painting'],
+  'GM can replace a slash-composite source and create separate Art specialties');
+assert.equal(findSpecialtyCandidate(artRegistry,'art|drawing').option.sourceUuid,art.uuid);
+assert.equal(findSpecialtyCandidate(artRegistry,'art|painting').option.templateUuid,art.uuid);
+assert.equal(art.system.nameEn,'Art (Drawing / Painting)',
+  'curating Art must never rename the original Compendium Item');
+
 const chosen=findSpecialtyCandidate(registry,'science|astronomy');
 assert.equal(chosen.option.th,'ดาราศาสตร์');
 assert.equal(specialtyTemplateFor(chosen.family,chosen.option,[combined,biology]),combined);
