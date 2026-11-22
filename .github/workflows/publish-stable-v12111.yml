@@ -90,4 +90,4 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "BRP UGE v1.21.11 — Specialty Management & Character Wizard" \
             --latest \
-            --notes "Stable Foundry VTT v14 Game System based on merged PR #8 and RC6: one Skill Family Template per specialized Skill, GM-managed bilingual Specialty choices, Occupation choice rules, player Character Wizard allocation, accessible radio Specialty picker, and Wizard layout fixes.\n\nRequires separately installed updated BRP UGE Compendium content module; no rules/content packs are bundled in this system ZIP.\n\nPersonal-use hobby project developed with assistance from ChatGPT (OpenAI). Unofficial; not endorsed by Chaosium, Foundry Gaming, or OpenAI. Back up Worlds before upgrading."
+            --notes-file docs/RELEASE-v1.21.11.md
