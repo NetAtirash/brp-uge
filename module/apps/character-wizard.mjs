@@ -287,20 +287,36 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   }
 
   async #ensureSkillCandidate(key){
-    let skill=this.skillCatalog.find(s=>canonicalSkillKey(s)===key);
-    if(skill)return skill;
+    const index=this.skillCatalog.findIndex(s=>canonicalSkillKey(s)===key);
+    const existing=index>=0?this.skillCatalog[index]:null;
+    // Non-specialty exact choices are valid independent Skills.
+    if(key.endsWith('|')) {
+      if(existing)return existing;
+      throw new Error('This Skill source is unavailable');
+    }
     const candidate=findSpecialtyCandidate(this.specialtyRegistry,key);
-    if(!candidate)throw new Error('This Specialty is not available');
+    if(!candidate)throw new Error('This Specialty is hidden or not approved by the GM');
     const template=specialtyTemplateFor(candidate.family,candidate.option,this.librarySkillDocs);
-    if(!template)throw new Error('A compatible source Skill template must be configured by the GM');
-    const desired=key;
-    // Source UUID is provenance, NOT a command to import its historical
-    // title. World overrides can rename or split a composite source example.
-    skill=candidate.option.sourceUuid && canonicalSkillKey(template)===desired
+    if(!template)throw new Error('A matching source Skill template must be configured by the GM');
+    const sourceRef=candidate.option.sourceUuid||candidate.option.templateUuid;
+    const sameSource=existing && (
+      existing.flags?.core?.sourceId===sourceRef ||
+      existing.flags?.['brp-uge']?.sourceUuid===sourceRef ||
+      existing.flags?.['brp-uge']?.specialtyTemplateUuid===sourceRef
+    );
+    if(existing && sameSource && canonicalSkillKey(template)===key)return existing;
+    // A prior source example may have the same displayed name as a curated
+    // World option. Prefer the explicit GM rules template for this new draft.
+    const created=candidate.option.sourceUuid && canonicalSkillKey(template)===key
       ?documentToEmbeddedItem(template)
       :composeSpecialtyItem(template,candidate.family,{en:candidate.option.en,th:candidate.option.th});
-    if(!this.skillCatalog.some(s=>sameSkill(s,skill)))this.skillCatalog.push(skill);
-    return this.skillCatalog.find(s=>sameSkill(s,skill));
+    if(!existing){this.skillCatalog.push(created);return created;}
+    const owned=this.targetActor?.items?.some?.(item=>item.type==='skill'&&sameSkill(item,existing));
+    if(owned)return existing; // never replace a historical Actor Skill
+    if(Number(this.wizardData.occRanks[index]||0)||Number(this.wizardData.persRanks[index]||0))
+      throw new Error('Existing draft has allocated points for this Skill; ask the GM to reconcile its source');
+    this.skillCatalog[index]=created;
+    return created;
   }
 
   #changeProfession(profId){
