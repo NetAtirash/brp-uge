@@ -51,3 +51,16 @@ export function occupationSkillEligible(skill,occupation,selections=[],catalog=[
   return normalizeOccupationChoiceGroups(occupation?.skillChoiceGroups).some(group=>
     Array.isArray(selected[group.id])&&selected[group.id].includes(key)&&occupationGroupAllowsSkill(group,skill));
 }
+
+
+/** Conservative diagnostic. Never creates choices from prose: it only warns
+ * when a likely occupational choose-N Skill clause has no typed metadata.
+ * False positives never change stored Actors or official content.
+ */
+export function occupationChoiceMetadataMissing(occupation={},description='') {
+  if(!occupation || normalizeOccupationChoiceGroups(occupation.skillChoiceGroups).length) return false;
+  const plain=String(description||'').replace(/<[^>]+>/gu,' ').replace(/\s+/gu,' ').trim();
+  if(!plain)return false;
+  return /(?:choose|pick|select)\s+(?:(?:any|up to|at least)\s+)?(?:\d+|one|two|three|four|five|six|seven|eight)\s+(?:(?:additional|other|different|of the following|from the following)\s+){0,3}(?:skills?|specialt(?:y|ies))/iu.test(plain)
+    || /เลือก(?:[^.!?。]{0,45})(?:ทักษะ|ความเชี่ยวชาญ)/u.test(plain);
+}
