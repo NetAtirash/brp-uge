@@ -504,8 +504,9 @@ export class OccupationDataModel extends BRPItemDataModel {
         count: new NumberField({required:true,integer:true,min:1,initial:1}),
         distinct: new BooleanField({initial:true}),
         options: new ArrayField(new SchemaField({
-          kind: new StringField({required:true,blank:false,options:["family","skill"],initial:"family"}),
+          kind: new StringField({required:true,blank:false,options:["family","skill","specialty"],initial:"family"}),
           familyKey: new StringField({required:true,blank:true,initial:""}),
+          specialtyKey: new StringField({required:true,blank:true,initial:""}),
           ref: new StringField({required:true,blank:true,initial:""})
         }),{initial:[]})
       }),{initial:[]}),
