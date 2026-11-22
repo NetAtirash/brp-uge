@@ -43,8 +43,10 @@ assert.match(wiz,/this\.wizardData\.personalFamilyDraft/);
 assert.match(wiz,/this\.wizardData\.personalSpecialtyDraft/);
 assert.match(wiz,/this\.wizardData\.occupationFamilyDrafts/);
 assert.match(wiz,/this\.wizardData\.occupationSpecialtyDrafts/);
-assert.match(wiz,/No approved Specialties — ask your GM/);
-assert.match(wiz,/ยังไม่มี Specialty ที่ GM เปิดใช้/);
+assert.doesNotMatch(wiz,/select\.add\(new Option\(/,
+  'Wizard must not dynamically inject choices into otherwise-empty selects');
+assert.match(wiz,/querySelectorAll\('\[data-personal-family-specialties\]'\)/);
+assert.match(wiz,/field\.dataset\.familyKey===family/);
 const init=read('brp-uge.mjs');
 assert.match(init,/specialtyRegistry',[\s\S]*?onChange:\s*refreshBRPWorldUI/);
 assert.match(init,/specialtyPresets',[\s\S]*?onChange:\s*refreshBRPWorldUI/);
@@ -53,4 +55,8 @@ assert.match(manager,/await game\.settings\.set\('brp-uge','specialtyRegistry',J
 const hbs=read('templates/apps/character-wizard.hbs');
 assert.match(hbs,/data-personal-family-picker/);
 assert.match(hbs,/data-personal-specialty-picker/);
+assert.match(hbs,/data-personal-family-specialties/);
+assert.match(hbs,/data-occupation-specialty-field/);
+assert.match(hbs,/\{\{#each f\.specialties as \|specialty\|\}\}/);
+assert.match(hbs,/<option value="{{specialty.key}}">{{specialty.label}}<\/option>/);
 console.log('PASS: live World Specialty changes appear in Wizard without resetting drafts');
