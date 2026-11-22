@@ -552,6 +552,14 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
           if(family?.options.some(o=>!o.hidden))pickerChoices.set('family:'+option.familyKey,{
             value:'family:'+option.familyKey,label:isTh?family.thFamily:family.enFamily
           });
+        } else if(option.kind==='specialty'){
+          const family=this.specialtyRegistry.find(f=>f.key===option.familyKey);
+          const actual=family?.options.find(o=>o.key===option.specialtyKey&&!o.hidden);
+          if(actual)pickerChoices.set('specialty:'+option.familyKey+'|'+actual.key,{
+            value:'specialty:'+option.familyKey+'|'+actual.key,
+            label:(isTh?family.thFamily:family.enFamily)+' ('+
+              (isTh?(actual.th||actual.en):actual.en)+')'
+          });
         } else {
           const skill=this.skillCatalog.find(s=>linkedOccupationSkill(s,option.ref));
           if(skill)pickerChoices.set('skill:'+canonicalSkillKey(skill),{
@@ -565,7 +573,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         } else {
           const family=this.specialtyRegistry.find(f=>f.key===option.familyKey);
           for(const candidate of family?.options||[]){
-            if(candidate.hidden)continue;
+            if(candidate.hidden || (option.kind==='specialty'&&candidate.key!==option.specialtyKey))continue;
             const key=option.familyKey+'|'+candidate.key;
             candidates.set(key,{key,label:(isTh?family.thFamily:family.enFamily)+
               ' ('+(isTh?(candidate.th||candidate.en):candidate.en)+')'});
@@ -925,6 +933,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const choice=String(picker?.value||'');
     const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
     const key=choice.startsWith('family:')?choice.slice(7)+'|'+String(subtype?.value||''):
+      choice.startsWith('specialty:')?choice.slice(10):
       choice.startsWith('skill:')?choice.slice(6):'';
     if(!key||key.endsWith('|'))return ui.notifications.warn(
       'Select a Skill Family and concrete Specialty before confirming your occupation choice');
