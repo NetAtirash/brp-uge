@@ -1,42 +1,89 @@
-# Compendium integration guide — BRP UGE v1.21.11
+# BRP UGE — ONE Skill Family Template per Compendium (RC3)
 
-The Game System stays data-free. Existing Skills retain their Item IDs, UUIDs, point calculations and existing references.
+**New, authoritative architecture:** a Compendium contains **one Skill Item per specialty-capable Skill Family**. Its system.specialtyDefaults metadata contains only verified, editable book-starting choices. Other specialties are GM World options, not additional Compendium Items. When a character learns different specializations, each is a separate Actor-owned Skill Item with independent points, advancement and rolls.
 
-## Skills
-Each concrete Specialty is still an independent Skill Item. Recommended fields are system.specialtyFamily, system.specialtyFamilyTh, system.specialty and system.specialtyTh, plus stable system.referenceKey and correct base/category/formula. World-only additions may be managed without publishing new Skills. Compound source examples such as Science (Chemistry / Physics) or rule headings (various) MUST be reviewed and not auto-split or published as single selectable specialties.
+This replaces previous "one Skill Item per named specialty" authoring advice.
 
-## Occupations
-Existing system.skillRefs are fixed/required skills. New system.skillChoiceGroups is a typed optional array. The following is an illustrative schema example only, NOT a book-authored occupation:
+## 1. Canonical Skill Family Template
+
+Use a stable real source Item UUID (or explicitly create a new one) with a neutral bilingual template title and isSpecialtyTemplate:true.
 
 ~~~json
 {
-  "id": "research-fields",
-  "labelEn": "Research fields",
-  "labelTh": "สาขาการค้นคว้า",
-  "count": 2,
+  "name": "Language (...)",
+  "type": "skill",
+  "system": {
+    "nameEn": "Language (...)",
+    "nameTh": "ภาษา (...)",
+    "referenceKey": "Language",
+    "specialtyFamily": "Language",
+    "specialtyFamilyTh": "ภาษา",
+    "isSpecialtyTemplate": true,
+    "specialty": "",
+    "specialtyTh": "",
+    "base": 0,
+    "baseFormula": "",
+    "category": "communication",
+    "specialtyDefaults": [
+      {
+        "key": "own",
+        "en": "Own",
+        "th": "ภาษาแม่",
+        "base": null,
+        "baseFormula": "",
+        "ruleNote": "Fill only with rules verified by content publisher",
+        "enabled": true
+      }
+    ]
+  }
+}
+~~~
+
+**This example demonstrates structure, NOT verified numerical rules.** The publisher must fill the correct base, formula, category, printed names and any native-language-specific rule. Do not infer them from the example.
+
+The same approach applies to Knowledge (...), Science (...), Art (...) and other specialty-capable Skills. To achieve the requested Language workflow, publish **only Own / ภาษาแม่** as a verified initial choice. Do NOT publish Other or every possible language automatically. For Knowledge and Science do not seed specialized examples unless the book/content author explicitly marks them as starting defaults.
+
+## 2. Book defaults vs GM World additions
+
+The source Skill Item's specialtyDefaults is a list of *options*, not documents, with stable key, bilingual en/th, optional base % override, optional baseFormula and ruleNote. GM may rename/hide/enable book defaults in the v3 World setting brp-uge.specialtyRegistry.bookOverrides. GM-created options are World additions under each family; optionally they may carry reviewed different Base % or Formula.
+
+Player chooses Family (Language), then an approved Specialty (Own or GM-approved additions), then gets a **new Actor Skill Item** like Language (Own). Different actor languages have independent ratings and histories. The Compendium's only source remains Language (...).
+
+## 3. Occupations
+
+Existing fixed Skill UUID references remain valid for ordinary unspecialized Skills. When a fixed occupation skillRef points to the new Family Template, Wizard requires the player to choose a concrete Specialty before granting occupation points. Additional choose-N clauses remain explicit publisher-authored skillChoiceGroups:
+
+~~~json
+{
+  "id": "allowed-languages",
+  "labelEn": "Languages",
+  "labelTh": "ภาษา",
+  "count": 1,
   "distinct": true,
   "options": [
-    {"kind": "family", "familyKey": "science", "ref": ""},
-    {"kind": "skill", "familyKey": "", "ref": "Compendium.example.skills.Item.REAL_ID"}
+    {"kind":"family","familyKey":"language","specialtyKey":"","ref":""}
   ]
 }
 ~~~
 
-This selects two distinct Skills from the union of a Family and an exact Skill alternative. It does NOT make that UUID an obligatory fixed Skill. Separate rule clauses should use separate groups. Actual quantities, alternative families, era exceptions and other restrictions must be verified against the original rulebook Occupation; do not infer or invent them from prose.
+A particular verified seed may instead be constrained with kind:"specialty", familyKey:"language", specialtyKey:"own". Ordinary standalone Skills use kind:"skill" and their actual source UUID. This is **structural syntax, not a quoted rulebook Occupation**. Counts and allowed alternatives must be verified from the book.
 
-## Safe workflow
-1. Back up the external Compendium sources and a test World.
-2. Audit occupation source text into fixed Skill UUIDs, choose-N options, and any permitted families.
-3. Retain source UUIDs and old Item IDs. Do not silently delete existing skillRefs even if migrating ambiguous legacy data; review it manually.
-4. Add verified skillChoiceGroups via the GM Occupation Item editor or the separate content pack source. Validate missing UUIDs, distinct counts, formulas and available families.
-5. In Game Settings -> Manage Specialties, review Compendium examples and add World-only options with a compatible real Skill template. World overlay saves never mutate Compendium Items.
-6. Test a new character: choose Occupation -> resolve choices -> pick exact Specialty -> spend occupation points -> spend personal points -> review -> save.
-7. Reopen a completed Actor and confirm its existing Skill IDs, allocated points, advancement, Flavor Names and equipment are preserved.
+## 4. Migrating old Compendium sources without harming Actors
 
-## Important boundaries
-- Old packs still load. The Wizard only knows new choose-N clauses once they are authored in Occupation choiceGroups.
-- World registry options are not independent published Compendium Items.
-- Generated Actor-owned Specialty Items keep separate IDs; template UUID is provenance only.
-- Removed/disabled source packs can prevent NEW selections but cannot erase existing Actor Items.
-- GM approval is a manual process; there is not yet an automatic in-app approval queue.
-- Manual Foundry v14 smoke testing is mandatory before tagging a release.
+1. Back up the content pack sources and a test World.
+2. Audit the old source subtype Items, choose one canonical family template, and preserve its ID where possible.
+3. Verify family-wide general rules and each real book-default variant's base/formula; never infer defaults from a slash heading or a rule example.
+4. Publish exactly one canonical Skill per Family (isSpecialtyTemplate:true) with only verified specialtyDefaults.
+5. Prepare explicit old UUID → family UUID mapping and review every Occupation, Weapon and other source reference. Replace old fixed specialty references with a Family reference and appropriately constrained choice group. Do NOT silently broaden an exact specialty requirement.
+6. Audit and only then archive/remove old per-subtype source Items; do not erase Actor-owned copies.
+7. Review v1/v2 World presets and overrides. Map approved specializations to bookOverrides or World additions; never treat all old Compendium variants as official seeds.
+8. Validate existing Actor Item IDs, independent point allocations, advancement, training, source provenance and Flavor Names remain unchanged.
+9. Test new Character Wizard and Occupation choices with migrated content pack in a copied World, in both themes.
+
+## 5. Boundaries and readiness
+
+- Without the new canonical Skill Family template, old multi-Item Compendiums are shown as migration candidates, **not automatically selectable book specialties**.
+- Game System updates alone cannot physically reduce Items inside a separate Compendium repository. The external pack must be rebuilt using this schema.
+- No hidden BRP UGE skill list or numeric defaults are bundled with the engine.
+- No automatic Actor/point migration. Existing owned Skills remain intact.
+- Do not publish a stable Game System or content-pack release without Foundry v14 manual testing.
