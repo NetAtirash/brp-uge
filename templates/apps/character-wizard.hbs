@@ -164,6 +164,11 @@
       </div>
     {{/if}}
     {{#if isStep4}}
+      <div class="brp-wiz-step4-progress" role="status">
+        <span class="{{#if selectedProfession.sourceUuid}}is-complete{{/if}}"><b>1</b> {{#if isTh}}เลือกอาชีพ{{else}}Choose occupation{{/if}}</span>
+        <span class="{{#if occupationChoicesValid}}is-complete{{/if}}"><b>2</b> {{#if isTh}}เลือกทักษะและ Specialty{{else}}Resolve Skill choices{{/if}}</span>
+        <span><b>3</b> {{#if isTh}}แจกแต้มอาชีพและแต้มส่วนตัว{{else}}Allocate occupation/personal points{{/if}}</span>
+      </div>
       <div class="panel-card wiz-section">
         <h3>{{#if isTh}}เลือกอาชีพและจัดสรรทักษะ{{else}}Occupation & Skills{{/if}}</h3>
         <div class="wiz-drop-hint" data-wiz-drop-item="occupation">{{#if isTh}}ลาก Occupation Item จาก Items Directory / Compendium มาวางที่นี่ได้{{else}}Drop an Occupation Item here from Items Directory / Compendium{{/if}}</div>
