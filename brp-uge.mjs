@@ -203,7 +203,7 @@ Hooks.once("init", async () => {
     name:'รายการทักษะตั้งต้น / Starting Skill Selection',
     hint:'เลือกใช้ทักษะทุกชนิดที่พบ หรือเฉพาะรายการที่ GM เลือกผ่านตัวจัดการทักษะตั้งต้น',
     scope:'world',config:true,restricted:true,type:String,
-    choices:{all:'All available Skills',book:'Skills identified as rulebook entries',selected:'GM selected Skills'},default:'all'
+    choices:{all:'All available Skills (legacy behavior)',baseline:'Generic baseline Skills only',book:'Skills identified as rulebook entries',selected:'GM selected Skills'},default:'all'
   });
   game.settings.register('brp-uge','startingSkillsKeys',{
     name:'Selected starting skill keys',scope:'world',config:false,restricted:true,type:String,default:'[]'
