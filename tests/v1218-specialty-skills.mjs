@@ -21,7 +21,8 @@ const biology=raw('Science (Natural / Biology)','วิทยาศาสตร�
 const persuasion=raw('Persuade','โน้มน้าวใจ',15,'persuade');
 const families=availableSpecialtyFamilies([chemistry,biology,persuasion]);
 assert.deepEqual(families.map(x=>x.enFamily),['Science'],'derive Science family without generic record');
-assert.ok(families[0].templateUuid,'real source template is required');
+assert.equal(families[0].templateUuid,'','legacy examples cannot pretend to be a canonical Family Template');
+assert.equal(families[0].requiresContentMigration,true);
 const astronomy=composeSpecialtyItem(chemistry,families[0],{en:'Astronomy',th:'ดาราศาสตร์'});
 assert.equal(astronomy.name,'Science (Astronomy)');
 assert.equal(astronomy.system.nameTh,'วิทยาศาสตร์ (ดาราศาสตร์)');
@@ -52,7 +53,7 @@ assert.ok(!/['"]Science \(Astronomy\)['"]/.test(read('module/skill-specialties.m
 const source=read('module/sheets/actor-sheet.mjs');
 assert.ok(source.includes('availableSpecialtyFamilies(await getLibraryDocuments'), 'add action resolves external Skills');
 assert.ok(source.includes('delete data._id;'), 'new independent IDs');
-assert.ok(source.includes('composeSpecialtyItem(source,family'), 'creates structured specialty');
+assert.ok(source.includes('composeSpecialtyItem(template,family'), 'creates structured specialty from a source-aware template');
 for(const type of ['character','npc']){
  const html=read(`templates/actor/${type}-sheet.hbs`);
  for(const required of ['data-specialty-controls','data-specialty-choice','data-custom-specialty-en','data-custom-specialty-th'])
@@ -62,5 +63,5 @@ const entry=read('brp-uge.mjs');
 assert.ok(entry.includes("registerMenu('brp-uge','manageSpecialties'"));
 assert.ok(entry.includes("register('brp-uge','specialtyPresets'"));
 const manager=read('module/apps/specialty-presets-menu.mjs');
-assert.ok(manager.includes("settings.set('brp-uge','specialtyPresets'"));
+assert.ok(manager.includes("settings.set('brp-uge','specialtyRegistry'"), 'World overlays replace legacy preset-only saves');
 console.log('PASS v1.21.9 dynamic Skill Specialty manager, identity, duplicates, and Science (Astronomy)');

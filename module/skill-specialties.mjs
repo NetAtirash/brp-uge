@@ -3,6 +3,7 @@
  */
 import { normalizedText } from './reference-utils.mjs';
 import { documentToEmbeddedItem } from './library-provider.mjs';
+import { isSkillFamilyTemplate, verifiedTemplateDefaults, skillTemplateName } from './skill-family-templates.mjs';
 
 const endSpecialty=/^(.+?)\s*\(([^()]*)\)\s*$/u;
 const text=value=>String(value??'').trim();
@@ -15,14 +16,17 @@ export function analyzeSkillFamily(item) {
   const th=text(system.nameTh||item.name||en);
   const enMatch=en.match(endSpecialty);
   const thMatch=th.match(endSpecialty);
+  const isTemplate=isSkillFamilyTemplate(item);
   const enFamily=text(system.specialtyFamily||enMatch?.[1]||en);
   const thFamily=text(system.specialtyFamilyTh||thMatch?.[1]||th);
-  const enSpecialty=text(system.specialty||enMatch?.[2]);
-  const thSpecialty=text(system.specialtyTh||thMatch?.[2]||enSpecialty);
+  // A literal (...) is a source TEMPLATE, never a selectable character skill.
+  const enSpecialty=isTemplate?'':text(system.specialty||enMatch?.[2]);
+  const thSpecialty=isTemplate?'':text(system.specialtyTh||thMatch?.[2]||enSpecialty);
   const key=specialtyFamilyKey(enFamily);
   return key?{
     key, enFamily, thFamily, enSpecialty, thSpecialty,
-    supportsSpecialty: Boolean(enMatch||system.specialtyFamily||system.specialty)
+    isTemplate,
+    supportsSpecialty: Boolean(isTemplate||enMatch||system.specialtyFamily||system.specialty)
   }:null;
 }
 
@@ -46,17 +50,17 @@ export function availableSpecialtyFamilies(documents) {
       family.exampleSpecialties.push({en:info.enSpecialty,th:info.thSpecialty});
     }
   }
-  // Prefer a template with a generic family rule heading and no special base formula.
+  // Prefer precisely one explicitly designated Family Template. Legacy
+  // (specialty-specific) Compendium Items are migration inputs only; do not
+  // treat them as official default choices for new characters.
   for(const family of grouped.values()){
-    family.templates.sort((a,b)=>{
-      // When source examples differ (e.g. Language Own vs Other), prefer
-      // the non-derived starting chance. Never use a character-bound base
-      // formula as the default for a newly created unrelated specialty.
-      const formula=x=>String(x.system?.baseFormula??'').trim()?1:0;
-      const generic=x=>String(x.flags?.['brp-uge']?.rulebookReference?.heading??'').toLowerCase().includes('(various)')?1:0;
-      return formula(a)-formula(b)||generic(b)-generic(a)||String(a.uuid).localeCompare(String(b.uuid));
-    });
-    family.templateUuid=family.templates[0].uuid;
+    const templates=family.templates.filter(isSkillFamilyTemplate);
+    family.legacyExamples=family.templates.filter(item=>!isSkillFamilyTemplate(item));
+    family.canonicalTemplate=templates.length===1?templates[0]:null;
+    family.requiresContentMigration=templates.length===0&&family.legacyExamples.length>0;
+    family.ambiguousTemplate=templates.length>1;
+    family.templateUuid=family.canonicalTemplate?.uuid||'';
+    family.bookDefaults=family.canonicalTemplate?verifiedTemplateDefaults(family.canonicalTemplate):[];
   }
   return [...grouped.values()].sort((a,b)=>a.enFamily.localeCompare(b.enFamily));
 }
@@ -80,7 +84,7 @@ export function readSpecialtyPresets(value) {
   return result;
 }
 
-export function composeSpecialtyItem(template, family, {en,th}={}) {
+export function composeSpecialtyItem(template, family, {en,th,base=null,baseFormula='',ruleNote=''}={}) {
   const enSpecialty=text(en),thSpecialty=text(th||enSpecialty);
   if(!enSpecialty)throw new Error('The English specialty reference is required');
   if(/[()<>\r\n]/u.test(enSpecialty)||/[()<>\r\n]/u.test(thSpecialty))throw new Error('Invalid specialty name');
@@ -95,6 +99,12 @@ export function composeSpecialtyItem(template, family, {en,th}={}) {
     nameEn:enName,nameTh:thName,referenceKey:enName,
     specialty:enSpecialty,specialtyTh:thSpecialty,
     specialtyFamily:family.enFamily,specialtyFamilyTh:family.thFamily,
+    isSpecialtyTemplate:false,specialtyDefaults:[],
+    // A book-verified specialty may have a different rule base from its
+    // family (e.g., a native language). No guessed adjustments.
+    ...(base!==null&&base!==undefined&&Number.isSafeInteger(Number(base))&&Number(base)>=0
+      ?{base:Number(base),baseFormula:text(baseFormula)}:
+        text(baseFormula)?{baseFormula:text(baseFormula)}:{}),
     occupationBonus:0,personalBonus:0,rank:0,personalityBonus:0,
     fixedRating:null,checked:false
   };

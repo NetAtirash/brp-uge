@@ -203,7 +203,7 @@ Hooks.once("init", async () => {
     name:'รายการทักษะตั้งต้น / Starting Skill Selection',
     hint:'เลือกใช้ทักษะทุกชนิดที่พบ หรือเฉพาะรายการที่ GM เลือกผ่านตัวจัดการทักษะตั้งต้น',
     scope:'world',config:true,restricted:true,type:String,
-    choices:{all:'All available Skills',book:'Skills identified as rulebook entries',selected:'GM selected Skills'},default:'all'
+    choices:{all:'All available Skills (legacy behavior)',baseline:'Generic baseline Skills only',book:'Skills identified as rulebook entries',selected:'GM selected Skills'},default:'all'
   });
   game.settings.register('brp-uge','startingSkillsKeys',{
     name:'Selected starting skill keys',scope:'world',config:false,restricted:true,type:String,default:'[]'
@@ -218,8 +218,22 @@ Hooks.once("init", async () => {
   });
 
   // Specialty definitions are World configuration, not embedded rulebook content.
+  // Versioned overlay: source Compendium Skill Items are never mutated by GM choices.
+  game.settings.register('brp-uge','specialtyRegistry',{
+    name:'Specialty registry / World overrides',
+    scope:'world',config:false,restricted:true,type:String,default:'{"schemaVersion":3,"families":{}}',
+    onChange: refreshBRPWorldUI
+  });
+  game.settings.register('brp-uge','specialtyCustomPolicy',{
+    name:'New Specialty policy / นโยบายสร้างความเชี่ยวชาญใหม่',
+    hint:'Restrict player-created specialties to approved World and Compendium choices, or allow requests for GM review.',
+    scope:'world',config:true,restricted:true,type:String,
+    choices:{restricted:'GM-managed choices only',approval:'Show custom entry; players must ask GM for approval'},
+    default:'restricted'
+  });
   game.settings.register('brp-uge','specialtyPresets',{
-    name:'Specialty preset options',scope:'world',config:false,restricted:true,type:String,default:'{}'
+    name:'Specialty preset options',scope:'world',config:false,restricted:true,type:String,default:'{}',
+    onChange: refreshBRPWorldUI
   });
   game.settings.registerMenu('brp-uge','manageSpecialties',{
     name:'ตัวเลือก Specialty / Manage Specialties',

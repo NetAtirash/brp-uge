@@ -50,10 +50,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          release_flags=(--latest)
+          if [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(rc|beta)\.[0-9]+$ ]]; then
+            # Never promote untested candidates to the stable /latest channel.
+            release_flags=(--prerelease --latest=false)
+          fi
           gh release create "$GITHUB_REF_NAME" \
             dist/brp-uge.zip \
             dist/system.json \
             --verify-tag \
             --title "BRP UGE $GITHUB_REF_NAME" \
             --generate-notes \
-            --latest
+            "${release_flags[@]}"

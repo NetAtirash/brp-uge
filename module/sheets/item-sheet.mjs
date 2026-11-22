@@ -3,6 +3,8 @@ import { getItemDescription, getLocalizedName, getDisplayItemName } from "../cha
 import { getThemedBRPIcon } from "../library-taxonomy.mjs";
 import { getReferenceChoices, itemReference, categoryLabel, resolveItemReference } from "../reference-utils.mjs";
 import { buildBRPRulebookView } from "../rulebook-reference-view.mjs";
+import { BRPOccupationChoiceEditor } from "../apps/occupation-choice-editor.mjs";
+import { normalizeOccupationChoiceGroups } from "../occupation-choice-rules.mjs";
 const { ItemSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -25,7 +27,8 @@ export class BRPItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
       editImage: BRPItemSheet.#onEditImage,
       toggleLanguageFields: BRPItemSheet.#onToggleLanguageFields,
       addReference: BRPItemSheet.#onAddReference,
-      removeReference: BRPItemSheet.#onRemoveReference
+      removeReference: BRPItemSheet.#onRemoveReference,
+      editOccupationChoices: BRPItemSheet.#onEditOccupationChoices
     }
   };
 
@@ -63,6 +66,11 @@ export class BRPItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     context.isPassion = t === "passion";
     context.isGear = t === "gear";
     context.isOccupation = t === "occupation";
+    context.isGM = Boolean(game.user?.isGM);
+    context.occupationChoiceGroups = context.isOccupation
+      ? normalizeOccupationChoiceGroups(this.document.system.skillChoiceGroups).map(g=>({
+          ...g,label:context.isTh?(g.labelTh||g.labelEn):(g.labelEn||g.labelTh),countOptions:g.options.length
+        })) : [];
     context.isWealth = t === "wealth";
     context.isStatus = t === "status";
     context.statusCharacteristics = ["str","con","siz","int","pow","dex","cha","edu"];
@@ -81,6 +89,12 @@ export class BRPItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     context.skillReferenceOptions = (context.isWeapon||context.isShield) ? await getReferenceChoices('skill',{actor:this.document.parent?.items?this.document.parent:null,lang}):[];
     context.selectedSkillRef = this.document.system.skillRef || '';
     return context;
+  }
+
+  static #onEditOccupationChoices(event) {
+    event.preventDefault();
+    if(!game.user?.isGM)return ui.notifications.warn("GM only");
+    new BRPOccupationChoiceEditor({item:this.document}).render({force:true});
   }
 
   /** Reference chips are changed via explicit actions, not editable translated text. */

@@ -2,7 +2,7 @@
 import { BRP_CONFIG, getCampaignRules } from '../config.mjs';
 import { getLocalizedName, powerMode } from '../character-tools.mjs';
 import { creationBudgets } from '../rules/character-creation.mjs';
-import { buildSkillPointUpdates, previewSkillTotal, shouldShowCategoryColumn, validateSkillPointValue } from '../skill-points-utils.mjs';
+import { buildSkillPointUpdates, previewSkillTotal, shouldShowCategoryColumn, validateSkillPointValue, validateSkillPointDraft } from '../skill-points-utils.mjs';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const APP = globalThis.foundry?.applications?.api?.ApplicationV2 ?? class {};
@@ -80,6 +80,7 @@ export class BRPSkillPointsEditor extends APP {
       <span class="brp-points-count" data-count></span></div>
       <div class="brp-points-table"><div class="brp-points-heading"><span>${words('ทักษะ','Skill')}</span><span>${words('พื้นฐาน','Base')}</span>${showCategory?`<span>${words('หมวด','Category')}</span>`:''}<span>${words('อาชีพ','Occupation')}</span><span>${words('ส่วนตัว','Personal')}</span><span>${words('ฝึกฝน','Training')}</span><span>${words('รวม','Total')}</span></div>
       <div class="brp-points-rows">${rows||`<p class="meta-text">${words('ยังไม่มีทักษะในชีท','No Skills on this Actor')}</p>`}</div></div>
+      <p class="brp-points-validation" data-validation role="status" hidden></p>
       <footer class="brp-points-footer"><span>${words('การเปลี่ยนแปลงยังไม่ถูกบันทึกจนกว่าจะกดบันทึก · * ทักษะที่ล็อกค่ารวมจะไม่เปลี่ยนจากการแจกแต้ม','Changes are not applied until Save · * Fixed-rating Skills ignore point allocations')}</span><button type="button" data-cancel>${words('ยกเลิก','Cancel')}</button><button type="button" data-save class="primary">${words('บันทึกแต้มทักษะ','Save Skill Points')}</button></footer>
     </main>`;
   }
@@ -111,7 +112,15 @@ export class BRPSkillPointsEditor extends APP {
       persEl.textContent=`${budget.personal-pers} / ${budget.personal}`;
       occEl.classList.toggle('over-budget',occ>budget.profession);persEl.classList.toggle('over-budget',pers>budget.personal);
       root.querySelector('[data-changes]').textContent=`${changed} ${this.#tr('รายการที่แก้','edited')}`;
-      root.querySelector('[data-save]').disabled=invalid||!changed||this.#saving;
+      const powers=this.actor.items.filter(i=>i.type==='power'&&powerMode(i.system)==='skill');
+      const audit=validateSkillPointDraft(this.actor,this.#draft,{
+        budget,cap:rules.creationSkillCap,
+        powerOccupation:powers.reduce((sum,p)=>sum+Number(p.system.occupationBonus||0),0),
+        powerPersonal:powers.reduce((sum,p)=>sum+Number(p.system.personalBonus||0),0)
+      });
+      const warning=root.querySelector('[data-validation]');
+      if(warning){warning.hidden=audit.valid;warning.textContent=audit.errors[0]||'';}
+      root.querySelector('[data-save]').disabled=invalid||!changed||this.#saving||!audit.valid;
     };
     const updateCount=()=>{
       const q=this.#filter.trim().toLocaleLowerCase();let visible=0;
@@ -145,6 +154,13 @@ export class BRPSkillPointsEditor extends APP {
           if(before.occupation!==Number(item.system.occupationBonus||0)||before.personal!==Number(item.system.personalBonus||0))
             throw new Error(this.#tr('แต้มทักษะเปลี่ยนจากหน้าต่างอื่นแล้ว กรุณาปิดและเปิดใหม่','Skill points changed elsewhere. Reopen the editor to avoid overwriting them.'));
         }
+        const powers=this.actor.items.filter(i=>i.type==='power'&&powerMode(i.system)==='skill');
+        const audit=validateSkillPointDraft(this.actor,this.#draft,{
+          budget,cap:rules.creationSkillCap,
+          powerOccupation:powers.reduce((sum,p)=>sum+Number(p.system.occupationBonus||0),0),
+          powerPersonal:powers.reduce((sum,p)=>sum+Number(p.system.personalBonus||0),0)
+        });
+        if(!audit.valid)throw new Error(audit.errors.join(' · '));
         const changes=buildSkillPointUpdates(skills,this.#draft);
         if(!changes.length)return this.close();
         this.#saving=true;refresh();

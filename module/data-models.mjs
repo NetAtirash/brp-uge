@@ -352,6 +352,18 @@ export class SkillDataModel extends BRPItemDataModel {
       specialtyTh: new StringField({ required: true, blank: true, initial: "" }),
       specialtyFamily: new StringField({ required: true, blank: true, initial: "" }),
       specialtyFamilyTh: new StringField({ required: true, blank: true, initial: "" }),
+      // One Compendium source per Skill Family. Characters receive separate
+      // Actor-owned instantiated specialties with independent allocations.
+      isSpecialtyTemplate: new BooleanField({initial:false}),
+      specialtyDefaults: new ArrayField(new SchemaField({
+        key: new StringField({required:true,blank:true,initial:""}),
+        en: new StringField({required:true,blank:false}),
+        th: new StringField({required:true,blank:true,initial:""}),
+        base: new NumberField({required:false,nullable:true,integer:true,min:0,initial:null}),
+        baseFormula: new StringField({required:true,blank:true,initial:""}),
+        ruleNote: new StringField({required:true,blank:true,initial:""}),
+        enabled: new BooleanField({initial:true})
+      }),{initial:[]}),
       base: new NumberField({ required: true, integer: true, min: 0, initial: 5 }),
       baseFormula: new StringField({ required: true, blank: true, initial: "" }),
       occupationBonus: new NumberField({ required: true, integer: true, min: 0, initial: 0 }),
@@ -484,6 +496,20 @@ export class OccupationDataModel extends BRPItemDataModel {
       wealthEnabled: new BooleanField({initial: true}),
       wealthRef: new StringField({required:true, blank:true, initial:""}),
       skillRefs: new ArrayField(new StringField({required:true, blank:false}), {initial:[]}),
+      // Optional choice clauses; old Occupations still resolve skillRefs without migration.
+      skillChoiceGroups: new ArrayField(new SchemaField({
+        id: new StringField({required:true,blank:false}),
+        labelTh: new StringField({required:true,blank:true,initial:""}),
+        labelEn: new StringField({required:true,blank:true,initial:""}),
+        count: new NumberField({required:true,integer:true,min:1,initial:1}),
+        distinct: new BooleanField({initial:true}),
+        options: new ArrayField(new SchemaField({
+          kind: new StringField({required:true,blank:false,options:["family","skill","specialty"],initial:"family"}),
+          familyKey: new StringField({required:true,blank:true,initial:""}),
+          specialtyKey: new StringField({required:true,blank:true,initial:""}),
+          ref: new StringField({required:true,blank:true,initial:""})
+        }),{initial:[]})
+      }),{initial:[]}),
       starterWeaponRefs: new ArrayField(new StringField({required:true, blank:false}), {initial:[]}),
       starterArmorRefs: new ArrayField(new StringField({required:true, blank:false}), {initial:[]}),
     };

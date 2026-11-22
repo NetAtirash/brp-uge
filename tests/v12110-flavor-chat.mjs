@@ -36,7 +36,7 @@ assert.match(css,/data-brp-theme="light"/);assert.match(css,/data-brp-theme="dar
 assert.match(css,/--brp-chat-ink: #2c211d/);assert.match(css,/--brp-chat-ink: #f4eadb/);
 assert.match(css,/#chat-log/);
 const manifest=JSON.parse(read('system.json'));
-assert.equal(manifest.version,'1.21.10');
-assert.equal(manifest.styles.at(-1),'styles/brp-v12110-flavor-chat.css');
-assert.match(manifest.download,/v1\.21\.10\/brp-uge\.zip/);
+assert.match(manifest.version,/^1\.21\.(?:10|11)$/);
+assert.ok(manifest.styles.includes('styles/brp-v12110-flavor-chat.css'));
+assert.match(manifest.download,/v1\.21\.(?:10|11)\/brp-uge\.zip/);
 console.log('PASS v1.21.10 flavor names, non-destructive identity and light/dark advancement chat');

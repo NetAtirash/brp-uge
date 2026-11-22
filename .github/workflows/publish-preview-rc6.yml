@@ -1,0 +1,92 @@
+name: Publish BRP UGE v1.21.11 RC6 Preview
+on:
+  push:
+    branches:
+      - 'feat/v1.21.11-specialty-management'
+
+permissions:
+  contents: write
+
+jobs:
+  preview-release:
+    # Explicit one-time commit marker. Ordinary PR updates never publish.
+    if: contains(github.event.head_commit.message, '[publish-v1.21.11-rc.6]')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: brp-uge-v1.21.11-rc.6-release
+      cancel-in-progress: false
+    steps:
+      - name: Check out exact preview source commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node 22 for offline regression tests
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify release tag is unused
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=v1.21.11-rc.6
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" > /dev/null 2>&1; then
+            echo "::error::Release tag $TAG already exists; refusing overwrite."
+            exit 1
+          fi
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "::error::GitHub release $TAG already exists; refusing overwrite."
+            exit 1
+          fi
+
+      - name: Verify all JavaScript module syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -type f -name '*.mjs' -print0)
+
+      - name: Run complete offline regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test in tests/*.mjs; do
+            echo "Running $test"
+            node "$test"
+          done
+
+      - name: Build and verify RC6 standalone Foundry package
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release.py --tag v1.21.11-rc.6 --output dist
+          python3 -m zipfile -t dist/brp-uge.zip
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path("dist/system.json").read_text())
+          assert m["id"]=="brp-uge"
+          assert m["version"]=="1.21.11-rc.6"
+          assert m["manifest"]=="https://github.com/NetAtirash/brp-uge/releases/download/v1.21.11-rc.6/system.json"
+          assert m["download"]=="https://github.com/NetAtirash/brp-uge/releases/download/v1.21.11-rc.6/brp-uge.zip"
+          print("RC6 pinned manifest is valid")
+          PY
+
+      - name: Publish RC6 prerelease without moving stable Latest
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create v1.21.11-rc.6 \
+            dist/brp-uge.zip \
+            dist/system.json \
+            --target "$GITHUB_SHA" \
+            --title "BRP UGE v1.21.11-rc.6 — Clickable Specialty Choices & Wizard Layout Fix" \
+            --prerelease \
+            --latest=false \
+            --notes "Foundry v14 preview: replace non-opening Specialty dropdowns with clickable radio-choice grids, remove overlapping Wizard progress and budget bars, and disclose personal-use ChatGPT-assisted project in README. Pair with separately updated RC5 Specialty-Families Compendium; test in a copied World. Not stable."
