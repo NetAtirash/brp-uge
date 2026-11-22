@@ -12,10 +12,12 @@ export function normalizeOccupationChoiceGroups(value) {
     count:Number.isSafeInteger(Number(g?.count))?Math.max(1,Number(g.count)):1,
     distinct:g?.distinct!==false,
     options:(Array.isArray(g?.options)?g.options:[]).map(opt=>({
-      kind:opt?.kind==='family'?'family':'skill',
+      kind:opt?.kind==='specialty'?'specialty':opt?.kind==='family'?'family':'skill',
       familyKey:specialtyFamilyKey(opt?.familyKey),
+      specialtyKey:specialtyFamilyKey(opt?.specialtyKey),
       ref:str(opt?.ref)
-    })).filter(opt=>opt.kind==='family'?!!opt.familyKey:!!opt.ref)
+    })).filter(opt=>opt.kind==='family'?!!opt.familyKey:
+       opt.kind==='specialty'?!!opt.familyKey&&!!opt.specialtyKey:!!opt.ref)
   })).filter(g=>g.options.length>0);
 }
 /**
@@ -52,8 +54,10 @@ export function occupationGroupAllowsSkill(group,skill) {
   return (group.options||[]).some(option=>{
     if(option.kind==='skill')return linkedOccupationSkill(skill,option.ref);
     const info=analyzeSkillFamily(skill);
-    return info?.supportsSpecialty && Boolean(info.enSpecialty)
-      && specialtyFamilyKey(info.enFamily)===option.familyKey;
+    if(!info?.supportsSpecialty||!info.enSpecialty ||
+      specialtyFamilyKey(info.enFamily)!==option.familyKey)return false;
+    return option.kind!=='specialty'||
+      specialtyFamilyKey(info.enSpecialty)===option.specialtyKey;
   });
 }
 export function validateOccupationChoices(groups,selections,catalog) {
