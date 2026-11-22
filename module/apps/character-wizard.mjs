@@ -602,7 +602,21 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         }
       }
       const selected=uiChoices[group.id]||[];
+      // Render concrete Specialty options server-side with the Handlebars
+      // template. Do not rely on DOM-generated Option() nodes in _onRender:
+      // this previously produced an empty picker on some Foundry screens.
+      const familySpecialtyOptions=[...new Set(group.options
+        .filter(opt=>opt.kind==='family').map(opt=>opt.familyKey))]
+        .map(key=>{
+          const family=this.specialtyRegistry.find(f=>f.key===key);
+          const specialties=(family?.options||[]).filter(opt=>!opt.hidden).map(opt=>({
+            key:opt.key,label:isTh?(opt.th||opt.en):opt.en
+          }));
+          return {key,label:isTh?(family?.thFamily||key):(family?.enFamily||key),
+            specialties,count:specialties.length};
+        });
       return {...group,label:isTh?(group.labelTh||group.labelEn):(group.labelEn||group.labelTh),
+        familySpecialtyOptions,
         selected:selected.map(key=>({key,label:candidates.get(key)?.label||key})),
         candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label)),
         pickerChoices:[...pickerChoices.values()].sort((a,b)=>a.label.localeCompare(b.label)),
@@ -617,9 +631,13 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.isCompletedActor=Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));
     context.allowRebuild=this.wizardData.allowRebuild;
     context.personalFamilyOptions=this.specialtyRegistry.filter(group=>
-      group.options?.some(option=>!option.hidden)).map(group=>({
-        key:group.key,label:isTh?group.thFamily:group.enFamily
-      }));
+      group.options?.some(option=>!option.hidden)).map(group=>{
+        const specialties=group.options.filter(option=>!option.hidden).map(option=>({
+          key:option.key,label:isTh?(option.th||option.en):option.en
+        }));
+        return {key:group.key,label:isTh?group.thFamily:group.enFamily,
+          count:specialties.length,specialties};
+      });
     context.personalSpecialtyOptions=this.specialtyRegistry.flatMap(group=>
       (group.options||[]).filter(option=>!option.hidden).map(option=>({
         key:group.key+'|'+option.key,
