@@ -330,7 +330,10 @@ class BRPItemDataModel extends foundry.abstract.TypeDataModel {
       descriptionTh: new HTMLField({ required: true, blank: true }),
       descriptionEn: new HTMLField({ required: true, blank: true }),
       nameTh: new StringField({ required: true, blank: true, initial: "" }),
-      nameEn: new StringField({ required: true, blank: true, initial: "" })
+      nameEn: new StringField({ required: true, blank: true, initial: "" }),
+      // Presentation only; no change to rules identity or linked sources.
+      flavorNameTh: new StringField({ required: true, blank: true, initial: "" }),
+      flavorNameEn: new StringField({ required: true, blank: true, initial: "" })
     };
   }
 }

@@ -1,7 +1,7 @@
 import { applyBRPControlLanguage } from "../ui-controls.mjs";
 import { BRP_CONFIG, getCampaignRules, isPowerSystemEnabled } from "../config.mjs";
 import { getLibraryDocuments, documentToEmbeddedItem } from "../library-provider.mjs";
-import { getLocalizedName, escapeForChat } from "../character-tools.mjs";
+import { getDisplayItemName, escapeForChat } from "../character-tools.mjs";
 import { itemMatchesReference, normalizedText } from "../reference-utils.mjs";
 import { linkedOccupationSkill, occupationSkillCoverage } from "../occupation-skill-linking.mjs";
 import { generationFormula, creationBudgets, POINT_BUY_BUDGET, pointBuySpent,
@@ -310,7 +310,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         const total = base + bonusCategory + personalityPts + occPts + persPts;
         return {
           index: idx,
-          name: getLocalizedName(s, uiLang),
+          name: getDisplayItemName(s, uiLang),
           nameEn: s.system?.nameEn||s.name,
           category: s.system.category,
           base, bonusCategory, personalityPts,
@@ -321,7 +321,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
           atCap: total >= rules.creationSkillCap,
           description: this.#plainRuleText(isTh ? s.system?.descriptionTh||s.system?.description : s.system?.descriptionEn||s.system?.description).slice(0,850),
           referenceKey:s.system.referenceKey||s.system.nameEn||s.name,
-          searchText: `${s.name} ${getLocalizedName(s,"en")} ${s.system.description} ${s.system.descriptionTh ?? ""} ${s.system.descriptionEn ?? ""}`.toLowerCase()
+          searchText: `${s.name} ${getDisplayItemName(s,"en")} ${s.system.description} ${s.system.descriptionTh ?? ""} ${s.system.descriptionEn ?? ""}`.toLowerCase()
         };
       })
       .sort((a, b) => Number(b.isOcc) - Number(a.isOcc) || a.name.localeCompare(b.name));
@@ -344,7 +344,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       .map(([key,value])=>`${key.toUpperCase()} ${value>ch[key]?'+':''}${value-ch[key]}`).join(' · ');
     context.personalityChoices=Object.entries(PERSONALITY_TYPES).map(([key,value])=>({key,label:isTh?value.th:value.en,selected:this.wizardData.personalityType===key}));
     context.personalityCount=personality.size;
-    context.personalityAvailable=this.skillCatalog.map((s,index)=>({index,label:getLocalizedName(s,uiLang),selected:personality.has(s.system?.referenceKey||s.system?.nameEn||s.name)}));
+    context.personalityAvailable=this.skillCatalog.map((s,index)=>({index,label:getDisplayItemName(s,uiLang),selected:personality.has(s.system?.referenceKey||s.system?.nameEn||s.name)}));
     context.personalitySelected=context.personalityAvailable.filter(s=>s.selected);
     context.isTh = isTh;
     context.step = this.step;
@@ -419,7 +419,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const availablePowerTemplates=allPowerTemplates.map((power,index)=>({power,index}))
       .filter(({power})=>isPowerSystemEnabled(power.system?.system));
     const powerOptions=availablePowerTemplates.map(({power,index})=>({index,
-      name:getLocalizedName(power,uiLang),english:power.system?.nameEn||power.name,
+      name:getDisplayItemName(power,uiLang),english:power.system?.nameEn||power.name,
       type:power.system?.system,selected:this.wizardData.selectedPowers.includes(index),previewSelected:this.wizardData.powerPreviewIndex===index}));
     context.powerCatalog=powerOptions.filter(p=>this.wizardData.powerSystemFilter==='all'||p.type===this.wizardData.powerSystemFilter);
     context.powerSystemsAvailable=context.powerSystemGroups.length>0;
@@ -430,7 +430,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const powerText=(item)=>this.#plainRuleText(isTh?item?.system?.descriptionTh||item?.system?.description:
       item?.system?.descriptionEn||item?.system?.description);
     context.powerPreview=previewPower&&isPowerSystemEnabled(previewPower.system?.system)?{
-      name:getLocalizedName(previewPower,uiLang),nameEn:previewPower.system?.nameEn||previewPower.name,
+      name:getDisplayItemName(previewPower,uiLang),nameEn:previewPower.system?.nameEn||previewPower.name,
       system:previewPower.system?.system,description:powerText(previewPower)
     }:null;
     context.powerRows=this.wizardData.selectedPowers.map(idx=>{
@@ -439,7 +439,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       const base=type==='Magic'?effectiveCh.int:type==='Psychic'?effectiveCh.pow:0;
       const occPts=Number(this.wizardData.occPowerRanks[idx]??0);
       const persPts=Number(this.wizardData.persPowerRanks[idx]??0);
-      return {index:idx,name:getLocalizedName(src,uiLang),nameEn:src.system.nameEn||src.name,
+      return {index:idx,name:getDisplayItemName(src,uiLang),nameEn:src.system.nameEn||src.name,
         description:powerText(src),type,base,occPts,persPts,total:base+occPts+persPts,allocated};
     }).filter(Boolean);
     const professionSkillCoverage=occupationSkillCoverage(this.skillCatalog,prof?.skillRefs??[]);
@@ -454,7 +454,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const allStarterRefs=[...(prof?.starterWeaponRefs??[]).map(ref=>({ref,type:'weapon'})),...(prof?.starterArmorRefs??[]).map(ref=>({ref,type:'armor'}))];
     context.profStarterReferences=await Promise.all(allStarterRefs.map(async r=>{
       const doc=await fromUuid(r.ref).catch(()=>null);
-      return {...r,label:doc?getLocalizedName(doc,uiLang):(isTh?'ไม่พบไอเทมที่อ้างอิง':'Missing referenced item'),
+      return {...r,label:doc?getDisplayItemName(doc,uiLang):(isTh?'ไม่พบไอเทมที่อ้างอิง':'Missing referenced item'),
         checked:(r.type==='weapon'?this.wizardData.selectedWeaponRefs:this.wizardData.selectedArmorRefs).includes(r.ref)};
     }));
     return context;

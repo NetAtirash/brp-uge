@@ -57,6 +57,20 @@ export function getLocalizedName(item, lang = "th") {
   if (lang === "en" && match?.[1]) return match[1].trim();
   return old;
 }
+/** Per-item presentation alias. Never use as a rules identifier or source reference. */
+export function getDisplayItemName(item, lang = "th") {
+  if (!item) return "";
+  const flavorKey = lang === "en" ? "flavorNameEn" : "flavorNameTh";
+  const flavor = String(item.system?.[flavorKey] ?? "").trim();
+  return flavor || getLocalizedName(item, lang);
+}
+
+export function getItemFlavorPresentation(item, lang = "th") {
+  const canonicalName = getLocalizedName(item, lang);
+  const displayName = getDisplayItemName(item, lang);
+  return { displayName, canonicalName, isFlavored: displayName !== canonicalName };
+}
+
 export function getNameLanguage() {
   try { return game.settings.get("brp-uge", "uiLanguage") || "th"; } catch { return "th"; }
 }
