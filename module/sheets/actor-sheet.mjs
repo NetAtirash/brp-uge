@@ -13,6 +13,7 @@ import { BRPSkillPointsEditor } from "../apps/skill-points-editor.mjs";
 import { shouldShowCategoryColumn } from "../skill-points-utils.mjs";
 import { sameSkill } from "../skill-foundation.mjs";
 import { availableSpecialtyFamilies, readSpecialtyPresets, composeSpecialtyItem } from "../skill-specialties.mjs";
+import { buildSpecialtyRegistry, specialtyTemplateFor } from "../specialty-registry.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -380,12 +381,15 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const sourceSkills=context.editMode && (context.isSkillsTab || this.document.type==='npc')
       ? await getLibraryDocuments({types:['skill']}) : [];
     const families=availableSpecialtyFamilies(sourceSkills);
+    this._specialtyRegistry=buildSpecialtyRegistry(sourceSkills,
+      game.settings.get("brp-uge","specialtyRegistry"),game.settings.get("brp-uge","specialtyPresets"));
     const familyChoices=families.map(f=>({
       uuid:`family:${encodeURIComponent(f.key)}`,
       familyKey:f.key,
       label:`${isTh?f.thFamily:f.enFamily} — ${isTh?'เพิ่ม Specialty':'New Specialty'} (${f.enFamily})`
     }));
-    const exactChoices=sourceSkills.map(skill=>({
+    const hiddenSources=new Set(this._specialtyRegistry.flatMap(f=>f.options.filter(o=>o.hidden).map(o=>o.sourceUuid)).filter(Boolean));
+    const exactChoices=sourceSkills.filter(skill=>!hiddenSources.has(skill.uuid)).map(skill=>({
       uuid:skill.uuid,
       label:`${getDisplayItemName(skill,uiLang)} — ${skill.system.baseFormula || `${skill.system.base??0}%`}`
     }));
@@ -408,6 +412,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const customInputs=bar.querySelector('[data-specialty-custom]');
       if(!source||!specialtyUI||!choice)continue;
       const presets=readSpecialtyPresets(game.settings.get('brp-uge','specialtyPresets'));
+      const registry=this._specialtyRegistry??[];
       const isTh=game.settings.get('brp-uge','uiLanguage')!=='en';
       const toggleCustom=()=>{if(customInputs)customInputs.hidden=choice.value!=='custom';};
       source.addEventListener('change',()=>{
@@ -417,12 +422,15 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         choice.replaceChildren();
         if(!familyKey)return;
         choice.add(new Option(isTh?'เลือก Specialty…':'Choose Specialty…',''));
-        for(const p of presets[familyKey]??[]){
+        const group=registry.find(f=>f.key===familyKey);
+        // The effective menu includes real source Skills and editable World overlays.
+        for(const p of group?.options.filter(o=>!o.hidden)??[]){
           const option=new Option(isTh?(p.th||p.en):p.en,p.en);
           option.dataset.th=p.th||p.en;
           choice.add(option);
         }
-        choice.add(new Option(isTh?'+ ระบุเอง':'+ Custom specialty','custom'));
+        if(game.user?.isGM || game.settings.get('brp-uge','specialtyCustomPolicy')==='approval')
+          choice.add(new Option(isTh?'+ ระบุเอง (GM อนุมัติ)':'+ Custom (GM approval)','custom'));
         choice.value='';toggleCustom();
       });
       choice.addEventListener('change',toggleCustom);
@@ -837,10 +845,21 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const thai=value==='custom'
         ? bar.querySelector('[data-custom-specialty-th]')?.value?.trim() : select.selectedOptions?.[0]?.dataset.th;
       if(!english)return ui.notifications.warn(th?'กรอกชื่ออังกฤษอ้างอิงของ Specialty':'An English reference is required');
-      const source=await fromUuid(family.templateUuid).catch(()=>null);
-      if(!source || source.type!=='skill')return ui.notifications.warn('Source Skill not available');
-      try {data=composeSpecialtyItem(source,family,{en:english,th:thai});}
-      catch(error){return ui.notifications.warn(error.message);}
+      const registry=buildSpecialtyRegistry(await getLibraryDocuments({types:['skill']}),
+        game.settings.get('brp-uge','specialtyRegistry'),game.settings.get('brp-uge','specialtyPresets'));
+      const group=registry.find(f=>f.key===familyKey);
+      const existing=group?.options.find(o=>o.en===english&&!o.hidden);
+      if(value==='custom'&&!game.user?.isGM)
+        return ui.notifications.warn(th?'โปรดให้ GM อนุมัติ Specialty ก่อน':'Ask the GM to approve this Specialty first');
+      if(value!=='custom'&&!existing)
+        return ui.notifications.warn(th?'ตัวเลือกนี้ไม่มีอยู่หรือถูกซ่อนแล้ว':'This Specialty is no longer available');
+      const sourceItems=await getLibraryDocuments({types:['skill']});
+      const template=(existing?specialtyTemplateFor(group,existing,sourceItems):sourceItems.find(d=>d.uuid===family.templateUuid));
+      if(!template || template.type!=='skill')return ui.notifications.warn('A matching source Skill template is required');
+      try {
+        if(existing?.sourceUuid) data=documentToEmbeddedItem(template);
+        else {const source=template;data=composeSpecialtyItem(source,family,{en:english,th:thai});}
+      } catch(error){return ui.notifications.warn(error.message);}
     } else {
       const item=await fromUuid(ref).catch(()=>null);
       if(item?.type!=='skill')return ui.notifications.warn('Selected Skill is unavailable');
