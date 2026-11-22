@@ -285,7 +285,13 @@
         {{/if}}
         {{#if personalFamilyOptions.length}}
           <section class="brp-wiz-personal-specialty">
-            <strong>{{#if isTh}}เลือก Specialty เพิ่มสำหรับแต้มส่วนตัว{{else}}Add a Specialty for Personal Points{{/if}}</strong>
+            <div class="brp-wiz-specialty-status">
+              <strong>{{#if isTh}}เลือก Specialty เพิ่มสำหรับแต้มส่วนตัว{{else}}Add a Specialty for Personal Points{{/if}}</strong>
+              <small role="status">{{#if isTh}}ตัวเลือกที่ GM เปิดใช้: {{availableSpecialtyCount}} รายการ{{else}}GM-approved Specialties: {{availableSpecialtyCount}}{{/if}}</small>
+              <button type="button" class="brp-btn" data-action="refreshWizardSpecialties" aria-label="{{#if isTh}}โหลดรายการ Specialty ใหม่{{else}}Refresh Specialty options{{/if}}">
+                <i class="fa-solid fa-rotate"></i> {{#if isTh}}โหลดใหม่{{else}}Refresh{{/if}}
+              </button>
+            </div>
             <p class="meta-text">{{#if isTh}}เลือก Skill Family ก่อน จากนั้นเลือก Specialty ที่ GM เปิดใช้ การเลือกยังไม่ใช้แต้ม และไม่ได้ให้สิทธิ์ใช้แต้มอาชีพ{{else}}Choose the Skill Family first, then its GM-approved Specialty. This does not spend points or grant occupation eligibility.{{/if}}</p>
             <div class="brp-wiz-choice-picker">
               <label class="brp-wiz-choice-field"><span>{{#if isTh}}ทักษะ{{else}}Skill Family{{/if}}</span>
@@ -306,6 +312,12 @@
               {{/each}}
               <button type="button" class="brp-btn" data-action="addPersonalSpecialty"><i class="fa-solid fa-plus"></i> {{#if isTh}}เพิ่มทักษะ{{else}}Add Skill{{/if}}</button>
             </div>
+          </section>
+        {{else}}
+          <section class="brp-wiz-personal-specialty" role="status">
+            <strong>{{#if isTh}}ยังไม่มี Specialty ที่ระบบอนุญาตให้เลือก{{else}}No approved Specialty options are available{{/if}}</strong>
+            <p class="meta-text">{{#if isTh}}ให้ GM ตรวจสอบ Compendium และกดบันทึกรายการ Specialty ใน Game Settings จากนั้นกดโหลดใหม่{{else}}Ask the GM to save approved Specialty options in Game Settings, then refresh the list.{{/if}}</p>
+            <button type="button" class="brp-btn" data-action="refreshWizardSpecialties"><i class="fa-solid fa-rotate"></i> {{#if isTh}}โหลดรายการ Specialty ใหม่{{else}}Reload Specialties{{/if}}</button>
           </section>
         {{/if}}
         <div class="wiz-drop-hint" data-wiz-drop-item="skill">{{#if isTh}}ลาก Skill Item จากคลังมาวางเพื่อเพิ่มทักษะในรายการแบ่งแต้ม{{else}}Drop Skill Items to add custom skills to allocation{{/if}}</div>
