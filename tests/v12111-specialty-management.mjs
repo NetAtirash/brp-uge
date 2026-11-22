@@ -33,9 +33,22 @@ const registry=buildSpecialtyRegistry([combined,biology,noSpecialty],overlay,'{}
 const science=registry.find(f=>f.key==='science');
 assert.ok(science);
 assert.equal(science.ambiguous.length,1,'compound example requires manual inspection');
-assert.ok(!science.options.some(o=>o.key==='chemistry / physics'));
+assert.ok(science.options.some(o=>o.en==='Chemistry / Physics'&&o.hidden&&o.review),
+  'ambiguous source appears for GM review but remains excluded from player choices');
 assert.ok(science.options.find(o=>o.key==='biology').hidden);
 assert.deepEqual(eligibleSpecialtyOptions(registry,'science').map(o=>o.key),['astronomy']);
+const curated=buildSpecialtyRegistry([combined,biology,noSpecialty],{
+  families:{science:{sourceOverrides:{[combined.uuid]:{
+    en:'Astronomy',th:'ดาราศาสตร์',state:'enabled'
+  }}}}
+},'{}');
+const cur=curated.find(f=>f.key==='science').options.find(o=>o.sourceUuid===combined.uuid);
+assert.equal(cur.en,'Astronomy','GM source override becomes a selectable concrete Specialty');
+assert.equal(cur.th,'ดาราศาสตร์');
+assert.equal(cur.hidden,false);
+assert.equal(cur.templateUuid,combined.uuid,'source provenance remains stable');
+assert.equal(findSpecialtyCandidate(curated,'science|astronomy').option.sourceUuid,combined.uuid);
+assert.equal(combined.system.nameEn,'Science (Chemistry / Physics)','source document must remain untouched');
 const chosen=findSpecialtyCandidate(registry,'science|astronomy');
 assert.equal(chosen.option.th,'ดาราศาสตร์');
 assert.equal(specialtyTemplateFor(chosen.family,chosen.option,[combined,biology]),combined);
@@ -102,10 +115,15 @@ assert.ok(wizard.indexOf('const unresolvedGear=[]')<wizard.indexOf('await actorD
   'Starter equipment must preflight before mutating Actor');
 assert.match(wizard,/if\(creationCompleted\)\{/);
 const template=read('templates/apps/character-wizard.hbs');
-assert.match(template,/data-occupation-choice-picker/);
+assert.match(template,/data-occupation-skill-picker/);
+assert.match(template,/data-occupation-specialty-picker/);
+assert.match(template,/data-personal-family-picker/);
+assert.match(template,/occupationMetadataMissing/);
 assert.match(template,/data-action="removeOccupationChoice"/);
 const manager=read('module/apps/specialty-presets-menu.mjs');
 assert.match(manager,/buildSpecialtyRegistry/);
+assert.match(manager,/sourceOverrides/);
+assert.ok(!manager.includes("readonly'),"), 'all source names should be editable as World overlays');
 assert.match(manager,/settings.set\('brp-uge','specialtyRegistry'/);
 const app=read('module/apps/occupation-choice-editor.mjs');
 assert.match(app,/system.skillChoiceGroups/);
