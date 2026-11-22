@@ -66,6 +66,7 @@ export class BRPItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     context.isPassion = t === "passion";
     context.isGear = t === "gear";
     context.isOccupation = t === "occupation";
+    context.isGM = Boolean(game.user?.isGM);
     context.occupationChoiceGroups = context.isOccupation
       ? normalizeOccupationChoiceGroups(this.document.system.skillChoiceGroups).map(g=>({
           ...g,label:context.isTh?(g.labelTh||g.labelEn):(g.labelEn||g.labelTh),countOptions:g.options.length
