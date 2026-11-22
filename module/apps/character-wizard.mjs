@@ -14,8 +14,9 @@ import { uniqueSkills, sameSkill, planMissingBaseSkills } from "../skill-foundat
 import { configuredStartingSkills } from "../skill-selection.mjs";
 import { availableSpecialtyFamilies, composeSpecialtyItem, analyzeSkillFamily, specialtyFamilyKey } from "../skill-specialties.mjs";
 import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor, specialtyNeedsReview } from "../specialty-registry.mjs";
-import { normalizeOccupationChoiceGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill, occupationChoiceMetadataMissing } from "../occupation-choice-rules.mjs";
+import { normalizeOccupationChoiceGroups, resolveOccupationTemplateGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill, occupationChoiceMetadataMissing } from "../occupation-choice-rules.mjs";
 import { canonicalSkillKey } from "../skill-foundation.mjs";
+import {isSkillFamilyTemplate} from "../skill-family-templates.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -279,11 +280,17 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   }
 
   #isOccupationalSkill(skillEntry,prof) {
-    return occupationSkillEligible(skillEntry,prof,this.wizardData.choiceSelections,this.skillCatalog);
+    if(occupationSkillEligible(skillEntry,prof,this.wizardData.choiceSelections,this.skillCatalog))return true;
+    const key=canonicalSkillKey(skillEntry);
+    return resolveOccupationTemplateGroups(prof,this.librarySkillDocs).some(group=>
+      (this.wizardData.choiceSelections[group.id]||[]).includes(key)
+      &&occupationGroupAllowsSkill(group,skillEntry));
   }
 
   #occupationChoiceStatus(prof=this.#getProfession()){
-    return validateOccupationChoices(prof?.skillChoiceGroups,this.wizardData.choiceSelections,this.skillCatalog);
+    return validateOccupationChoices(
+      resolveOccupationTemplateGroups(prof,this.librarySkillDocs),
+      this.wizardData.choiceSelections,this.skillCatalog);
   }
 
   async #ensureSkillCandidate(key){
@@ -307,9 +314,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(existing && sameSource && canonicalSkillKey(template)===key)return existing;
     // A prior source example may have the same displayed name as a curated
     // World option. Prefer the explicit GM rules template for this new draft.
-    const created=candidate.option.sourceUuid && canonicalSkillKey(template)===key
-      ?documentToEmbeddedItem(template)
-      :composeSpecialtyItem(template,candidate.family,{en:candidate.option.en,th:candidate.option.th});
+    const created=composeSpecialtyItem(template,candidate.family,candidate.option);
     if(!existing){this.skillCatalog.push(created);return created;}
     const owned=this.targetActor?.items?.some?.(item=>item.type==='skill'&&sameSkill(item,existing));
     if(owned)return existing; // never replace a historical Actor Skill
@@ -537,7 +542,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     }).filter(Boolean);
     const professionSkillCoverage=occupationSkillCoverage(this.skillCatalog,prof?.skillRefs??[]);
     // Resolve optional or required choice clauses before profession allocations.
-    const choiceGroups=normalizeOccupationChoiceGroups(prof.skillChoiceGroups);
+    const choiceGroups=resolveOccupationTemplateGroups(prof,this.librarySkillDocs);
     const uiChoices=this.wizardData.choiceSelections;
     context.professionChoiceGroups=choiceGroups.map(group=>{
       const candidates=new Map(),pickerChoices=new Map();
@@ -591,7 +596,13 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         key:group.key+'|'+option.key,
         label:(isTh?group.thFamily:group.enFamily)+' ('+(isTh?(option.th||option.en):option.en)+')'
       }))).sort((a,b)=>a.label.localeCompare(b.label));
-    context.professionFixedSkillNames=professionSkillCoverage.linked.map(index=>getDisplayItemName(this.skillCatalog[index],uiLang));
+    context.professionFixedSkillNames=professionSkillCoverage.linked.map(index=>{
+      const skill=this.skillCatalog[index];
+      const info=analyzeSkillFamily(skill);
+      return isSkillFamilyTemplate(skill)?
+        (isTh?info.thFamily:info.enFamily)+' — '+(isTh?'เลือก Specialty':'Choose Specialty'):
+        getDisplayItemName(skill,uiLang);
+    });
     context.professionLinkedSkillCount=professionSkillCoverage.linked.length;
     context.professionMissingSkillCount=professionSkillCoverage.missing.length;
     context.professionHasLinkedSkills=Boolean(prof?.sourceUuid && professionSkillCoverage.linked.length);
@@ -908,7 +919,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     event.preventDefault();
     const id=String(target.dataset.groupId||'');
     const prof=this.#getProfession();
-    const group=normalizeOccupationChoiceGroups(prof?.skillChoiceGroups).find(g=>g.id===id);
+    const group=resolveOccupationTemplateGroups(prof,this.librarySkillDocs).find(g=>g.id===id);
     if(!group)return;
     const picker=this.element.querySelector('[data-occupation-kind-radio="'+CSS.escape(id)+'"]:checked');
     const choice=String(picker?.value||'');
@@ -1259,7 +1270,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       // A Skill Family is a selectable group, not an order to copy all
       // published examples into every new Actor. Explicit selections remain.
       const selectedFoundation=new Set(configuredStartingSkills(this.skillCatalog).filter(
-        item=>!analyzeSkillFamily(item)?.supportsSpecialty));
+        item=>!analyzeSkillFamily(item)?.supportsSpecialty&&!isSkillFamilyTemplate(item)));
       this.skillCatalog.forEach((tpl, idx) => {
         const occupationBonus = Number(this.wizardData.occRanks[idx] ?? 0);
         const personalBonus = Number(this.wizardData.persRanks[idx] ?? 0);
