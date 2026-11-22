@@ -120,6 +120,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       selectOccupationChoice: BRPCharacterWizard.#onSelectOccupationChoice,
       removeOccupationChoice: BRPCharacterWizard.#onRemoveOccupationChoice,
       addPersonalSpecialty: BRPCharacterWizard.#onAddPersonalSpecialty,
+      refreshWizardSpecialties: BRPCharacterWizard.#onRefreshWizardSpecialties,
       unlockRebuild: BRPCharacterWizard.#onUnlockRebuild,
       allocateSkill: BRPCharacterWizard.#onAllocateSkill,
       addWizardPower: BRPCharacterWizard.#onAddWizardPower,
@@ -1007,6 +1008,20 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(!occupationGroupAllowsSkill(group,skill))return ui.notifications.warn('Skill is not eligible for this occupation choice');
     this.wizardData.choiceSelections[id]=[...previous,key];
     this.render();
+  }
+
+  static async #onRefreshWizardSpecialties(event){
+    event.preventDefault();
+    try{
+      // Refresh rules sources explicitly without rebuilding the Skill catalog:
+      // index-based Wizard allocations must remain stable while the user edits.
+      this.librarySkillDocs=await getLibraryDocuments({types:['skill']});
+      this.specialtyRegistrySnapshot=null;
+      this.#refreshSpecialtyRegistry();
+      this.render();
+    }catch(error){
+      ui.notifications.error('Could not reload the available Specialty templates: '+error.message);
+    }
   }
 
   static async #onAddPersonalSpecialty(event){
