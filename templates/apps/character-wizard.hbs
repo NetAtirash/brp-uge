@@ -197,6 +197,44 @@
           </section>
         </div>
       </div>
+      {{#if professionChoiceGroups.length}}
+      <div class="panel-card wiz-section brp-wiz-occupation-choices">
+        <h3>{{#if isTh}}เลือกทักษะและ Specialty ของอาชีพก่อนแบ่งแต้ม{{else}}Resolve Occupation Skill Choices before allocating points{{/if}}</h3>
+        <p class="meta-text">{{#if isTh}}เลือกทักษะตามจำนวนและเงื่อนไขที่ GM กำหนดไว้ใน Occupation Item; การเลือกยังไม่ใช้แต้ม{{else}}Select each required skill from the Occupation's authorized list; selecting a Specialty costs no points.{{/if}}</p>
+        {{#each professionChoiceGroups as |g|}}
+          <section class="brp-wiz-choice-group">
+            <header>
+              <strong>{{g.label}}</strong>
+              <span class="{{#if g.complete}}is-complete{{else}}is-pending{{/if}}">{{g.selectedCount}} / {{g.count}}</span>
+            </header>
+            <div class="brp-wiz-choice-picker">
+              <select data-occupation-choice-picker="{{g.id}}" aria-label="{{g.label}}">
+                <option value="">{{#if @root.isTh}}เลือกทักษะหรือ Specialty…{{else}}Choose a Skill or Specialty…{{/if}}</option>
+                {{#each g.candidates as |c|}}
+                  <option value="{{c.key}}">{{c.label}}</option>
+                {{/each}}
+              </select>
+              <button type="button" class="brp-btn" data-action="selectOccupationChoice" data-group-id="{{g.id}}">
+                <i class="fa-solid fa-plus"></i> {{#if @root.isTh}}เพิ่ม{{else}}Add{{/if}}
+              </button>
+            </div>
+            {{#if g.selected.length}}
+              <div class="brp-wiz-choice-chips">
+                {{#each g.selected as |c|}}
+                  <span class="brp-wiz-choice-chip">{{c.label}}
+                    <button type="button" data-action="removeOccupationChoice" data-group-id="{{g.id}}" data-key="{{c.key}}" aria-label="{{#if @root.isTh}}นำทางเลือกออก{{else}}Remove choice{{/if}}">×</button>
+                  </span>
+                {{/each}}
+              </div>
+            {{/if}}
+            {{#unless g.candidates.length}}
+              <p class="brp-wiz-choice-warning">{{#if @root.isTh}}ไม่พบตัวเลือกที่ตรงกับเงื่อนไข กรุณาให้ GM ตรวจสอบ Compendium และ Occupation{{else}}No compatible options: ask the GM to review this Occupation and its content packs.{{/if}}</p>
+            {{/unless}}
+          </section>
+        {{/each}}
+        {{#unless occupationChoicesValid}}<p class="brp-wiz-choice-warning" role="status">{{#if isTh}}เลือกทักษะอาชีพให้ครบทุกกลุ่มก่อนจัดสรรแต้มอาชีพ{{else}}Complete every choice group before spending occupation points.{{/if}}</p>{{/unless}}
+      </div>
+      {{/if}}
       <div class="panel-card wiz-section">
         <div class="wiz-budget-bar">
           <span>{{#if isTh}}อาชีพ{{else}}Occupation{{/if}} <strong>{{selectedProfession.title}}</strong></span>
@@ -208,7 +246,7 @@
 
         {{#if selectedProfession.sourceUuid}}
           <p class="wiz-linked-skills-note" role="status">
-            {{#if isTh}}ทักษะอาชีพที่เชื่อมโยงแล้ว: <strong>{{professionLinkedSkillCount}}</strong> รายการ — จะถูกเพิ่มลงชีทพร้อมค่าเริ่มต้น แม้ยังไม่แบ่งแต้ม อาชีพที่มีตัวเลือกทักษะเพิ่มเติมต้องเลือกตามคำอธิบายในรายการอาชีพ{{else}}Linked occupation skills: <strong>{{professionLinkedSkillCount}}</strong>. These will be added to the sheet at their base chance even without allocated points. Choose any additional optional specialties described by the occupation manually.{{/if}}
+            {{#if isTh}}ทักษะอาชีพที่เชื่อมโยงแล้ว: <strong>{{professionLinkedSkillCount}}</strong> รายการ — จะถูกเพิ่มลงชีทพร้อมค่าเริ่มต้น แม้ยังไม่แบ่งแต้ม ตัวเลือกทักษะเพิ่มเติมจะแสดงแยกตามกลุ่มด้านบน{{else}}Linked occupation skills: <strong>{{professionLinkedSkillCount}}</strong>. These will be added to the sheet at their base chance even without allocated points. Complete any choice groups above before spending occupation points.{{/if}}
             {{#if professionMissingSkillCount}}<strong class="wiz-link-warning">{{#if isTh}}ไม่พบลิงก์ทักษะ {{professionMissingSkillCount}} รายการ — ตรวจ Skills Compendium และเปิด Wizard ใหม่{{else}}Missing {{professionMissingSkillCount}} skill links — check the Skills Compendium and reopen the Wizard{{/if}}</strong>{{/if}}
           </p>
         {{/if}}
@@ -282,6 +320,16 @@
       </div>
     {{/if}}
     {{#if isStep6}}
+      {{#if isCompletedActor}}
+        <div class="panel-card wiz-rebuild-protection" role="status">
+          <strong>{{#if isTh}}ตัวละครนี้สร้างเสร็จแล้ว — ป้องกันข้อมูลเดิม{{else}}This character is complete — existing data protected{{/if}}</strong>
+          <p>{{#if isTh}}การบันทึก Wizard อีกครั้งอาจเปลี่ยนค่าสถานะและแต้มที่มีอยู่ จึงต้องให้ GM ยืนยันก่อน ทักษะและแต้มปกติสามารถปรับจาก Character Sheet ได้{{else}}Re-running creation could change statistics or starting allocations. A GM must explicitly unlock rebuilding. Use the Character Sheet for ordinary skill edits.{{/if}}</p>
+          {{#if @root.isGM}}
+            {{#unless allowRebuild}}<button class="brp-btn" type="button" data-action="unlockRebuild">{{#if isTh}}ยืนยันเปิดสิทธิ์แก้ไขตัวละครเดิม{{else}}Unlock character rebuild (GM){{/if}}</button>
+            {{else}}<strong>{{#if isTh}}ปลดล็อกการสร้างซ้ำแล้ว — ตรวจสอบก่อนบันทึก{{else}}Rebuild unlocked — review carefully before saving{{/if}}</strong>{{/unless}}
+          {{/if}}
+        </div>
+      {{/if}}
       <div class="panel-card wiz-section">
         <h3><i class="fa-solid fa-clipboard-check"></i> {{#if isTh}}ขั้นที่ 10: ตรวจสอบข้อมูลและบันทึกตัวละคร{{else}}Step 10: Finishing Touches & Review{{/if}}</h3>
         <div class="wiz-review-progress">
