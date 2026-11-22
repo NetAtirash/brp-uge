@@ -101,8 +101,10 @@ export function specialtyTemplateFor(group,option,documents=[]) {
   const byUuid=new Map(documents.map(doc=>[doc.uuid,doc]));
   if(option.sourceUuid && byUuid.has(option.sourceUuid))return byUuid.get(option.sourceUuid);
   if(option.templateUuid && byUuid.has(option.templateUuid))return byUuid.get(option.templateUuid);
+  // Do not automatically use a composite/"various" source as the rules template.
   if(group.fingerprintConflict)return null;
-  return byUuid.get(group.templateUuid)||null;
+  const safe=group.templates?.find(doc=>!group.ambiguous.some(a=>a.sourceUuid===doc.uuid));
+  return safe?byUuid.get(safe.uuid)||null:null;
 }
 
 export function specialtyIdentity(item) {
