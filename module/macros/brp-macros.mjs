@@ -1,4 +1,4 @@
-import { powerChance, getLocalizedName, getNameLanguage, escapeForChat } from "../character-tools.mjs";
+import { powerChance, getDisplayItemName, getNameLanguage, escapeForChat } from "../character-tools.mjs";
 import { BRPRolls } from "../rolls/brp-rolls.mjs";
 
 export const BRP_MACROS = {
@@ -8,7 +8,7 @@ export const BRP_MACROS = {
 
     const skills = targetActor.items.filter((i) => i.type === "skill");
     const options = skills
-      .map((s) => `<option value="${s.id}">${escapeForChat(getLocalizedName(s,getNameLanguage()))} (${s.system.total ?? s.system.base}%)</option>`)
+      .map((s) => `<option value="${s.id}">${escapeForChat(getDisplayItemName(s,getNameLanguage()))} (${s.system.total ?? s.system.base}%)</option>`)
       .join("");
 
     const { DialogV2 } = foundry.applications.api;
@@ -49,7 +49,7 @@ export const BRP_MACROS = {
             BRPRolls.rollSkill({
               actor: targetActor,
               skillId: item.id,
-              title: getLocalizedName(item, getNameLanguage()),
+              title: getDisplayItemName(item, getNameLanguage()),
               baseTarget: item.system.total ?? item.system.base,
               difficulty,
               modifier,
@@ -124,12 +124,12 @@ export const BRP_MACROS = {
         reason: `EXP check ${r.total} (target >${threshold}) · ${succeeds ? "สำเร็จ" : "ไม่สำเร็จ"}`
       });
       await item.update({ "system.checked": false });
-      const safeName = escapeForChat(getLocalizedName(item, getNameLanguage()));
+      const safeName = escapeForChat(getDisplayItemName(item, getNameLanguage()));
       lines.push(`<li><strong>${safeName}</strong>: ${r.total} (>${threshold}) — ${succeeds ? `+${gain}%` : "ไม่เพิ่ม"}</li>`);
     }
     await ChatMessage.implementation.create({
       speaker: ChatMessage.getSpeaker({ actor: targetActor }),
-      content: `<div class="brp-chat-card is-succeed"><div class="brp-chat-kicker">ADVANCEMENT</div><div class="brp-chat-heading" style="color:#f4f8ff!important;font-size:13px!important;font-weight:700!important;line-height:1.45!important">ผลทอยพัฒนาทักษะ/พลัง</div><ul>${lines.join("")}</ul></div>`,
+      content: `<div class="brp-chat-card is-succeed"><div class="brp-chat-kicker">ADVANCEMENT</div><div class="brp-chat-heading">ผลทอยพัฒนาทักษะ/พลัง</div><ul>${lines.join("")}</ul></div>`,
       ...BRPRolls.chatVisibility(confirm.messageMode)
     });
   }

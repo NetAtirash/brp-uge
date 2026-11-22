@@ -3,7 +3,7 @@ import { applyBRPControlLanguage } from './ui-controls.mjs';
 import { getLibraryDocuments, LIBRARY_CATEGORIES, documentToEmbeddedItem } from './library-provider.mjs';
 import { BRP_ERAS, BRP_GROUPS, getThemedBRPIcon, getBRPGroup } from './library-taxonomy.mjs';
 import { isPowerSystemEnabled } from './config.mjs';
-import { getLocalizedName, getItemTooltip, getTooltipLanguage } from './character-tools.mjs';
+import { getDisplayItemName, getItemTooltip, getTooltipLanguage } from './character-tools.mjs';
 import { applyStatusTemplate } from './status-template.mjs';
 import { buildBRPRulebookView } from './rulebook-reference-view.mjs';
 import { sameSkill } from './skill-foundation.mjs';
@@ -27,7 +27,7 @@ export class BRPCompendiumBrowser extends HandlebarsApplicationMixin(Application
       const ref=doc.flags?.['brp-uge']?.rulebookReference;
       const view=buildBRPRulebookView(doc,uiLang);
       const s=doc.system??{};
-      return {index,name:getLocalizedName(doc,uiLang),img:getThemedBRPIcon(doc)||doc.img||'icons/svg/item-bag.svg',type:doc.type,
+      return {index,name:getDisplayItemName(doc,uiLang),img:getThemedBRPIcon(doc)||doc.img||'icons/svg/item-bag.svg',type:doc.type,
         meta:this.activeCategory==='skills'?`${s.category||'skill'} · ${s.baseFormula||`${s.base??0}%`}`:doc.type==='power'?`${s.system||'Power'} · ${s.costPP??0} PP`:doc.type,
         group,groupLabel:BRP_GROUPS[group]?.[isTh?0:1]||group,eras,eraLabels:eras.map(k=>BRP_ERAS.find(e=>e.key===k)?.[isTh?'th':'en']||k).join(' · '),
         description:String(getItemTooltip(s,getTooltipLanguage())||'').slice(0,230),

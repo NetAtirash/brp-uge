@@ -1,5 +1,5 @@
 import { BRP_CONFIG } from "../config.mjs";
-import { escapeForChat, getLocalizedName } from "../character-tools.mjs";
+import { escapeForChat, getDisplayItemName } from "../character-tools.mjs";
 import { majorWoundOutcome, majorWoundPatch } from "../rules/major-wounds.mjs";
 import { maxSpellLevel, spellPPCost, magicCostOnResult, spellCastingRank } from "../rules/spell-casting.mjs";
 
@@ -189,7 +189,7 @@ export class BRPRolls {
     const dexterity = Number(actor.system.derived?.effectiveCharacteristics?.dex ?? actor.system.characteristics?.dex?.value ?? 10);
     const maximum = maxSpellLevel(intelligence);
     const initial = Math.min(maximum, Math.max(1,Number(magic.spellLevel || 1)));
-    const powerName = escapeForChat(getLocalizedName(power,lang));
+    const powerName = escapeForChat(getDisplayItemName(power,lang));
     const ppBefore = Number(actor.system.pp.value ?? 0);
     const perLevel = spellPPCost(magic,1);
     const form = await foundry.applications.api.DialogV2.input({
@@ -231,7 +231,7 @@ export class BRPRolls {
     const spent = Math.min(ppBefore, magicCostOnResult(result.degree,intended));
     const after = Math.max(0,Number(actor.system.pp.value??0)-spent);
     await actor.update({"system.pp.value":after});
-    const label = getLocalizedName(power,lang);
+    const label = getDisplayItemName(power,lang);
     const note = result.degree === "fumble" ? (th ? "Fumble: เสีย PP ที่ตั้งใจใช้ทั้งหมด และห้ามใช้บทเดิมในรอบถัดไป" : "Fumble: all committed PP lost; cannot retry this spell next round") :
       result.degree === "failure" ? (th?"ล้มเหลว: เสีย 1 PP":"Failure: 1 PP spent") : (th?"ร่ายสำเร็จ: ใช้ PP ตามระดับ":"Success: full level cost");
     await ChatMessage.implementation.create({

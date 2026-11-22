@@ -47,7 +47,7 @@ function refreshBRPWorldUI() {
 }
 
 Hooks.once("init", async () => {
-  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.8 (Foundry V14)");
+  console.log("BRP-UGE | Initializing Basic Roleplaying: Universal Game Engine v1.21.10 (Foundry V14)");
 
   if (globalThis.Handlebars && !Handlebars.helpers.eq) {
     Handlebars.registerHelper("eq", (a, b) => a === b);

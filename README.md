@@ -94,3 +94,7 @@ The Actor/NPC header now displays DM, Armor and MOV beside the header controls, 
 - Character and NPC Sheets can launch a full-viewport, draft-first Skill allocation editor with category/search filters and one batch save.
 - Skill Category Bonus calculations remain unchanged. Hide misleading zero-only badges and remove the bonus column when the rule is disabled or all modifiers are zero.
 - The Skill editor never updates Advancement log training, status modifiers, rulebook source records, or Compendium packs.
+
+## v1.21.10 — Flavor Names and Chat Contrast
+
+Every Item type supports optional Thai and English Flavor Names on its Item Sheet. Actor-owned copies use these for presentation only; canonical rules names, IDs, UUIDs, and Compendium sources remain intact. Chat advancement colors adapt to Light and Dark. See `CHANGELOG-v1.21.10.md` and [UI study](docs/UI-REFERENCE-DND5E-PF2E.md).

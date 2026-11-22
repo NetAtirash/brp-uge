@@ -7,7 +7,7 @@ import { BRPRolls } from "../rolls/brp-rolls.mjs";
 import { getLibraryDocuments, documentToEmbeddedItem } from "../library-provider.mjs";
 import { getBRPIcon, getThemedBRPIcon } from "../library-taxonomy.mjs";
 import { statusSkillAdjustment, characteristicAdjustments, agePenalties, agePenaltyBreakdown } from "../status-effects.mjs";
-import { escapeForChat, getItemTooltip, getTooltipLanguage, getLocalizedName, getNameLanguage, getSkillNameMatches, powerMode, powerChance } from "../character-tools.mjs";
+import { escapeForChat, getItemTooltip, getTooltipLanguage, getLocalizedName, getDisplayItemName, getNameLanguage, getSkillNameMatches, powerMode, powerChance } from "../character-tools.mjs";
 import { creationBudgets } from "../rules/character-creation.mjs";
 import { BRPSkillPointsEditor } from "../apps/skill-points-editor.mjs";
 import { shouldShowCategoryColumn } from "../skill-points-utils.mjs";
@@ -236,7 +236,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const scopeLabel = e.skillScope === "category"
         ? (ui.catLabels?.[e.skillCategory] ?? e.skillCategory ?? "—")
         : e.skillScope === "specific"
-          ? affectedSkillItems.map(i=>getLocalizedName(i,uiLang)).join(", ") || "—"
+          ? affectedSkillItems.map(i=>getDisplayItemName(i,uiLang)).join(", ") || "—"
           : ({none:"—",all:isTh?"ทุกทักษะ":"All skills",visual:isTh?"ทักษะการมองเห็น":"Visual skills"})[e.skillScope] ?? "—";
       return {...e, name:uiLang==='en'?(e.nameEn||e.name):(e.nameTh||e.name), scopeLabel,
         characteristicLabel:e.characteristic?.toUpperCase() || "—",
@@ -255,7 +255,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.currencyRows=[...new Set([...configuredUnits,...savedUnits])].map(unit=>({unit,amount:Number((sys.currency??[]).find(c=>c.unit===unit)?.amount??0)}));
     const jobs=this.document.items.filter(i=>i.type==="occupation");
     context.occupationItems=await Promise.all(jobs.map(async i=>({
-      id:i.id,name:getLocalizedName(i,uiLang),
+      id:i.id,name:getDisplayItemName(i,uiLang),
       wealth:i.system.wealthEnabled ? wealthDisplayFromItem(await resolveWealthItem(i.system.wealthRef),uiLang) : "",
       active:i.id===(sys.activeOccupationId||jobs[0]?.id)
     })));
@@ -266,7 +266,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.noteFilter = this.#noteFilter;
     context.advancementLog = [...(sys?.advancementLog ?? [])].map(entry => ({
       ...entry,
-      itemDisplay: (this.document.items.get(entry.itemId) ? getLocalizedName(this.document.items.get(entry.itemId), uiLang) : entry.itemName) ?? "(Deleted)",
+      itemDisplay: (this.document.items.get(entry.itemId) ? getDisplayItemName(this.document.items.get(entry.itemId), uiLang) : entry.itemName) ?? "(Deleted)",
       isPower: entry.itemType === "power",
       positive: Number(entry.points) > 0,
       negative: Number(entry.points) < 0
@@ -316,10 +316,13 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     let checkedCount = 0;
     const presentItem = (item) => ({
       id: item.id, name: item.name, img: getThemedBRPIcon(item), type: item.type, system: item.system,
-      localizedTooltip: getItemTooltip(item.system, getTooltipLanguage()).slice(0,750),
-      displayName: getLocalizedName(item, uiLang),
+      localizedTooltip: `${getDisplayItemName(item, uiLang) !== getLocalizedName(item, uiLang)
+        ? `${isTh ? "ชื่อกฎ" : "Rules"}: ${getLocalizedName(item, uiLang)} — ` : ""}${getItemTooltip(item.system, getTooltipLanguage())}`.slice(0,750),
+      displayName: getDisplayItemName(item, uiLang),
+      canonicalName: getLocalizedName(item, uiLang),
+      isFlavored: getDisplayItemName(item, uiLang) !== getLocalizedName(item, uiLang),
       englishName: item.system?.nameEn || item.name,
-      showEnglishName: uiLang==='th' && !!(item.system?.nameEn || item.name) && getLocalizedName(item,'th') !== (item.system?.nameEn||item.name),
+      showEnglishName: uiLang==='th' && !String(item.system?.flavorNameTh ?? '').trim() && !!(item.system?.nameEn || item.name) && getLocalizedName(item,'th') !== (item.system?.nameEn||item.name),
       resolvedMode: item.type === "power" ? powerMode(item.system) : "",
       canCheckImprovement: item.type === "power" ? powerMode(item.system) === "skill" : false,
       previewChance: item.type === "power" ? powerChance(item, this.document) : 0
@@ -384,7 +387,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }));
     const exactChoices=sourceSkills.map(skill=>({
       uuid:skill.uuid,
-      label:`${getLocalizedName(skill,uiLang)} — ${skill.system.baseFormula || `${skill.system.base??0}%`}`
+      label:`${getDisplayItemName(skill,uiLang)} — ${skill.system.baseFormula || `${skill.system.base??0}%`}`
     }));
     context.skillCatalog=[...familyChoices,...exactChoices];
     context.hasSpecialtyFamilies=families.length>0;
@@ -702,7 +705,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const skill = healer.items.find(s => s.type === "skill" && matchNames[method].some(k => getSkillNameMatches(s,k) || String(s.system.description??"").includes(k)));
       const baseTarget = skill ? Number(skill.system.total ?? skill.system.base ?? 0) : ({firstAid:30,medicine:5,psychotherapy:1})[method];
       result = await BRPRolls.rollSkill({ actor: healer, skillId: skill?.id,
-        title: `${esc(getLocalizedName(skill, getNameLanguage()) || method)} → ${esc(actor.name)}`,
+        title: `${esc(getDisplayItemName(skill, getNameLanguage()) || method)} → ${esc(actor.name)}`,
         subtitle: details, baseTarget });
       if (!result) return;
     }
@@ -848,7 +851,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     // Never keep a template's ID: each specialty is its own embedded document.
     delete data._id;
     const [created]=await this.document.createEmbeddedDocuments('Item',[data]);
-    if(created)ui.notifications.info(`${th?'เพิ่มทักษะแล้ว':'Added'}: ${getLocalizedName(created,th?'th':'en')}`);
+    if(created)ui.notifications.info(`${th?'เพิ่มทักษะแล้ว':'Added'}: ${getDisplayItemName(created,th?'th':'en')}`);
   }
 
   static async #onRunExp(event) {
@@ -865,7 +868,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const item = itemId ? actor.items.get(itemId) : null;
     let card;
     if (item) {
-      const name = getLocalizedName(item, lang);
+      const name = getDisplayItemName(item, lang);
       const description = getItemTooltip(item.system, lang);
       let value = "";
       if (item.type === "skill") value = `${item.system.total ?? item.system.base ?? "—"}%`;
@@ -906,7 +909,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     BRPRolls.rollSkill({
       actor: this.document,
       skillId: item.id,
-      title: getLocalizedName(item, getNameLanguage()),
+      title: getDisplayItemName(item, getNameLanguage()),
       baseTarget: item.system.total ?? item.system.base,
       difficulty: item.system.statusDifficult ? "difficult" : "average"
     });
@@ -924,7 +927,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const systemName = String(power.system?.system || "Magic");
     const uiLang = game.settings.get("brp-uge", "uiLanguage") || "th";
     const caption = uiLang === "th" ? "ใช้พลัง" : "Power";
-    const powerLabel = getLocalizedName(power, uiLang);
+    const powerLabel = getDisplayItemName(power, uiLang);
     const actor = this.document;
     const targetActor = Array.from(game.user?.targets ?? [])[0]?.actor;
     if (systemName === "Magic" && mode === "skill") {
@@ -964,7 +967,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     BRPRolls.rollSkill({
       actor: this.document,
       skillId: item.id,
-      title: `แรงผลักดัน: ${getLocalizedName(item, getNameLanguage())}`,
+      title: `แรงผลักดัน: ${getDisplayItemName(item, getNameLanguage())}`,
       baseTarget: item.system.value ?? 50
     });
   }
@@ -1007,7 +1010,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const res = await BRPRolls.rollSkill({
       actor: this.document,
       skillId: skillItem?.id,
-      title: `โจมตีด้วยอาวุธ: ${getLocalizedName(weapon, getNameLanguage())}`,
+      title: `โจมตีด้วยอาวุธ: ${getDisplayItemName(weapon, getNameLanguage())}`,
       subtitle: targetInfo
         ? `เป้าหมาย: ${targetInfo.name} (${targetInfo.ap} AP · HP ${targetInfo.hp}/${targetInfo.hpMax} · หลบหลีก ${targetInfo.dodge}%)`
         : "",
@@ -1028,7 +1031,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if (dmgSpec.isFixed) {
         await BRPRolls.renderDamageCard({
           attackerActor: this.document,
-          weaponName: getLocalizedName(weapon, getNameLanguage()),
+          weaponName: getDisplayItemName(weapon, getNameLanguage()),
           degree: res.degree,
           damageTotal: dmgSpec.fixedTotal,
           breakdown: `Max (${baseDmg}${dm !== "0" ? dm : ""}) ทะลุเกราะ`,
@@ -1041,7 +1044,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         const dmgRoll = await new Roll(dmgSpec.formula).evaluate();
         await BRPRolls.renderDamageCard({
           attackerActor: this.document,
-          weaponName: getLocalizedName(weapon, getNameLanguage()),
+          weaponName: getDisplayItemName(weapon, getNameLanguage()),
           degree: res.degree,
           damageTotal: dmgRoll.total,
           breakdown: `${dmgSpec.formula} → ${dmgRoll.result}`,
@@ -1053,7 +1056,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       } else {
         await ChatMessage.implementation.create({
           speaker: ChatMessage.getSpeaker({ actor: this.document }),
-          content: `<div class="brp-chat-card"><div class="brp-chat-kicker">WEAPON</div><strong>ความเสียหาย/ผลของ ${escapeForChat(getLocalizedName(weapon,getNameLanguage()))}:</strong> ${escapeForChat(baseDmg)}</div>`,
+          content: `<div class="brp-chat-card"><div class="brp-chat-kicker">WEAPON</div><strong>ความเสียหาย/ผลของ ${escapeForChat(getDisplayItemName(weapon,getNameLanguage()))}:</strong> ${escapeForChat(baseDmg)}</div>`,
           ...BRPRolls.chatVisibility(res.messageMode)
         });
       }
@@ -1089,10 +1092,10 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const categoryOptions = options(existing.skillCategory || "combat", categories.map(k=>[k,categoryLabel(k,getNameLanguage())]));
     const skillChecks = categories.map(cat => {
       const matches = allSkills.filter(item => (item.system.category || "communication") === cat)
-        .sort((a,b)=>getLocalizedName(a,getNameLanguage()).localeCompare(getLocalizedName(b,getNameLanguage())));
+        .sort((a,b)=>getDisplayItemName(a,getNameLanguage()).localeCompare(getDisplayItemName(b,getNameLanguage())));
       if (!matches.length) return "";
       return `<fieldset class="brp-status-check-group"><legend>${esc(labels[cat] || cat)}</legend>${matches.map(item=>
-        `<label class="brp-status-skill-option"><input type="checkbox" name="skillChoice_${item.id}" ${selectedIds.has(item.id)?"checked":""}> <span>${esc(getLocalizedName(item,getNameLanguage()))}</span></label>`
+        `<label class="brp-status-skill-option"><input type="checkbox" name="skillChoice_${item.id}" ${selectedIds.has(item.id)?"checked":""}> <span>${esc(getDisplayItemName(item,getNameLanguage()))}</span></label>`
       ).join("")}</fieldset>`;
     }).join("");
     const f=await foundry.applications.api.DialogV2.input({
@@ -1195,7 +1198,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const existing = (this.document.system.advancementLog ?? []).find(row => row.id === id);
     const choices = this.document.items.filter(item => item.type === "skill" || item.type === "power");
     if (!choices.length) return ui.notifications.warn("กรุณาเพิ่มทักษะหรือพลังก่อนบันทึกการพัฒนา");
-    const opts = choices.map(item => `<option value="${escapeForChat(item.id)}" ${item.id === (existing?.itemId || defaultItemId) ? "selected" : ""}>${escapeForChat(getLocalizedName(item, getNameLanguage()))} (${item.type})</option>`).join("");
+    const opts = choices.map(item => `<option value="${escapeForChat(item.id)}" ${item.id === (existing?.itemId || defaultItemId) ? "selected" : ""}>${escapeForChat(getDisplayItemName(item, getNameLanguage()))} (${item.type})</option>`).join("");
     await foundry.applications.api.DialogV2.wait({
       window: { title: existing ? "แก้ไขบันทึกการพัฒนา" : "บันทึกการพัฒนาใหม่" },
       content: `<div class="brp-macro-form brp-dialog-grid">

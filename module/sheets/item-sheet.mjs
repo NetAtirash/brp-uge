@@ -1,5 +1,5 @@
 import { applyBRPControlLanguage } from "../ui-controls.mjs";
-import { getItemDescription, getLocalizedName } from "../character-tools.mjs";
+import { getItemDescription, getLocalizedName, getDisplayItemName } from "../character-tools.mjs";
 import { getThemedBRPIcon } from "../library-taxonomy.mjs";
 import { getReferenceChoices, itemReference, categoryLabel, resolveItemReference } from "../reference-utils.mjs";
 import { buildBRPRulebookView } from "../rulebook-reference-view.mjs";
@@ -51,6 +51,10 @@ export class BRPItemSheet extends HandlebarsApplicationMixin(ItemSheetV2) {
     context.rulebookView = buildBRPRulebookView(this.document, context.isTh ? "th" : "en");
     context.nameTh = getLocalizedName(this.document, "th");
     context.nameEn = getLocalizedName(this.document, "en");
+    context.flavorNameTh = String(this.document.system?.flavorNameTh ?? "");
+    context.flavorNameEn = String(this.document.system?.flavorNameEn ?? "");
+    context.flavorDisplay = getDisplayItemName(this.document, context.isTh ? "th" : "en");
+    context.rulesDisplay = getLocalizedName(this.document, context.isTh ? "th" : "en");
     context.isSkill = t === "skill";
     context.isWeapon = t === "weapon";
     context.isArmor = t === "armor";

@@ -22,6 +22,23 @@
     </div>
   </header>
 
+  {{!-- Optional aliases for narrative use; no change to rules identity. --}}
+  <section class="brp-flavor-editor" aria-label="{{#if isTh}}ชื่อเอกลักษณ์{{else}}Flavor Name{{/if}}">
+    <div class="brp-flavor-intro">
+      <strong>{{#if isTh}}ชื่อเอกลักษณ์ (Flavor Name){{else}}Flavor Name / In-world Name{{/if}}</strong>
+      <small>{{#if isTh}}ใช้แสดงแทนชื่อหลักเฉพาะไอเทมนี้ ไม่เปลี่ยนข้อมูลกฎหรือ Compendium ต้นฉบับ{{else}}Shown instead of the rules name on this Item. Mechanics and source Compendium are unchanged.{{/if}}</small>
+    </div>
+    <div class="brp-flavor-inputs">
+      <label class="{{#if isTh}}brp-language-primary{{else}}brp-language-secondary{{/if}}">{{#if isTh}}ชื่อเอกลักษณ์ภาษาไทย{{else}}Thai Flavor Name{{/if}}
+        <input type="text" name="system.flavorNameTh" value="{{flavorNameTh}}" placeholder="{{#if isTh}}เว้นว่างเพื่อใช้ชื่อหลัก{{else}}Leave empty for the rules name{{/if}}" autocomplete="off" />
+      </label>
+      <label class="{{#if isTh}}brp-language-secondary{{else}}brp-language-primary{{/if}}">{{#if isTh}}ชื่อเอกลักษณ์ภาษาอังกฤษ{{else}}English Flavor Name{{/if}}
+        <input type="text" name="system.flavorNameEn" value="{{flavorNameEn}}" placeholder="{{#if isTh}}เว้นว่างเพื่อใช้ชื่อหลัก{{else}}Leave empty for the rules name{{/if}}" autocomplete="off" />
+      </label>
+    </div>
+    <div class="brp-flavor-reference"><span>{{#if isTh}}ชื่อกฎต้นฉบับ{{else}}Rules name{{/if}}:</span> <strong>{{rulesDisplay}}</strong></div>
+  </section>
+
   {{#if rulebookView}}
     <details class="brp-item-rulebook" open>
       <summary class="brp-item-rulebook-summary"><i class="fa-solid fa-book-open-reader" aria-hidden="true"></i>
