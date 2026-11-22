@@ -57,6 +57,9 @@ assert.match(wiz,/this\.wizardData\.occupationFamilyDrafts/);
 assert.match(wiz,/this\.wizardData\.occupationSpecialtyDrafts/);
 assert.match(wiz,/wizardSpecialtyFamilies\(this\.specialtyRegistry,uiLang\)/);
 assert.match(wiz,/wizardOccupationFamilyChoices\(/);
+assert.match(wiz,/refreshWizardSpecialties: BRPCharacterWizard/);
+assert.match(wiz,/this\.librarySkillDocs=await getLibraryDocuments\(\{types:\['skill'\]\}\)/);
+assert.match(wiz,/this\.specialtyRegistrySnapshot=null/);
 assert.doesNotMatch(wiz,/select\.add\(new Option\(/,
   'Wizard must not dynamically inject choices into otherwise-empty selects');
 assert.match(wiz,/querySelectorAll\('\[data-personal-family-specialties\]'\)/);
@@ -73,4 +76,7 @@ assert.match(hbs,/data-personal-family-specialties/);
 assert.match(hbs,/data-occupation-specialty-field/);
 assert.match(hbs,/\{\{#each f\.specialties as \|specialty\|\}\}/);
 assert.match(hbs,/<option value="{{specialty.key}}">{{specialty.label}}<\/option>/);
+assert.match(hbs,/data-action="refreshWizardSpecialties"/);
+assert.match(hbs,/availableSpecialtyCount/);
+assert.match(hbs,/data-personal-family-specialties/);
 console.log('PASS: live World Specialty changes appear in Wizard without resetting drafts');
