@@ -386,3 +386,53 @@ html[data-brp-theme] .brp-uge .brp-wiz-fixed-skills {
     max-height:200px;
   }
 }
+
+
+/* Visible, checkable occupation Skill choice clauses and progress. */
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-step4-progress {
+  display:flex;gap:8px;flex-wrap:wrap;position:sticky;top:0;z-index:8;
+  padding:9px 10px;margin-bottom:9px;
+  background:var(--brp-panel)!important;border:1px solid var(--brp-border-strong)!important;
+  border-radius:5px;box-shadow:0 3px 12px #0003;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-step4-progress span {
+  display:flex;align-items:center;gap:6px;flex:1 1 145px;
+  font-size:11px;line-height:1.35;color:var(--brp-text)!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-step4-progress b {
+  display:inline-grid;place-items:center;flex:none;width:22px;height:22px;
+  border-radius:50%;background:var(--brp-deep)!important;
+  border:1px solid var(--brp-border-strong)!important;color:var(--brp-text)!important;
+}
+html[data-brp-theme] .application.brp-uge.brp-wizard-window .brp-wiz-step4-progress span.is-complete b {
+  background:var(--brp-success)!important;color:var(--brp-paper)!important;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-radio-list {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:7px;padding:6px 0;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-radio-list .brp-wiz-choice-radio {
+  display:flex!important;align-items:center;gap:9px;min-width:0;min-height:36px;
+  border:1px solid var(--brp-border)!important;background:var(--brp-surface)!important;
+  border-radius:5px;padding:7px 9px;cursor:pointer;
+  color:var(--brp-text)!important;font-size:12px;line-height:1.35;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-radio-list .brp-wiz-choice-radio:has(input:checked) {
+  border-color:var(--brp-accent)!important;background:var(--brp-highlight)!important;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-radio-list input[type="radio"] {
+  appearance:auto!important;accent-color:var(--brp-accent);
+  flex:none;width:16px;height:16px;margin:0;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-radio-list .brp-wiz-choice-radio span {
+  color:var(--brp-text)!important;overflow-wrap:anywhere;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-radio-list label:focus-within {
+  outline:2px solid var(--brp-focus)!important;outline-offset:2px;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-field[hidden] {
+  display:none!important;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-choose-label {
+  display:block;margin:5px 0;color:var(--brp-text)!important;font-size:12px;
+}
