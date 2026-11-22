@@ -460,3 +460,20 @@ html[data-brp-theme] .brp-uge .brp-specialty-manager-v3 .brp-manager-warning {
     grid-template-columns:1fr;
   }
 }
+
+/* Foundry v14 Wizard: explain effective GM options and refresh safely. */
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-status {
+  display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;
+  margin-bottom:8px;color:var(--brp-text);
+}
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-status > strong {
+  flex:1 1 230px;
+}
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-status small {
+  font-size:11px;color:var(--brp-muted);
+}
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-status > button {
+  width:auto!important;min-height:30px;padding:5px 10px!important;
+  background:var(--brp-surface)!important;color:var(--brp-text)!important;
+  border:1px solid var(--brp-border-strong)!important;
+}
