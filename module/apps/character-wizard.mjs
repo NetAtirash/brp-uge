@@ -758,13 +758,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         for(const field of fields){
           const active=!!family&&field.dataset.familyKey===family;
           field.hidden=!active;
-          const picker=field.querySelector('[data-occupation-specialty-picker]');
-          if(!picker)continue;
-          picker.disabled=!active;
-          if(active){
-            const draft=this.wizardData.occupationSpecialtyDrafts[id]||'';
-            if([...picker.options].some(o=>o.value===draft))picker.value=draft;
-            else picker.value='';
+          const selected=this.wizardData.occupationSpecialtyDrafts[id]||'';
+          for(const radio of field.querySelectorAll('[data-occupation-specialty-option]')){
+            radio.checked=active&&radio.value===selected;
           }
         }
       };
@@ -773,9 +769,11 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       if(saved)saved.checked=true;
       for(const radio of radios)radio.addEventListener('change',()=>update(true));
       for(const field of fields){
-        field.querySelector('[data-occupation-specialty-picker]')?.addEventListener('change',e=>{
-          this.wizardData.occupationSpecialtyDrafts[id]=e.target.value;
-        });
+        for(const radio of field.querySelectorAll('[data-occupation-specialty-option]')){
+          radio.addEventListener('change',()=>{
+            if(radio.checked)this.wizardData.occupationSpecialtyDrafts[id]=radio.value;
+          });
+        }
       }
       update();
     }
@@ -792,20 +790,19 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         for(const field of fields){
           const active=!!personalFamily.value&&field.dataset.personalFamilySpecialties===personalFamily.value;
           field.hidden=!active;
-          const picker=field.querySelector('[data-personal-specialty-picker]');
-          if(!picker)continue;
-          picker.disabled=!active;
-          if(active){
-            const chosen=this.wizardData.personalSpecialtyDraft;
-            picker.value=[...picker.options].some(o=>o.value===chosen)?chosen:'';
+          const chosen=this.wizardData.personalSpecialtyDraft;
+          for(const radio of field.querySelectorAll('[data-personal-specialty-option]')){
+            radio.checked=active&&radio.value===chosen;
           }
         }
       };
       personalFamily.addEventListener('change',()=>update(true));
       for(const field of fields){
-        field.querySelector('[data-personal-specialty-picker]')?.addEventListener('change',e=>{
-          this.wizardData.personalSpecialtyDraft=e.target.value;
-        });
+        for(const radio of field.querySelectorAll('[data-personal-specialty-option]')){
+          radio.addEventListener('change',()=>{
+            if(radio.checked)this.wizardData.personalSpecialtyDraft=radio.value;
+          });
+        }
       }
       update();
     }
@@ -990,8 +987,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const picker=this.element.querySelector('[data-occupation-kind-radio="'+CSS.escape(id)+'"]:checked');
     const choice=String(picker?.value||'');
     const family=choice.startsWith('family:')?choice.slice(7):'';
-    const subtype=[...this.element.querySelectorAll('[data-occupation-specialty-picker]')]
-      .find(select=>select.dataset.occupationSpecialtyPicker===id&&select.dataset.familyKey===family);
+    const subtype=[...this.element.querySelectorAll('[data-occupation-specialty-option]:checked')]
+      .find(radio=>radio.dataset.occupationSpecialtyOption===id&&radio.dataset.familyKey===family);
     const key=family?family+'|'+String(subtype?.value||''):
       choice.startsWith('specialty:')?choice.slice(10):
       choice.startsWith('skill:')?choice.slice(6):'';
@@ -1028,9 +1025,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     event.preventDefault();
     this.#refreshSpecialtyRegistry();
     const family=this.element.querySelector('[data-personal-family-picker]')?.value||'';
-    const picker=[...this.element.querySelectorAll('[data-personal-specialty-picker]')]
-      .find(select=>select.dataset.familyKey===family);
-    const choice=picker?.value||'';
+    const selected=[...this.element.querySelectorAll('[data-personal-specialty-option]:checked')]
+      .find(radio=>radio.dataset.personalSpecialtyOption===family);
+    const choice=selected?.value||'';
     const key=family&&choice?family+'|'+choice:'';
     if(!key)return ui.notifications.warn('Choose a Skill Family and Specialty');
     try{await this.#ensureSkillCandidate(key);}
