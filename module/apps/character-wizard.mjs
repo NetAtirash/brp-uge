@@ -109,6 +109,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       rollSingleChar: BRPCharacterWizard.#onRollSingleChar,
       stepChar: BRPCharacterWizard.#onStepChar,
       selectProfession: BRPCharacterWizard.#onSelectProfession,
+      openOccupationChoiceSetup: BRPCharacterWizard.#onOpenOccupationChoiceSetup,
       selectOccupationChoice: BRPCharacterWizard.#onSelectOccupationChoice,
       removeOccupationChoice: BRPCharacterWizard.#onRemoveOccupationChoice,
       addPersonalSpecialty: BRPCharacterWizard.#onAddPersonalSpecialty,
@@ -847,6 +848,37 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     event.preventDefault();
     this.#changeProfession(target.dataset.profId||'');
     this.render();
+  }
+
+  static async #onOpenOccupationChoiceSetup(event){
+    event.preventDefault();
+    if(!game.user?.isGM)return ui.notifications.warn('GM only');
+    const prof=this.#getProfession();
+    if(!prof?.sourceUuid)return;
+    try{
+      const original=await fromUuid(prof.sourceUuid);
+      if(!original||original.type!=='occupation')throw new Error('Occupation source is unavailable');
+      let editable=original;
+      if(original.pack){
+        // A locked Compendium is immutable: create a campaign-local Occupation
+        // rather than modifying the official content pack or Actor copies.
+        const data=documentToEmbeddedItem(original);
+        delete data._id;delete data.id;
+        data.name=(original.system?.nameEn||original.name)+' (World)';
+        data.system.nameEn=(original.system?.nameEn||original.name)+' (World)';
+        data.system.nameTh=(original.system?.nameTh||original.name)+' (แคมเปญ)';
+        data.flags??={};
+        data.flags['brp-uge']??={};
+        data.flags['brp-uge'].originalOccupationUuid=original.uuid;
+        editable=await Item.implementation.create(data,{renderSheet:false});
+        if(!editable)throw new Error('Could not create World copy of this Occupation');
+        this.libraryProfessions.push(editable);
+        this.#changeProfession(editable.uuid);
+        ui.notifications.info('Created a World copy. Configure its Skill Choice Groups, then return to the Wizard.');
+      }
+      editable.sheet?.render({force:true});
+      this.render();
+    }catch(error){ui.notifications.error(error.message);}
   }
 
   static async #onSelectOccupationChoice(event,target) {
