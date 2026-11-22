@@ -41,7 +41,8 @@ export async function configureStartingSkills() {
   if(!globalThis.game?.user?.isGM){globalThis.ui?.notifications?.warn?.('GM only');return false;}
   const isTh=game.settings.get('brp-uge','uiLanguage')!=='en';
   const sources=game.settings.get('brp-uge','startingSkillsSource');
-  const skills=uniqueSkills(await getLibraryDocuments({types:['skill'],includeWorld:true,includePacks:sources!=='world'}));
+  const skills=uniqueSkills(await getLibraryDocuments({types:['skill'],includeWorld:true,includePacks:sources!=='world'}))
+    .filter(item=>!analyzeSkillFamily(item)?.supportsSpecialty);
   if(!skills.length){ui.notifications.warn(isTh?'ไม่พบ Skill Items ใน World หรือ Compendium':'No Skill Items in World or enabled Compendiums');return false;}
   const saved=decodeStartingSkillKeys(game.settings.get('brp-uge','startingSkillsKeys'));
   const mode=game.settings.get('brp-uge','startingSkillsMode');
