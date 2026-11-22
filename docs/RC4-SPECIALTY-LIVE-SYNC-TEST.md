@@ -30,3 +30,7 @@ https://github.com/NetAtirash/brp-uge/releases/download/v1.21.11-rc.4/system.jso
 ~~~
 
 The RC3 manifest is pinned to RC3; use the versioned RC4 URL for a preview upgrade. This is a Game System, not a Module. Do not install two `brp-uge` systems side by side in the same Foundry User Data root. Stable Latest remains v1.21.10. PR #8 stays Draft pending in-world verification.
+
+## Published preview checkpoint
+
+This RC4 publication commit includes verified live World Specialty registry refresh, selector draft preservation and regression coverage. The publication workflow creates a versioned prerelease, not a stable Latest replacement. Install only in a copied Foundry v14 World.
