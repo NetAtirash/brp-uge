@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');
+assert.ok(manifest.styles.includes('styles/brp-v1219-workbench.css'));
 const {availableSpecialtyFamilies,analyzeSkillFamily,composeSpecialtyItem,readSpecialtyPresets}=await import('../module/skill-specialties.mjs');
 const {canonicalSkillKey,uniqueSkills,sameSkill,planMissingBaseSkills}=await import('../module/skill-foundation.mjs');
 

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf-8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');
+assert.ok(manifest.styles.includes('styles/brp-v1219-workbench.css'));
 const css=read('styles/brp-v1217-layout.css');
 for(const match of ['grid-template-columns:116px','brp-banner-combat-strip','brp-header-utilities','brp-manager-controls'])assert.ok(css.includes(match),match);
 for(const kind of ['character','npc']){

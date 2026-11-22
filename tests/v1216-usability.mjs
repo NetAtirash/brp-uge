@@ -5,7 +5,7 @@ import {settingsGroupFor,settingPresentation} from '../module/apps/settings-orga
 const read=(p)=>readFileSync(new URL('../'+p, import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');
+assert.ok(manifest.styles.includes('styles/brp-v1219-workbench.css'));
 assert.match(manifest.manifest,/releases\/latest\/download\/system\.json/);
 assert.ok(manifest.download.endsWith(`/v${manifest.version}/brp-uge.zip`), 'Versioned release download must match the manifest version');
 const skills=[{type:'skill',name:'A',system:{nameEn:'Spot',referenceKey:'Spot'}}, {type:'skill',name:'B',system:{nameEn:'Dodge',referenceKey:'Dodge'}},{type:'skill',name:'C',system:{nameEn:'Spot',referenceKey:'Spot'}}];

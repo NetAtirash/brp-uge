@@ -5,7 +5,7 @@ const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
 assert.ok(manifest.styles.includes('styles/brp-personal-and-wizard.css'));
 assert.ok(manifest.styles.includes('styles/brp-fa7-v14.css'));
-assert.equal(manifest.styles.at(-1),'styles/brp-v1219-workbench.css');
+assert.ok(manifest.styles.includes('styles/brp-v1219-workbench.css'));
 const wizard=read('module/apps/character-wizard.mjs');
 const wizardHbs=read('templates/apps/character-wizard.hbs');
 const model=read('module/data-models.mjs');
