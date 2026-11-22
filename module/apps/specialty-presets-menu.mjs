@@ -41,7 +41,7 @@ export class SpecialtyPresetsMenu extends App {
   }
   #familyConfig(){
     this.#overlay.families[this.#family]??={
-      additions:[],sourceOverrides:{},hidden:[],legacyMigrated:false
+      additions:[],bookOverrides:{},sourceOverrides:{},hidden:[],legacyMigrated:false
     };
     return this.#overlay.families[this.#family];
   }
@@ -54,12 +54,16 @@ export class SpecialtyPresetsMenu extends App {
   }
   #row(group,entry,newRow=false){
     const source=Boolean(entry.sourceUuid);
+    const book=entry.source==='book';
     const state=entry.state==='review'?'review':entry.hidden?'hidden':entry.state||'enabled';
-    const origin=source?this.#tr('รายการจาก Compendium / World','Installed source item'):
-      entry.source==='legacy'?this.#tr('Preset เดิม','Previous World preset'):this.#tr('ตัวเลือก World','World option');
+    const origin=book?this.#tr('Specialty ตั้งต้นจากหนังสือ','Verified book default'):
+      entry.source==='legacy-source'?this.#tr('รายการ Compendium เดิม — รอย้ายเป็น Template','Legacy source (migration needed)'):
+      entry.source==='legacy-preset'?this.#tr('Preset เดิมรอ GM อนุมัติ','Legacy preset pending review'):
+      this.#tr('Specialty ที่ GM เพิ่ม','GM-added Specialty');
     const statusText=this.#tr('ยังไม่ให้ผู้เล่นเลือกจนกว่าจะจัดการชื่อและยืนยัน','Review this source heading before enabling it');
     return '<article class="brp-specialty-row" data-row data-source="'+esc(entry.source||'world')+
-      '" data-source-uuid="'+esc(entry.sourceUuid||'')+'" data-original-en="'+esc(entry.originalEn||entry.en||'')+
+      '" data-source-uuid="'+esc(entry.sourceUuid||'')+'" data-book-key="'+esc(entry.bookKey||'')+
+      '" data-original-en="'+esc(entry.originalEn||entry.en||'')+
       '" data-original-th="'+esc(entry.originalTh||entry.th||'')+'" data-is-new="'+(newRow?'true':'false')+'">'+
       '<div class="brp-specialty-row-head"><span class="brp-specialty-source-kind">'+esc(origin)+'</span>'+
       (entry.review?'<span class="brp-specialty-review-note">'+this.#tr('ต้องตรวจสอบ','Needs review')+'</span>':
@@ -82,6 +86,8 @@ export class SpecialtyPresetsMenu extends App {
         '</select></label>'+
       '</div>'+
       (entry.review?'<small class="brp-manager-note">'+statusText+'</small>':'')+
+      (book?'<small class="brp-manager-note">'+this.#tr('ค่ากฎตั้งต้น: ','Book rule base: ')+
+       esc(entry.baseFormula||String(entry.base??group.canonicalTemplate?.system?.base??0)+'%')+'</small>':'')+
       (source?'<small class="brp-manager-uuid">'+esc(entry.sourceUuid)+'</small>':'')+
       '</article>';
   }
@@ -105,11 +111,14 @@ export class SpecialtyPresetsMenu extends App {
         '<section class="brp-specialty-detail">'+
         (group?'<div class="brp-family-detail-heading"><h3>'+esc(current)+'</h3>'+
           '<span>'+group.activeCount+' '+this.#tr('ตัวเลือกที่เปิดให้ผู้เล่น','available choices')+'</span></div>'+
+          (group.requiresContentMigration?'<p class="brp-manager-note brp-manager-warning">'+this.#tr(
+            'ยังใช้ Compendium แบบทักษะย่อยหลาย Item กรุณาย้ายข้อมูลให้เหลือ Skill Template หนึ่งรายการต่อ Family ก่อนใช้ตัวเลือกตั้งต้น',
+            'Legacy Compendium stores several subtype Items. Migrate to one Skill Family Template to supply verified defaults.')+'</p>':'')+
           (group.fingerprintConflict?'<p class="brp-manager-note">'+this.#tr(
             'แหล่งข้อมูล Family นี้มีสูตรหรือค่าเริ่มต้นต่างกัน กรุณาเลือกแม่แบบกฎให้ตรงกับ Specialty',
             'This family has differing base chances or formulas. Choose an appropriate template.')+'</p>':'')+
           '<div data-specialty-rows>'+group.options.map(e=>this.#row(group,e)).join('')+'</div>'+
-          '<button type="button" data-add-specialty '+(group.templates.length?'':'disabled')+'>'+
+          '<button type="button" data-add-specialty '+(group.canonicalTemplate?'':'disabled')+'>'+
             this.#tr('+ เพิ่ม Specialty ภายใต้ทักษะนี้','+ Add Specialty to this Skill')+'</button>'+
           '<p class="brp-manager-note">'+this.#tr(
             'รายการที่ซ่อนหรือรอตรวจสอบจะไม่ปรากฏในตัวเลือกผู้เล่น การแก้ไข World ไม่เปลี่ยนทักษะที่ตัวละครมีอยู่แล้ว',
@@ -127,12 +136,13 @@ export class SpecialtyPresetsMenu extends App {
     const group=this.#registry.find(f=>f.key===this.#family);
     if(!group)return;
     const cfg=this.#familyConfig();
-    const additions=[],sourceOverrides={},seen=new Set();
+    const additions=[],sourceOverrides={...cfg.sourceOverrides},bookOverrides={},seen=new Set();
     for(const node of this.element.querySelectorAll('[data-row]')){
       const en=safe(node.querySelector('[data-en]')?.value);
       const th=safe(node.querySelector('[data-th]')?.value);
       const state=node.querySelector('[data-state]')?.value||'enabled';
       const uuid=node.dataset.sourceUuid;
+      const bookKey=node.dataset.bookKey;
       const k=specialtyFamilyKey(en);
       if(!en||!k||/[()<>\r\n]/u.test(en)||/[()<>\r\n]/u.test(th))
         throw new Error(this.#tr('กรอกชื่อ Specialty ภาษาอังกฤษที่ถูกต้อง','A valid English Specialty name is required')+': '+en);
@@ -141,12 +151,18 @@ export class SpecialtyPresetsMenu extends App {
       if(state==='enabled'&&seen.has(k))
         throw new Error(this.#tr('Specialty เปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
       if(state==='enabled')seen.add(k);
-      if(uuid){
-        const originalEn=node.dataset.originalEn;
-        const originalTh=node.dataset.originalTh;
-        const originalState=specialtyNeedsReview(originalEn)?'review':'enabled';
-        if(en!==originalEn||th!==originalTh||state!==originalState)
+      if(bookKey){
+        const originalEn=node.dataset.originalEn,originalTh=node.dataset.originalTh;
+        const original=group.options.find(o=>o.source==='book'&&o.bookKey===bookKey);
+        const initial=original?.state==='hidden'?'hidden':'enabled';
+        if(en!==originalEn||th!==originalTh||state!==initial)
+          bookOverrides[bookKey]={en,th,state};
+      }else if(uuid){
+        const originalEn=node.dataset.originalEn,originalTh=node.dataset.originalTh;
+        const initial='review';
+        if(en!==originalEn||th!==originalTh||state!==initial)
           sourceOverrides[uuid]={en,th,state};
+        else delete sourceOverrides[uuid];
       }else{
         const templateUuid=node.querySelector('[data-template]')?.value||'';
         if(!templateUuid&&state==='enabled')
@@ -155,6 +171,7 @@ export class SpecialtyPresetsMenu extends App {
       }
     }
     cfg.additions=additions;
+    cfg.bookOverrides=bookOverrides;
     cfg.sourceOverrides=sourceOverrides;
     cfg.hidden=[];
     cfg.legacyMigrated=true;
@@ -177,10 +194,10 @@ export class SpecialtyPresetsMenu extends App {
     }));
     root.querySelector('[data-add-specialty]')?.addEventListener('click',()=>{
       const group=this.#registry.find(f=>f.key===this.#family);
-      if(!group?.templates.length)return;
+      if(!group?.canonicalTemplate)return;
       const holder=root.ownerDocument.createElement('div');
       holder.innerHTML=this.#row(group,{en:'',th:'',state:'review',source:'world',
-        templateUuid:group.templates.length===1?group.templateUuid:'',sourceUuid:''},true);
+        templateUuid:group.canonicalTemplate.uuid,sourceUuid:''},true);
       root.querySelector('[data-specialty-rows]').append(holder.firstElementChild);
       holder.firstElementChild?.querySelector('[data-en]')?.focus();
     });
