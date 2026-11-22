@@ -1,198 +1,222 @@
 /**
- * GM Specialty Management. Source Skills are read only; hidden/renamed options
- * live in World settings. All changes remain a draft until Save.
+ * Source-aware GM Specialty Manager for Foundry v14.
+ * Source Skill Items remain immutable. Every row (including composite source
+ * headings) is editable via World-only overlays; incomplete examples stay
+ * hidden from players until the GM curates a concrete Specialty.
  */
-import { getLibraryDocuments } from '../library-provider.mjs';
-import { buildSpecialtyRegistry, readSpecialtyRegistry } from '../specialty-registry.mjs';
-import { readSpecialtyPresets, specialtyFamilyKey } from '../skill-specialties.mjs';
+import {getLibraryDocuments} from '../library-provider.mjs';
+import {buildSpecialtyRegistry,readSpecialtyRegistry,specialtyNeedsReview} from '../specialty-registry.mjs';
+import {specialtyFamilyKey} from '../skill-specialties.mjs';
 
-const esc=s=>String(s??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const BaseApp=globalThis.foundry?.applications?.api?.ApplicationV2;
-
-export class SpecialtyPresetsMenu extends BaseApp {
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const App=globalThis.foundry?.applications?.api?.ApplicationV2;
+const safe=v=>String(v??'').trim();
+export class SpecialtyPresetsMenu extends App {
   static DEFAULT_OPTIONS={
     id:'brp-uge-specialty-presets',
+    classes:['brp-uge','brp-specialty-presets-app'],
     window:{title:'BRP UGE · Specialty Management',resizable:true},
-    position:{width:930,height:680},
-    classes:['brp-uge','brp-specialty-presets-app']
+    position:{width:1020,height:750}
   };
   #documents=[];
   #registry=[];
   #overlay=null;
+  #snapshot='';
   #family='';
   #query='';
-  #loading=false;
-  #busy=false;
-  #snapshot='';
+  #saving=false;
 
   #isTh(){return game.settings.get('brp-uge','uiLanguage')!=='en';}
   #tr(th,en){return this.#isTh()?th:en;}
-  async #ensureLoaded(){
+  async #load(){
     if(this.#overlay!==null)return;
     this.#documents=await getLibraryDocuments({types:['skill']});
     this.#snapshot=game.settings.get('brp-uge','specialtyRegistry');
     this.#overlay=readSpecialtyRegistry(this.#snapshot);
   }
-  #refreshRegistry(){
-    const legacy=game.settings.get('brp-uge','specialtyPresets');
-    this.#registry=buildSpecialtyRegistry(this.#documents,this.#overlay,legacy);
+  #refresh(){
+    this.#registry=buildSpecialtyRegistry(this.#documents,this.#overlay,
+      game.settings.get('brp-uge','specialtyPresets'));
     if(!this.#registry.some(f=>f.key===this.#family))this.#family=this.#registry[0]?.key||'';
   }
-  #familyOverlay(){
-    this.#overlay.families[this.#family]??={additions:[],hidden:[]};
+  #familyConfig(){
+    this.#overlay.families[this.#family]??={
+      additions:[],sourceOverrides:{},hidden:[],legacyMigrated:false
+    };
     return this.#overlay.families[this.#family];
   }
-  #row(entry,templates,add=false){
-    const th=this.#isTh();
-    const isSource=entry.source==='compendium';
-    const isNew=add===true;
-    const template=entry.templateUuid||'';
-    const candidates=templates.map(item=>
-      '<option value="'+esc(item.uuid)+'" '+(item.uuid===template?'selected':'')+'>'+
-      esc(item.system?.nameEn||item.name)+' ('+esc(item.system?.baseFormula||String(item.system?.base??0)+'%')+')</option>'
-    ).join('');
-    const name=entry.en||'';
-    const label=entry.source==='compendium'?'Compendium / World Item':
-      entry.source==='legacy'?'Legacy preset':'GM World option';
-    return '<div class="brp-specialty-row" data-source="'+esc(entry.source||'world')+'" data-key="'+esc(entry.key||'')+'" data-new="'+String(isNew)+'">'+
-      '<div class="brp-specialty-row-head"><strong>'+esc(label)+'</strong>'+
-      (entry.sourceUuid?'<button type="button" class="brp-specialty-open" data-open-source="'+esc(entry.sourceUuid)+'">'+this.#tr('เปิดต้นฉบับ','Open source')+'</button>':'')+
-      '<label><input type="checkbox" data-hidden '+(entry.hidden?'checked':'')+'> '+this.#tr('ซ่อน','Hidden')+'</label>'+
-      (!isSource?'<button type="button" data-remove title="'+this.#tr('นำออกจากรายการ World','Remove World option')+'">×</button>':'')+
-      '</div>'+
+  #templateOptions(group,selected){
+    return '<option value="">'+this.#tr('เลือกแม่แบบจาก Compendium','Choose a source template')+'</option>'+
+      group.templates.map(t=>
+        '<option value="'+esc(t.uuid)+'" '+(t.uuid===selected?'selected':'')+'>'+
+        esc(t.system?.nameEn||t.name)+' · '+esc(t.system?.baseFormula||String(t.system?.base??0)+'%')+
+        '</option>').join('');
+  }
+  #row(group,entry,newRow=false){
+    const source=Boolean(entry.sourceUuid);
+    const state=entry.hidden?'hidden':entry.state||'enabled';
+    const origin=source?this.#tr('รายการจาก Compendium / World','Installed source item'):
+      entry.source==='legacy'?this.#tr('Preset เดิม','Previous World preset'):this.#tr('ตัวเลือก World','World option');
+    const statusText=this.#tr('ยังไม่ให้ผู้เล่นเลือกจนกว่าจะจัดการชื่อและยืนยัน','Review this source heading before enabling it');
+    return '<article class="brp-specialty-row" data-row data-source="'+esc(entry.source||'world')+
+      '" data-source-uuid="'+esc(entry.sourceUuid||'')+'" data-original-en="'+esc(entry.originalEn||entry.en||'')+
+      '" data-original-th="'+esc(entry.originalTh||entry.th||'')+'" data-is-new="'+(newRow?'true':'false')+'">'+
+      '<div class="brp-specialty-row-head"><span class="brp-specialty-source-kind">'+esc(origin)+'</span>'+
+      (entry.sourceAmbiguous||entry.review?'<span class="brp-specialty-review-note">'+this.#tr('ต้องตรวจสอบ','Needs review')+'</span>':'')+
+      (source?'<button type="button" data-open-source="'+esc(entry.sourceUuid)+'">'+this.#tr('เปิด Item ต้นฉบับ','Open source Item')+'</button>':'')+
+      (!source?'<button type="button" data-archive>'+this.#tr('ซ่อน','Archive')+'</button>':'')+'</div>'+
       '<div class="brp-specialty-row-fields">'+
-      '<label>English <input data-en type="text" value="'+esc(name)+'" '+(isNew?'':'readonly')+' maxlength="100"></label>'+
-      '<label>ไทย <input data-th type="text" value="'+esc(entry.th||'')+'" maxlength="100"></label>'+
-      '<label>'+this.#tr('แม่แบบกฎ','Rule template')+
-      '<select data-template '+(isSource?'disabled':'')+'><option value="">'+this.#tr('เลือกแม่แบบ','Select source')+'</option>'+candidates+'</select></label>'+
+      '<label>Specialty (English)<input type="text" data-en value="'+esc(entry.en||'')+'" maxlength="100" autocomplete="off"></label>'+
+      '<label>Specialty (ไทย)<input type="text" data-th value="'+esc(entry.th||'')+'" maxlength="100" autocomplete="off"></label>'+
+      '<label>'+this.#tr('สถานะ','Status')+
+        '<select data-state>'+
+          '<option value="enabled" '+(state==='enabled'?'selected':'')+'>'+this.#tr('ใช้งาน / ให้ผู้เล่นเลือก','Enabled / selectable')+'</option>'+
+          '<option value="hidden" '+(state==='hidden'?'selected':'')+'>'+this.#tr('ซ่อนจากตัวเลือกผู้เล่น','Hidden from players')+'</option>'+
+          '<option value="review" '+(state==='review'?'selected':'')+'>'+this.#tr('รอ GM ตรวจสอบ','Needs GM review')+'</option>'+
+        '</select></label>'+
+      '<label>'+this.#tr('แม่แบบค่ากฎ','Rule base template')+
+        '<select data-template '+(source?'disabled':'')+'>'+
+          this.#templateOptions(group,entry.templateUuid||'')+
+        '</select></label>'+
       '</div>'+
-      '<small>'+esc(entry.sourceUuid||entry.templateUuid||'')+'</small></div>';
+      (entry.sourceAmbiguous?'<small class="brp-manager-note">'+statusText+'</small>':'')+
+      (source?'<small class="brp-manager-uuid">'+esc(entry.sourceUuid)+'</small>':'')+
+      '</article>';
   }
   async _renderHTML(){
-    await this.#ensureLoaded();
-    this.#refreshRegistry();
-    const th=this.#isTh();
-    const family=this.#registry.find(f=>f.key===this.#family);
-    const familyList=this.#registry.map(f=>
-      '<button type="button" data-family="'+esc(f.key)+'" class="'+(f.key===this.#family?'selected':'')+'">'+
-      '<span>'+esc(th?f.thFamily:f.enFamily)+'</span><small>'+
-      f.options.length+' / '+f.ambiguous.length+' '+this.#tr('ต้องตรวจสอบ','review')+'</small></button>'
+    await this.#load();this.#refresh();
+    const group=this.#registry.find(f=>f.key===this.#family);
+    const sidebar=this.#registry.map(f=>
+      '<button type="button" data-family="'+esc(f.key)+'" class="brp-family-item '+(f.key===this.#family?'selected':'')+'">'+
+        '<span class="brp-family-title">'+esc(this.#isTh()?f.thFamily:f.enFamily)+'</span>'+
+        '<span class="brp-family-count">'+f.activeCount+' / '+f.options.length+'</span></button>'
     ).join('');
-    const rows=family?.options.map(o=>this.#row(o,family.templates)).join('')||'';
-    const ambiguous=family?.ambiguous.map(a=>'<li>'+esc(a.name)+' — <small>'+esc(a.sourceUuid)+'</small></li>').join('')||'';
-    const note=family?.fingerprintConflict?'<p class="brp-manager-note">'+this.#tr(
-      'แม่แบบใน Family นี้มีกฎ Base/Category ต่างกัน ต้องเลือกแม่แบบเฉพาะสำหรับตัวเลือกใหม่',
-      'Templates in this family differ in base/category; select a matching source for every new choice.'
-    )+'</p>':'';
-    return '<main class="brp-specialty-manager-v2">'+
-      '<header><h2>'+this.#tr('จัดการ Specialty','Specialty Management')+'</h2><p>'+
-      this.#tr('อ่านข้อมูลจาก World/Compendium และบันทึกการเปลี่ยนแปลงเฉพาะ World ไม่แก้ต้นฉบับ',
-       'Read installed World/Compendium Skills; save World-only overrides without editing sources.')+'</p></header>'+
-      '<div class="brp-specialty-columns"><aside><label>'+this.#tr('Skill Families','Skill Families')+
-      '<input type="search" data-family-filter value="'+esc(this.#query)+'" placeholder="'+this.#tr('ค้นหา Skill Family','Find a Skill Family')+'"></label>'+
-      '<nav class="brp-specialty-family-list">'+familyList+'</nav></aside>'+
-      '<section class="brp-specialty-detail">'+
-      (family?'<h3>'+esc(th?family.thFamily:family.enFamily)+'</h3><p class="brp-manager-note">'+
-        family.sourceCount+' '+this.#tr('แม่แบบจากแหล่งข้อมูล','installed source templates')+' · '+
-        family.activeCount+' '+this.#tr('ตัวเลือกที่แสดง','active choices')+'</p>'+note+
-        '<div data-specialty-rows>'+rows+'</div>'+
-        '<button type="button" data-add '+(family.templates.length?'':'disabled')+'>'+
-          this.#tr('+ เพิ่ม Specialty ใหม่','+ Add Specialty')+'</button>'+
-        (ambiguous?'<details><summary>'+this.#tr('รายการกำกวมที่ต้องตรวจสอบ','Ambiguous source examples')+
-          ' ('+family.ambiguous.length+')</summary><ul>'+ambiguous+'</ul></details>':'')
-       :'<p>'+this.#tr('ไม่พบ Skill Family จาก World/Compendium ที่เปิดใช้','No families found in accessible sources')+'</p>')+
-      '</section></div><footer class="brp-manager-actions">'+
-      '<button type="button" data-cancel>'+this.#tr('ยกเลิก','Cancel')+'</button>'+
-      '<button type="button" data-save '+(this.#busy?'disabled':'')+'>'+this.#tr('บันทึกการเปลี่ยนแปลง','Save World Changes')+'</button>'+
-      '</footer></main>';
+    const current=group?(this.#isTh()?group.thFamily:group.enFamily):'';
+    return '<main class="brp-specialty-manager-v3">'+
+      '<header class="brp-manager-heading"><h2>'+this.#tr('จัดการทักษะและ Specialty','Manage Skill Specialties')+'</h2>'+
+        '<p>'+this.#tr('เลือก Skill Family ทางซ้าย แล้วจัดการชื่อ Specialty ของแต่ละรายการได้ รวมถึงรายการต้นฉบับจาก Compendium โดยไม่แก้ข้อมูลกฎหลัก',
+          'Select a family, then curate all Specialty names, including source items. Compendium rules are not modified.')+'</p></header>'+
+      '<div class="brp-specialty-columns">'+
+        '<aside class="brp-specialty-sidebar"><label class="brp-search-label">'+this.#tr('ค้นหา Skill Family','Search Skill Families')+
+        '<input type="search" data-family-search value="'+esc(this.#query)+'" placeholder="'+this.#tr('ค้นหาทักษะ…','Search…')+'"></label>'+
+        '<nav class="brp-specialty-family-list">'+sidebar+'</nav></aside>'+
+        '<section class="brp-specialty-detail">'+
+        (group?'<div class="brp-family-detail-heading"><h3>'+esc(current)+'</h3>'+
+          '<span>'+group.activeCount+' '+this.#tr('ตัวเลือกที่เปิดให้ผู้เล่น','available choices')+'</span></div>'+
+          (group.fingerprintConflict?'<p class="brp-manager-note">'+this.#tr(
+            'แหล่งข้อมูล Family นี้มีสูตรหรือค่าเริ่มต้นต่างกัน กรุณาเลือกแม่แบบกฎให้ตรงกับ Specialty',
+            'This family has differing base chances or formulas. Choose an appropriate template.')+'</p>':'')+
+          '<div data-specialty-rows>'+group.options.map(e=>this.#row(group,e)).join('')+'</div>'+
+          '<button type="button" data-add-specialty '+(group.templates.length?'':'disabled')+'>'+
+            this.#tr('+ เพิ่ม Specialty ภายใต้ทักษะนี้','+ Add Specialty to this Skill')+'</button>'+
+          '<p class="brp-manager-note">'+this.#tr(
+            'รายการที่ซ่อนหรือรอตรวจสอบจะไม่ปรากฏในตัวเลือกผู้เล่น การแก้ไข World ไม่เปลี่ยนทักษะที่ตัวละครมีอยู่แล้ว',
+            'Hidden or unreviewed entries are excluded from player choices. Existing Actor skills stay unchanged.')+'</p>'
+          :'<p>'+this.#tr('ไม่พบ Skill Family ที่ใช้งานได้','No Skill Families found')+'</p>')+
+        '</section></div>'+
+      '<footer class="brp-manager-actions"><button type="button" data-cancel>'+this.#tr('ยกเลิก','Cancel')+'</button>'+
+        '<button type="button" data-save '+(this.#saving?'disabled':'')+'>'+this.#tr('บันทึกการเปลี่ยนแปลง','Save changes')+'</button></footer>'+
+    '</main>';
   }
-  _replaceHTML(html,element){element.innerHTML=html;}
-  #store(){
+  _replaceHTML(html,root){root.innerHTML=html;}
+
+  #collect(){
     if(!this.#family)return;
-    const root=this.element;
     const group=this.#registry.find(f=>f.key===this.#family);
     if(!group)return;
-    const additions=[],hidden=[],seen=new Set();
-    for(const row of root.querySelectorAll('.brp-specialty-row')){
-      const en=row.querySelector('[data-en]').value.trim();
-      const th=row.querySelector('[data-th]').value.trim();
-      const key=row.dataset.new==='true'?specialtyFamilyKey(en):row.dataset.key;
-      if(!key||!en || /[()<>/]/u.test(en))throw new Error('Invalid Specialty English name: '+en);
-      if(seen.has(key))throw new Error('Duplicate Specialty: '+en);
-      seen.add(key);
-      const hide=row.querySelector('[data-hidden]').checked;
-      if(hide)hidden.push(key);
-      const original=group.options.find(o=>o.key===key);
-      const templateUuid=row.querySelector('[data-template]').value;
-      const isSource=row.dataset.source==='compendium';
-      if(!isSource && !templateUuid && (
-        group.fingerprintConflict || group.ambiguous.some(a=>a.sourceUuid===group.templateUuid)))
-        throw new Error('Select a specific rules template for '+en+'; automatic source inference is unsafe');
-      if(!isSource && !templateUuid && !group.templateUuid)
-        throw new Error('A real source template is required for '+en);
-      // Keep existing Compendium names immutable. A changed translated label
-      // is an overlay, not an update to the installed source document.
-      if(!isSource || th!==original?.th)
-        additions.push({key,en,th,templateUuid:templateUuid||group.templateUuid,state:hide?'hidden':'enabled'});
+    const cfg=this.#familyConfig();
+    const additions=[],sourceOverrides={},seen=new Set();
+    for(const node of this.element.querySelectorAll('[data-row]')){
+      const en=safe(node.querySelector('[data-en]')?.value);
+      const th=safe(node.querySelector('[data-th]')?.value);
+      const state=node.querySelector('[data-state]')?.value||'enabled';
+      const uuid=node.dataset.sourceUuid;
+      const k=specialtyFamilyKey(en);
+      if(!en||!k||/[()<>\r\n]/u.test(en)||/[()<>\r\n]/u.test(th))
+        throw new Error(this.#tr('กรอกชื่อ Specialty ภาษาอังกฤษที่ถูกต้อง','A valid English Specialty name is required')+': '+en);
+      if(state==='enabled'&&specialtyNeedsReview(en))
+        throw new Error(this.#tr('ต้องระบุชื่อ Specialty เดี่ยวก่อนเปิดให้ผู้เล่นเลือก: ','Resolve composite Specialty before enabling: ')+en);
+      if(state==='enabled'&&seen.has(k))
+        throw new Error(this.#tr('Specialty เปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
+      if(state==='enabled')seen.add(k);
+      if(uuid){
+        const originalEn=node.dataset.originalEn;
+        const originalTh=node.dataset.originalTh;
+        const originalState=specialtyNeedsReview(originalEn)?'review':'enabled';
+        if(en!==originalEn||th!==originalTh||state!==originalState)
+          sourceOverrides[uuid]={en,th,state};
+      }else{
+        const templateUuid=node.querySelector('[data-template]')?.value||'';
+        if(!templateUuid&&state==='enabled')
+          throw new Error(this.#tr('เลือกแม่แบบค่ากฎสำหรับ ','Select rule template for ')+en);
+        additions.push({key:k,en,th,templateUuid,state});
+      }
     }
-    this.#familyOverlay().additions=additions;
-    this.#familyOverlay().hidden=hidden;
+    cfg.additions=additions;
+    cfg.sourceOverrides=sourceOverrides;
+    cfg.hidden=[];
+    cfg.legacyMigrated=true;
   }
   _onRender(context,options){
     super._onRender(context,options);
     const root=this.element;
+    const filter=root.querySelector('[data-family-search]');
+    const applyFilter=()=>{
+      const q=this.#query.trim().toLocaleLowerCase();
+      for(const el of root.querySelectorAll('[data-family]'))
+        el.hidden=Boolean(q&&!el.textContent.toLocaleLowerCase().includes(q));
+    };
+    filter?.addEventListener('input',e=>{this.#query=e.target.value;if(!e.isComposing)applyFilter();});
+    filter?.addEventListener('compositionend',e=>{this.#query=e.target.value;applyFilter();});
+    applyFilter();
     root.querySelectorAll('[data-family]').forEach(button=>button.addEventListener('click',async()=>{
-      try {this.#store();this.#family=button.dataset.family;await this.render();}
+      try{this.#collect();this.#family=button.dataset.family;await this.render();}
       catch(error){ui.notifications.warn(error.message);}
     }));
-    const filter=root.querySelector('[data-family-filter]');
-    const apply=()=>{
-      const q=this.#query.trim().toLocaleLowerCase();
-      root.querySelectorAll('[data-family]').forEach(el=>{el.hidden=q&&!el.textContent.toLocaleLowerCase().includes(q);});
-    };
-    filter?.addEventListener('input',e=>{this.#query=e.target.value;if(!e.isComposing)apply();});
-    filter?.addEventListener('compositionend',e=>{this.#query=e.target.value;apply();});apply();
-    const rows=root.querySelector('[data-specialty-rows]');
-    root.querySelector('[data-add]')?.addEventListener('click',()=>{
+    root.querySelector('[data-add-specialty]')?.addEventListener('click',()=>{
       const group=this.#registry.find(f=>f.key===this.#family);
       if(!group?.templates.length)return;
       const holder=root.ownerDocument.createElement('div');
-      holder.innerHTML=this.#row({key:'',en:'',th:'',source:'world',templateUuid:group.templateUuid,
-        hidden:false},group.templates,true);
-      rows.append(holder.firstElementChild);
-      rows.lastElementChild?.querySelector('[data-en]')?.focus();
+      holder.innerHTML=this.#row(group,{en:'',th:'',state:'review',source:'world',
+        templateUuid:group.templates.length===1?group.templateUuid:'',sourceUuid:''},true);
+      root.querySelector('[data-specialty-rows]').append(holder.firstElementChild);
+      holder.firstElementChild?.querySelector('[data-en]')?.focus();
     });
-    rows?.addEventListener('click',async e=>{
-      const remove=e.target.closest('[data-remove]');
-      if(remove){remove.closest('.brp-specialty-row')?.remove();return;}
+    root.querySelector('[data-specialty-rows]')?.addEventListener('click',async e=>{
+      const archive=e.target.closest('[data-archive]');
+      if(archive){
+        const row=archive.closest('[data-row]');
+        row.querySelector('[data-state]').value='hidden';
+        return;
+      }
       const open=e.target.closest('[data-open-source]');
-      if(open) {
-        const doc=await fromUuid(open.dataset.openSource).catch(()=>null);
-        if(doc?.sheet)doc.sheet.render({force:true});
+      if(open){
+        const item=await fromUuid(open.dataset.openSource).catch(()=>null);
+        if(item?.sheet)item.sheet.render({force:true});
+      }
+    });
+    // A source example like "Drawing / Painting" moves to enabled only after
+    // it becomes a single specialty. GM retains explicit control of status.
+    root.querySelector('[data-specialty-rows]')?.addEventListener('change',e=>{
+      if(e.target.matches('[data-en]')){
+        const row=e.target.closest('[data-row]'),state=row?.querySelector('[data-state]');
+        if(state?.value==='review'&&!specialtyNeedsReview(e.target.value))state.value='enabled';
       }
     });
     root.querySelector('[data-cancel]')?.addEventListener('click',()=>this.close());
     root.querySelector('[data-save]')?.addEventListener('click',async()=>{
-      if(!game.user?.isGM||this.#busy)return;
+      if(!game.user?.isGM||this.#saving)return;
       try{
-        this.#store();
+        this.#collect();
         if(game.settings.get('brp-uge','specialtyRegistry')!==this.#snapshot)
-          throw new Error(this.#tr('GM คนอื่นแก้ไข Registry แล้ว กรุณาเปิดหน้าต่างใหม่',
-          'Specialty Registry changed in another window; reopen to avoid overwriting.'));
-        this.#busy=true;
+          throw new Error(this.#tr('มี GM อีกคนเปลี่ยน Registry แล้ว กรุณาเปิดใหม่','Registry changed elsewhere. Reopen to avoid overwriting.'));
+        this.#saving=true;
         const data=readSpecialtyRegistry(this.#overlay);
         await game.settings.set('brp-uge','specialtyRegistry',JSON.stringify(data));
-        // Preserve the existing reader's legacy preference list until the
-        // Character Sheet is also migrated to the versioned registry.
-        const legacy=readSpecialtyPresets(game.settings.get('brp-uge','specialtyPresets'));
-        for(const [key,val] of Object.entries(data.families)){
-          legacy[key]=(val.additions||[]).filter(o=>o.state!=='hidden').map(o=>({en:o.en,th:o.th}));
-        }
-        await game.settings.set('brp-uge','specialtyPresets',JSON.stringify(legacy));
-        ui.notifications.info(this.#tr('บันทึก Specialty Registry แล้ว','Specialty Registry saved'));
+        ui.notifications.info(this.#tr('บันทึก Specialty Management แล้ว','Specialty Management saved'));
         await this.close();
       }catch(error){ui.notifications.error(error.message);}
-      finally{this.#busy=false;}
+      finally{this.#saving=false;}
     });
   }
 }
