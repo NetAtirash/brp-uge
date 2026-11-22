@@ -32,11 +32,12 @@ const overlay=readSpecialtyRegistry({families:{Science:{
 const registry=buildSpecialtyRegistry([combined,biology,noSpecialty],overlay,'{}');
 const science=registry.find(f=>f.key==='science');
 assert.ok(science);
-assert.equal(science.ambiguous.length,1,'compound example requires manual inspection');
+assert.equal(science.ambiguous.length,2,'legacy subtype Items require template migration');
 assert.ok(science.options.some(o=>o.en==='Chemistry / Physics'&&o.hidden&&o.review),
   'ambiguous source appears for GM review but remains excluded from player choices');
 assert.ok(science.options.find(o=>o.key==='biology').hidden);
-assert.deepEqual(eligibleSpecialtyOptions(registry,'science').map(o=>o.key),['astronomy']);
+assert.equal(science.requiresContentMigration,true);
+assert.deepEqual(eligibleSpecialtyOptions(registry,'science').map(o=>o.key),['astronomy'],'legacy subtypes are not automatic book defaults');
 const curated=buildSpecialtyRegistry([combined,biology,noSpecialty],{
   families:{science:{sourceOverrides:{[combined.uuid]:{
     en:'Astronomy',th:'ดาราศาสตร์',state:'enabled'
