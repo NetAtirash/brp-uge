@@ -1,5 +1,12 @@
 # BRP Universal Game Engine — Engine Only (Foundry VTT v14)
 
+> [!IMPORTANT]
+> **Personal project / โครงการเพื่อใช้งานส่วนตัว**
+>
+> **ไทย:** โปรเจกต์ BRP UGE นี้จัดทำขึ้นเพื่อการใช้งานส่วนตัวและการทดลองพัฒนา Game System สำหรับ Foundry VTT โดยใช้ **ChatGPT (OpenAI) ช่วยในการออกแบบ เขียนโค้ด และปรับปรุงระบบ** โค้ดอาจมีข้อผิดพลาดและยังต้องทดสอบก่อนนำไปใช้งานจริง โปรเจกต์นี้ไม่ใช่ผลิตภัณฑ์อย่างเป็นทางการ และไม่ได้รับการรับรองหรือสนับสนุนโดย Chaosium, Foundry Gaming หรือ OpenAI
+>
+> **English:** BRP UGE is a **personal-use hobby project developed with assistance from ChatGPT (OpenAI)** for designing, coding, and iterating a Foundry VTT game system. It is experimental, may contain errors, and requires testing before use. It is **unofficial and not endorsed by or affiliated with Chaosium, Foundry Gaming, or OpenAI**. Third-party names and trademarks belong to their respective owners.
+
 The Game System remains data-free in **v1.21.5** (architecture introduced in v1.20.0). It ships Actor and Item Data Models, bilingual sheets, rolls, combat tools, character creation, settings and a read-only browser for external content sources. It contains **no bundled Skill, Occupation, Power, Gear, Wealth, Status or Actor records**, creates **no Compendium packs**, and generates no rules content itself. It can copy the baseline Skills from World Items or an installed Compendium into a newly created Actor, without editing those source records.
 
 ## Installation
