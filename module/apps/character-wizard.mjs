@@ -12,8 +12,8 @@ import { resolveWealthItem, wealthDisplayFromItem } from "../wealth-utils.mjs";
 import { agePenalties } from "../status-effects.mjs";
 import { uniqueSkills, sameSkill, planMissingBaseSkills } from "../skill-foundation.mjs";
 import { configuredStartingSkills } from "../skill-selection.mjs";
-import { availableSpecialtyFamilies, composeSpecialtyItem } from "../skill-specialties.mjs";
-import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor } from "../specialty-registry.mjs";
+import { availableSpecialtyFamilies, composeSpecialtyItem, analyzeSkillFamily, specialtyFamilyKey } from "../skill-specialties.mjs";
+import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor, specialtyNeedsReview } from "../specialty-registry.mjs";
 import { normalizeOccupationChoiceGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill } from "../occupation-choice-rules.mjs";
 import { canonicalSkillKey } from "../skill-foundation.mjs";
 
@@ -64,6 +64,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       },
       professionId: this.targetActor?.items?.find?.(i=>i.type==="occupation")?.uuid || "",
       choiceSelections: structuredClone(this.targetActor?.getFlag?.('brp-uge','creationOccupationChoices')||{}),
+      personalSpecialtyKeys: [],
       professionDrafts: {},
       allowRebuild: false,
       rolledBasis: null,
@@ -291,8 +292,12 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(!candidate)throw new Error('This Specialty is not available');
     const template=specialtyTemplateFor(candidate.family,candidate.option,this.librarySkillDocs);
     if(!template)throw new Error('A compatible source Skill template must be configured by the GM');
-    skill=candidate.option.sourceUuid?documentToEmbeddedItem(template):
-      composeSpecialtyItem(template,candidate.family,{en:candidate.option.en,th:candidate.option.th});
+    const desired=key;
+    // Source UUID is provenance, NOT a command to import its historical
+    // title. World overrides can rename or split a composite source example.
+    skill=candidate.option.sourceUuid && canonicalSkillKey(template)===desired
+      ?documentToEmbeddedItem(template)
+      :composeSpecialtyItem(template,candidate.family,{en:candidate.option.en,th:candidate.option.th});
     if(!this.skillCatalog.some(s=>sameSkill(s,skill)))this.skillCatalog.push(skill);
     return this.skillCatalog.find(s=>sameSkill(s,skill));
   }
@@ -370,8 +375,17 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         const bonusCategory=categoryBonusPreview(effectiveCh,s.system.category,rules.categoryBonusMode,rules.useEdu);
         const personalityPts=personality.has(s.system?.referenceKey||s.system?.nameEn||s.name)?20:0;
         const total = base + bonusCategory + personalityPts + occPts + persPts;
+        const info=analyzeSkillFamily(s);
+        const key=canonicalSkillKey(s);
+        const selectedKeys=Object.values(this.wizardData.choiceSelections).flat();
+        const isPersonalSpecialty=this.wizardData.personalSpecialtyKeys.includes(key);
+        const owned=Boolean(this.targetActor?.items?.some?.(own=>own.type==='skill'&&sameSkill(own,s)));
         return {
           index: idx,
+          skillKey:key,isPersonalSpecialty,owned,
+          isSpecialtyExample:Boolean(info?.supportsSpecialty),
+          needsReview:Boolean(info?.supportsSpecialty&&specialtyNeedsReview(info.enSpecialty)),
+          isPlayerSelected:selectedKeys.includes(key)||isPersonalSpecialty,
           name: getDisplayItemName(s, uiLang),
           nameEn: s.system?.nameEn||s.name,
           category: s.system.category,
@@ -509,8 +523,19 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const choiceGroups=normalizeOccupationChoiceGroups(prof.skillChoiceGroups);
     const uiChoices=this.wizardData.choiceSelections;
     context.professionChoiceGroups=choiceGroups.map(group=>{
-      const candidates=new Map();
+      const candidates=new Map(),pickerChoices=new Map();
       for(const option of group.options){
+        if(option.kind==='family'){
+          const family=this.specialtyRegistry.find(f=>f.key===option.familyKey);
+          if(family?.options.some(o=>!o.hidden))pickerChoices.set('family:'+option.familyKey,{
+            value:'family:'+option.familyKey,label:isTh?family.thFamily:family.enFamily
+          });
+        } else {
+          const skill=this.skillCatalog.find(s=>linkedOccupationSkill(s,option.ref));
+          if(skill)pickerChoices.set('skill:'+canonicalSkillKey(skill),{
+            value:'skill:'+canonicalSkillKey(skill),label:getDisplayItemName(skill,uiLang)
+          });
+        }
         if(option.kind==='skill'){
           const skill=this.skillCatalog.find(s=>linkedOccupationSkill(s,option.ref));
           if(skill)candidates.set(canonicalSkillKey(skill),{
@@ -529,12 +554,21 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       return {...group,label:isTh?(group.labelTh||group.labelEn):(group.labelEn||group.labelTh),
         selected:selected.map(key=>({key,label:candidates.get(key)?.label||key})),
         candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label)),
+        pickerChoices:[...pickerChoices.values()].sort((a,b)=>a.label.localeCompare(b.label)),
         complete:selected.length===group.count,selectedCount:selected.length};
     });
     const choiceStatus=this.#occupationChoiceStatus(prof);
     context.occupationChoicesValid=choiceStatus.valid;
+    const occupationText=this.#plainRuleText((prof.description||'')+' '+(prof.descriptionTh||''));
+    context.occupationMetadataMissing=Boolean(prof.sourceUuid&&!choiceGroups.length &&
+      /(choose|any (skill|specialty)|เลือก|จากทักษะ|อย่างใดอย่างหนึ่ง|pick one|pick [0-9])/iu.test(occupationText));
+    context.occupationHasChoiceGroups=choiceGroups.length>0;
     context.isCompletedActor=Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));
     context.allowRebuild=this.wizardData.allowRebuild;
+    context.personalFamilyOptions=this.specialtyRegistry.filter(group=>
+      group.options?.some(option=>!option.hidden)).map(group=>({
+        key:group.key,label:isTh?group.thFamily:group.enFamily
+      }));
     context.personalSpecialtyOptions=this.specialtyRegistry.flatMap(group=>
       (group.options||[]).filter(option=>!option.hidden).map(option=>({
         key:group.key+'|'+option.key,
@@ -544,10 +578,16 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.professionLinkedSkillCount=professionSkillCoverage.linked.length;
     context.professionMissingSkillCount=professionSkillCoverage.missing.length;
     context.professionHasLinkedSkills=Boolean(prof?.sourceUuid && professionSkillCoverage.linked.length);
-    context.skillRows = skillRows;
+    // Do not flood creation with every Compendium Skill (Art (...),
+    // Science (...), etc.). A Specialty is visible for point allocation only
+    // after occupation selection, personal selection, or existing Actor use.
+    context.skillRows = skillRows.filter(row=>!row.isSpecialtyExample ||
+      row.isPlayerSelected || row.owned || (row.isOcc&&!row.needsReview) ||
+      row.occPts>0 || row.persPts>0 || row.personalityPts>0);
+    context.skillRowsAllCount=skillRows.length;
     // The profession's linked starter skills have their base percentages even
     // before the player allocates occupation/personal points.
-    context.topSkills = skillRows.filter((s) => s.occPts > 0 || s.persPts > 0 || s.isOcc);
+    context.topSkills = context.skillRows.filter((s) => s.occPts > 0 || s.persPts > 0 || s.isOcc);
     context.powerCount = context.powerRows.length;
     const allStarterRefs=[...(prof?.starterWeaponRefs??[]).map(ref=>({ref,type:'weapon'})),...(prof?.starterArmorRefs??[]).map(ref=>({ref,type:'armor'}))];
     context.profStarterReferences=await Promise.all(allStarterRefs.map(async r=>{
