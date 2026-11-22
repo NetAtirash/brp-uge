@@ -1,6 +1,7 @@
 /** GM-defined initial skills, referencing external World/Compendium records only. */
 import { getLibraryDocuments } from './library-provider.mjs';
 import { uniqueSkills, canonicalSkillKey } from './skill-foundation.mjs';
+import { analyzeSkillFamily } from './skill-specialties.mjs';
 
 export function decodeStartingSkillKeys(value) {
   if(Array.isArray(value))return new Set(value.filter(x=>typeof x==='string' && x));
@@ -19,6 +20,8 @@ export function isRulebookSkill(item) {
 export function filterStartingSkills(skills,{mode='all',keys='[]'}={}) {
   const unique=uniqueSkills(skills);
   if(mode==='book')return unique.filter(isRulebookSkill);
+  // Explicit opt-in: do not copy every specialized example as an automatic base Skill.
+  if(mode==='baseline')return unique.filter(item=>!analyzeSkillFamily(item)?.supportsSpecialty);
   if(mode!=='selected')return unique;
   const allowed=decodeStartingSkillKeys(keys);
   return unique.filter(skill=>allowed.has(canonicalSkillKey(skill)));
