@@ -110,6 +110,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       selectProfession: BRPCharacterWizard.#onSelectProfession,
       selectOccupationChoice: BRPCharacterWizard.#onSelectOccupationChoice,
       removeOccupationChoice: BRPCharacterWizard.#onRemoveOccupationChoice,
+      addPersonalSpecialty: BRPCharacterWizard.#onAddPersonalSpecialty,
       unlockRebuild: BRPCharacterWizard.#onUnlockRebuild,
       allocateSkill: BRPCharacterWizard.#onAllocateSkill,
       addWizardPower: BRPCharacterWizard.#onAddWizardPower,
@@ -281,6 +282,19 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   #occupationChoiceStatus(prof=this.#getProfession()){
     return validateOccupationChoices(prof?.skillChoiceGroups,this.wizardData.choiceSelections,this.skillCatalog);
+  }
+
+  async #ensureSkillCandidate(key){
+    let skill=this.skillCatalog.find(s=>canonicalSkillKey(s)===key);
+    if(skill)return skill;
+    const candidate=findSpecialtyCandidate(this.specialtyRegistry,key);
+    if(!candidate)throw new Error('This Specialty is not available');
+    const template=specialtyTemplateFor(candidate.family,candidate.option,this.librarySkillDocs);
+    if(!template)throw new Error('A compatible source Skill template must be configured by the GM');
+    skill=candidate.option.sourceUuid?documentToEmbeddedItem(template):
+      composeSpecialtyItem(template,candidate.family,{en:candidate.option.en,th:candidate.option.th});
+    if(!this.skillCatalog.some(s=>sameSkill(s,skill)))this.skillCatalog.push(skill);
+    return this.skillCatalog.find(s=>sameSkill(s,skill));
   }
 
   #changeProfession(profId){
@@ -521,6 +535,11 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.occupationChoicesValid=choiceStatus.valid;
     context.isCompletedActor=Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));
     context.allowRebuild=this.wizardData.allowRebuild;
+    context.personalSpecialtyOptions=this.specialtyRegistry.flatMap(group=>
+      (group.options||[]).filter(option=>!option.hidden).map(option=>({
+        key:group.key+'|'+option.key,
+        label:(isTh?group.thFamily:group.enFamily)+' ('+(isTh?(option.th||option.en):option.en)+')'
+      }))).sort((a,b)=>a.label.localeCompare(b.label));
     context.professionLinkedSkillCount=professionSkillCoverage.linked.length;
     context.professionMissingSkillCount=professionSkillCoverage.missing.length;
     context.professionHasLinkedSkills=Boolean(prof?.sourceUuid && professionSkillCoverage.linked.length);
@@ -772,21 +791,23 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(previous.length>=group.count)return ui.notifications.warn('This occupation choice group is already full');
     if(Object.entries(this.wizardData.choiceSelections).some(([groupId,keys])=>groupId!==id&&keys.includes(key)))
       return ui.notifications.warn('This Skill is selected in another group');
-    let skill=this.skillCatalog.find(s=>canonicalSkillKey(s)===key);
-    if(!skill){
-      const candidate=findSpecialtyCandidate(this.specialtyRegistry,key);
-      if(!candidate)return ui.notifications.warn('This Specialty is no longer available');
-      const template=specialtyTemplateFor(candidate.family,candidate.option,this.librarySkillDocs);
-      if(!template)return ui.notifications.warn('A compatible source Skill template must be configured by the GM');
-      try {
-        if(candidate.option.sourceUuid)skill=documentToEmbeddedItem(template);
-        else skill=composeSpecialtyItem(template,candidate.family,{en:candidate.option.en,th:candidate.option.th});
-      }catch(error){return ui.notifications.warn(error.message);}
-      if(!this.skillCatalog.some(s=>sameSkill(s,skill)))this.skillCatalog.push(skill);
-      skill=this.skillCatalog.find(s=>sameSkill(s,skill));
-    }
+    let skill;
+    try{skill=await this.#ensureSkillCandidate(key);}
+    catch(error){return ui.notifications.warn(error.message);}
     if(!occupationGroupAllowsSkill(group,skill))return ui.notifications.warn('Skill is not eligible for this occupation choice');
     this.wizardData.choiceSelections[id]=[...previous,key];
+    this.render();
+  }
+
+  static async #onAddPersonalSpecialty(event){
+    event.preventDefault();
+    const picker=this.element.querySelector('[data-personal-specialty-picker]');
+    const key=String(picker?.value||'');
+    if(!key)return;
+    const already=this.skillCatalog.some(skill=>canonicalSkillKey(skill)===key);
+    if(already)return ui.notifications.info('This Specialty is already available in Skill allocation');
+    try{await this.#ensureSkillCandidate(key);}
+    catch(error){return ui.notifications.warn(error.message);}
     this.render();
   }
 
@@ -825,8 +846,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const delta = Number(target.dataset.delta || 0);
     const tpl = this.skillCatalog[idx];
     if (!tpl) return;
-    if(pool==='occ'&&!this.#occupationChoiceStatus().valid){
-      return ui.notifications.warn('Choose all required Occupation Skill options before allocating occupation points');
+    if(!this.#occupationChoiceStatus().valid){
+      return ui.notifications.warn('Complete occupation Skill choices before allocating points');
     }
     if(pool==='occ'&&!this.#isOccupationalSkill(tpl,this.#getProfession())) {
       return ui.notifications.warn('Occupation points must be spent on skills allowed by the selected occupation');
