@@ -250,6 +250,19 @@
             {{#if professionMissingSkillCount}}<strong class="wiz-link-warning">{{#if isTh}}ไม่พบลิงก์ทักษะ {{professionMissingSkillCount}} รายการ — ตรวจ Skills Compendium และเปิด Wizard ใหม่{{else}}Missing {{professionMissingSkillCount}} skill links — check the Skills Compendium and reopen the Wizard{{/if}}</strong>{{/if}}
           </p>
         {{/if}}
+        {{#if personalSpecialtyOptions.length}}
+          <section class="brp-wiz-personal-specialty">
+            <strong>{{#if isTh}}เลือกเพิ่ม Specialty สำหรับแต้มส่วนตัว{{else}}Add a personal-interest Specialty{{/if}}</strong>
+            <p class="meta-text">{{#if isTh}}ตัวเลือกนี้ไม่ทำให้ใช้แต้มอาชีพได้โดยอัตโนมัติ แต่สามารถแบ่งแต้มส่วนตัวตามกฎและ GM อนุญาต{{else}}This does not grant occupation eligibility. Personal points can be spent on a permitted specialty.{{/if}}</p>
+            <div class="brp-wiz-choice-picker">
+              <select data-personal-specialty-picker aria-label="{{#if isTh}}เพิ่ม Specialty ส่วนตัว{{else}}Personal Specialty{{/if}}">
+                <option value="">{{#if isTh}}เลือก Specialty…{{else}}Select a Specialty…{{/if}}</option>
+                {{#each personalSpecialtyOptions as |o|}}<option value="{{o.key}}">{{o.label}}</option>{{/each}}
+              </select>
+              <button type="button" class="brp-btn" data-action="addPersonalSpecialty"><i class="fa-solid fa-plus"></i> {{#if isTh}}เพิ่มทักษะ{{else}}Add Skill{{/if}}</button>
+            </div>
+          </section>
+        {{/if}}
         <div class="wiz-drop-hint" data-wiz-drop-item="skill">{{#if isTh}}ลาก Skill Item จากคลังมาวางเพื่อเพิ่มทักษะในรายการแบ่งแต้ม{{else}}Drop Skill Items to add custom skills to allocation{{/if}}</div>
         <div class="wiz-search-row">
           <input type="search" dir="auto" autocomplete="off" data-wiz-skill-search value="{{wizardData.skillFilter}}" placeholder="{{#if isTh}}ค้นหาทักษะ...{{else}}Filter skills...{{/if}}" />
