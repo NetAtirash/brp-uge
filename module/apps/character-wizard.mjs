@@ -1028,6 +1028,13 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         console.warn('BRP-UGE | Missing occupation Skill references',professionCoverage.missing);
         this.step=4;this.render();return;
       }
+      // Resolve source before ANY Actor mutation. Missing Compendium data must
+      // not produce a half-saved character or overwrite existing resources.
+      const resolvedOccupation=prof.sourceUuid?await fromUuid(prof.sourceUuid).catch(()=>null):null;
+      if(prof.sourceUuid && resolvedOccupation?.type!=='occupation'){
+        ui.notifications.error('Selected Occupation Item is unavailable. No changes were saved.');
+        this.step=4;this.render();return;
+      }
       const ch = this.wizardData.characteristics;
       const effective=this.#getCreationCharacteristics(rules);
       const maxHp = rules.heroicHitPoints ? effective.con + effective.siz : Math.ceil((effective.con + effective.siz) / 2);
@@ -1077,12 +1084,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       // Occupations are actual Foundry Items, allowing GM-built world Items to be
       // dragged to Actor sheets and reused in future Wizards. No World Item is edited.
       if(prof.sourceUuid) {
-        const worldOccupation=await fromUuid(prof.sourceUuid).catch(()=>null);
-        if(!worldOccupation || worldOccupation.type!=='occupation') {
-          ui.notifications.error('Selected Occupation Item is unavailable; select another or clear the selection.');
-          return;
-        }
-        const occupationData=documentToEmbeddedItem(worldOccupation);
+        const occupationData=documentToEmbeddedItem(resolvedOccupation);
         occupationData.flags??={};
         occupationData.flags['brp-uge']={...(occupationData.flags['brp-uge']??{}),wizardId:prof.id};
         const oldJob=actorDoc.items.find(i=>i.type==='occupation');
