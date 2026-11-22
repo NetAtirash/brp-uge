@@ -1,0 +1,85 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {buildSpecialtyRegistry,readSpecialtyRegistry,eligibleSpecialtyOptions,
+  findSpecialtyCandidate,specialtyTemplateFor} from '../module/specialty-registry.mjs';
+import {composeSpecialtyItem} from '../module/skill-specialties.mjs';
+import {canonicalSkillKey,sameSkill} from '../module/skill-foundation.mjs';
+import {normalizeOccupationChoiceGroups,occupationGroupAllowsSkill,
+  occupationSkillEligible,validateOccupationChoices} from '../module/occupation-choice-rules.mjs';
+import {filterStartingSkills} from '../module/skill-selection.mjs';
+
+globalThis.foundry={utils:{deepClone:structuredClone}};
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+const source=(name,id,base=1)=>({
+  type:'skill',documentName:'Item',uuid:'Compendium.example.skills.Item.'+id,name,
+  system:{nameEn:name,nameTh:'วิทยาศาสตร์ ('+name.split('(')[1],
+    referenceKey:name,category:'mental',base,baseFormula:'',occupationBonus:0,personalBonus:0},
+  flags:{'brp-uge':{rulebookReference:{heading:'Science (various)'}}},
+  toObject(){return {type:this.type,name:this.name,_id:'SHOULD-NOT-REUSE',
+    system:structuredClone(this.system),flags:structuredClone(this.flags)};}
+});
+const combined=source('Science (Chemistry / Physics)','combined');
+const biology=source('Science (Biology)','bio');
+const noSpecialty={
+  type:'skill',documentName:'Item',uuid:'Item.ordinary',
+  name:'Persuade',system:{nameEn:'Persuade',base:15}
+};
+const overlay=readSpecialtyRegistry({families:{Science:{
+  additions:[{key:'astronomy',en:'Astronomy',th:'ดาราศาสตร์',templateUuid:combined.uuid}],
+  hidden:['biology']
+}}});
+const registry=buildSpecialtyRegistry([combined,biology,noSpecialty],overlay,'{}');
+const science=registry.find(f=>f.key==='science');
+assert.ok(science);
+assert.equal(science.ambiguous.length,1,'compound example requires manual inspection');
+assert.ok(!science.options.some(o=>o.key==='chemistry / physics'));
+assert.ok(science.options.find(o=>o.key==='biology').hidden);
+assert.deepEqual(eligibleSpecialtyOptions(registry,'science').map(o=>o.key),['astronomy']);
+const chosen=findSpecialtyCandidate(registry,'science|astronomy');
+assert.equal(chosen.option.th,'ดาราศาสตร์');
+assert.equal(specialtyTemplateFor(chosen.family,chosen.option,[combined,biology]),combined);
+const astronomy=composeSpecialtyItem(combined,science,{en:'Astronomy',th:'ดาราศาสตร์'});
+assert.equal(canonicalSkillKey(astronomy),'science|astronomy');
+assert.ok(!sameSkill(astronomy,biology),'different specialties have independent identities');
+assert.equal(astronomy._id,undefined);
+
+const exact={
+  ...biology,flags:{core:{sourceId:biology.uuid},'brp-uge':{sourceUuid:biology.uuid}}
+};
+const groups=normalizeOccupationChoiceGroups([{
+ id:'fields',labelEn:'Fields',count:2,distinct:true,
+ options:[{kind:'family',familyKey:'science',ref:''}]
+}]);
+assert.equal(occupationGroupAllowsSkill(groups[0],astronomy),true);
+assert.equal(occupationGroupAllowsSkill(groups[0],noSpecialty),false);
+const selections={fields:['science|astronomy','science|biology']};
+assert.ok(validateOccupationChoices(groups,selections,[astronomy,biology]).valid);
+assert.ok(!validateOccupationChoices(groups,{fields:['science|astronomy']},[astronomy,biology]).valid);
+assert.ok(!validateOccupationChoices(groups,{fields:['science|astronomy','science|astronomy']},[astronomy,biology]).valid);
+assert.ok(!validateOccupationChoices(groups,{fields:['science|astronomy','bad']},[astronomy,biology]).valid);
+const occupation={skillRefs:[],skillChoiceGroups:groups};
+assert.ok(occupationSkillEligible(astronomy,occupation,selections,[astronomy,biology]));
+assert.ok(!occupationSkillEligible(noSpecialty,occupation,selections,[astronomy,biology]));
+assert.equal(filterStartingSkills([combined,biology,noSpecialty],{mode:'baseline'}).length,1);
+
+const schema=read('module/data-models.mjs');
+assert.match(schema,/skillChoiceGroups: new ArrayField/);
+const wizard=read('module/apps/character-wizard.mjs');
+assert.match(wizard,/selectOccupationChoice: BRPCharacterWizard/);
+assert.match(wizard,/validateOccupationChoices/);
+assert.match(wizard,/professionDrafts/);
+assert.match(wizard,/creationOccupationChoices/);
+assert.match(wizard,/allowRebuild/);
+assert.match(wizard,/if\(creationCompleted\)\{/);
+const template=read('templates/apps/character-wizard.hbs');
+assert.match(template,/data-occupation-choice-picker/);
+assert.match(template,/data-action="removeOccupationChoice"/);
+const manager=read('module/apps/specialty-presets-menu.mjs');
+assert.match(manager,/buildSpecialtyRegistry/);
+assert.match(manager,/settings.set\('brp-uge','specialtyRegistry'/);
+const app=read('module/apps/occupation-choice-editor.mjs');
+assert.match(app,/system.skillChoiceGroups/);
+const manifest=JSON.parse(read('system.json'));
+assert.equal(manifest.version,'1.21.11');
+assert.equal(manifest.styles.at(-1),'styles/brp-v12111-specialty-management.css');
+console.log('PASS v1.21.11 Specialty registry, source safety, choice groups and Wizard integration');
