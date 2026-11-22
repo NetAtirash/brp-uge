@@ -279,6 +279,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     this.wizardData.professionDrafts[prev]={
       occRanks:structuredClone(this.wizardData.occRanks),
       occPowerRanks:structuredClone(this.wizardData.occPowerRanks),
+      touchedSkillIndices:[...this.wizardData.touchedSkillIndices],
       choiceSelections:structuredClone(this.wizardData.choiceSelections)
     };
     const restore=this.wizardData.professionDrafts[profId||'none'];
@@ -286,6 +287,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     this.wizardData.professionChanged=true;
     this.wizardData.occRanks=structuredClone(restore?.occRanks||{});
     this.wizardData.occPowerRanks=structuredClone(restore?.occPowerRanks||{});
+    this.wizardData.touchedSkillIndices=[...(restore?.touchedSkillIndices||[])];
     this.wizardData.choiceSelections=structuredClone(restore?.choiceSelections||{});
     this.#syncStarterGear();
   }
@@ -916,6 +918,12 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       ui.notifications.error("ไม่พบตัวละครเป้าหมายสำหรับบันทึกข้อมูล");
       return;
     }
+    // Completed Actors must never be rebuilt from a reopened Wizard by accident.
+    if(actorDoc.getFlag?.('brp-uge','creationCompleted') &&
+      (!this.wizardData.allowRebuild || !game.user?.isGM)) {
+      ui.notifications.warn('Completed character protected. Use the GM Unlock Rebuild control in step 6.');
+      this.step=6;this.render();return;
+    }
 
     try {
       const rules = getCampaignRules();
@@ -966,6 +974,11 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       }
       const uiLang = game.settings.get("brp-uge", "uiLanguage") || "th";
       const prof = this.#getProfession() || {name:'',nameTh:'',description:'',descriptionTh:'',skillRefs:[],wealthRef:'',wealthEnabled:false};
+      const choiceStatus=this.#occupationChoiceStatus(prof);
+      if(!choiceStatus.valid){
+        ui.notifications.error(choiceStatus.errors.join(' · '));
+        this.step=4;this.render();return;
+      }
       const professionCoverage=occupationSkillCoverage(this.skillCatalog,prof.skillRefs);
       if (prof.sourceUuid && professionCoverage.missing.length) {
         const label=game.settings.get('brp-uge','uiLanguage')==='th'
@@ -1059,22 +1072,31 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
           // because the player visited the Wizard without re-allocating them.
           const creationCompleted=Boolean(actorDoc.getFlag?.('brp-uge','creationCompleted')
             ??actorDoc.flags?.['brp-uge']?.creationCompleted);
-          const touched=this.wizardData.touchedSkillIndices.includes(idx)
-            ||this.wizardData.touchedPersonality||this.wizardData.professionChanged;
-          if(creationCompleted&&!touched) return;
-          // Recreate the Wizard allocation while retaining independent post-creation training.
-          // An old allocation (pre-1.7.0) is stored only in rank: migrate it rather than double-count it.
-          const oldOcc = Number(existing.system.occupationBonus ?? 0);
-          const oldPers = Number(existing.system.personalBonus ?? 0);
-          const legacyRank = Number(existing.system.rank ?? 0);
-          const postCreationTraining = oldOcc || oldPers ? legacyRank : 0;
+          const skillTouched=this.wizardData.touchedSkillIndices.includes(idx);
+          if(creationCompleted&&!skillTouched&&!this.wizardData.touchedPersonality)return;
+          if(creationCompleted){
+            // Never infer zero from a blank Wizard draft for an existing skill.
+            // Only explicit row edits change its existing profession/personal pools.
+            const changes={_id:existing.id};
+            if(skillTouched){
+              changes['system.occupationBonus']=occupationBonus;
+              changes['system.personalBonus']=personalBonus;
+            }
+            if(this.wizardData.touchedPersonality)changes['system.personalityBonus']=personalityBonus;
+            skillUpdates.push(changes);
+            return;
+          }
+          // New creation: retain training from a prior legacy migration.
+          const oldOcc=Number(existing.system.occupationBonus??0);
+          const oldPers=Number(existing.system.personalBonus??0);
+          const legacyRank=Number(existing.system.rank??0);
           skillUpdates.push({
-            _id: existing.id,
-            "system.occupationBonus": occupationBonus,
-            "system.personalBonus": personalBonus,
-            "system.personalityBonus": personalityBonus,
-            "system.referenceKey": personalityKey,
-            "system.rank": postCreationTraining
+            _id:existing.id,
+            'system.occupationBonus':occupationBonus,
+            'system.personalBonus':personalBonus,
+            'system.personalityBonus':personalityBonus,
+            'system.referenceKey':personalityKey,
+            'system.rank':oldOcc||oldPers?legacyRank:0
           });
         } else {
           // Baseline skills are copied from the external library at printed base
@@ -1130,6 +1152,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       }
       if (gearToAdd.length) await actorDoc.createEmbeddedDocuments("Item", gearToAdd);
 
+      await actorDoc.setFlag("brp-uge", "creationOccupationChoices",
+        structuredClone(this.wizardData.choiceSelections));
       await actorDoc.setFlag("brp-uge", "creationCompleted", true);
       ui.notifications.info(`สร้างตัวละคร "${this.wizardData.name}" (${prof.nameTh}) เสร็จสมบูรณ์แล้ว!`);
       await this.close();
