@@ -67,6 +67,10 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       professionId: this.targetActor?.items?.find?.(i=>i.type==="occupation")?.uuid || "",
       choiceSelections: structuredClone(this.targetActor?.getFlag?.('brp-uge','creationOccupationChoices')||{}),
       personalSpecialtyKeys: [],
+      personalFamilyDraft: '',
+      personalSpecialtyDraft: '',
+      occupationFamilyDrafts: {},
+      occupationSpecialtyDrafts: {},
       professionDrafts: {},
       allowRebuild: false,
       rolledBasis: null,
@@ -753,20 +757,50 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       const subtype=this.element.querySelector('[data-occupation-specialty-picker="'+CSS.escape(id)+'"]');
       const field=this.element.querySelector('[data-occupation-specialty-field="'+CSS.escape(id)+'"]');
       const radios=[...choices.querySelectorAll('[data-occupation-kind-radio]')];
-      const update=()=>{
+      const update=(persist=false)=>{
         const selected=radios.find(r=>r.checked)?.value||'';
+        if(persist){
+          this.wizardData.occupationFamilyDrafts[id]=selected;
+          this.wizardData.occupationSpecialtyDrafts[id]='';
+        }
         const family=selected.startsWith('family:')?selected.slice(7):'';
         fillSpecialties(family,subtype);
+        if(subtype){
+          const saved=this.wizardData.occupationSpecialtyDrafts[id]||'';
+          if([...subtype.options].some(o=>o.value===saved))subtype.value=saved;
+          subtype.addEventListener('change',e=>{
+            this.wizardData.occupationSpecialtyDrafts[id]=e.target.value;
+          });
+        }
         if(field)field.hidden=!family;
       };
-      for(const radio of radios)radio.addEventListener('change',update);
+      const previous=this.wizardData.occupationFamilyDrafts[id]||'';
+      const prevRadio=radios.find(r=>r.value===previous);
+      if(prevRadio)prevRadio.checked=true;
+      for(const radio of radios)radio.addEventListener('change',()=>update(true));
       update();
     }
     const personalFamily=this.element.querySelector('[data-personal-family-picker]');
     const personalSpecialty=this.element.querySelector('[data-personal-specialty-picker]');
     if(personalFamily){
-      const update=()=>fillSpecialties(personalFamily.value,personalSpecialty);
-      personalFamily.addEventListener('change',update);
+      const previous=this.wizardData.personalFamilyDraft;
+      if([...personalFamily.options].some(o=>o.value===previous))personalFamily.value=previous;
+      const update=(persist=false)=>{
+        if(persist){
+          this.wizardData.personalFamilyDraft=personalFamily.value;
+          this.wizardData.personalSpecialtyDraft='';
+        }
+        fillSpecialties(personalFamily.value,personalSpecialty);
+        if(personalSpecialty){
+          const chosen=this.wizardData.personalSpecialtyDraft;
+          if([...personalSpecialty.options].some(o=>o.value===chosen))
+            personalSpecialty.value=chosen;
+        }
+      };
+      personalFamily.addEventListener('change',()=>update(true));
+      personalSpecialty?.addEventListener('change',e=>{
+        this.wizardData.personalSpecialtyDraft=e.target.value;
+      });
       update();
     }
     // Catalog search filters rows in place. Do not rerender on every keystroke:
