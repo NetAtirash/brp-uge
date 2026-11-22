@@ -12,7 +12,8 @@ import { creationBudgets } from "../rules/character-creation.mjs";
 import { BRPSkillPointsEditor } from "../apps/skill-points-editor.mjs";
 import { shouldShowCategoryColumn } from "../skill-points-utils.mjs";
 import { sameSkill } from "../skill-foundation.mjs";
-import { availableSpecialtyFamilies, readSpecialtyPresets, composeSpecialtyItem } from "../skill-specialties.mjs";
+import { availableSpecialtyFamilies, readSpecialtyPresets, composeSpecialtyItem, analyzeSkillFamily, specialtyFamilyKey } from "../skill-specialties.mjs";
+import { canonicalSkillKey } from "../skill-foundation.mjs";
 import { buildSpecialtyRegistry, specialtyTemplateFor } from "../specialty-registry.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
@@ -389,7 +390,10 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       label:`${isTh?f.thFamily:f.enFamily} — ${isTh?'เพิ่ม Specialty':'New Specialty'} (${f.enFamily})`
     }));
     const hiddenSources=new Set(this._specialtyRegistry.flatMap(f=>f.options.filter(o=>o.hidden).map(o=>o.sourceUuid)).filter(Boolean));
-    const exactChoices=sourceSkills.filter(skill=>!hiddenSources.has(skill.uuid)).map(skill=>({
+    // Specialty source variants are never shown as unrelated stand-alone
+    // Skills; player chooses the Family first, then an approved Specialty.
+    const exactChoices=sourceSkills.filter(skill=>!hiddenSources.has(skill.uuid) &&
+      !analyzeSkillFamily(skill)?.supportsSpecialty).map(skill=>({
       uuid:skill.uuid,
       label:`${getDisplayItemName(skill,uiLang)} — ${skill.system.baseFormula || `${skill.system.base??0}%`}`
     }));
@@ -858,8 +862,12 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         specialtyTemplateFor(group,{sourceUuid:'',templateUuid:''},sourceItems);
       if(!template || template.type!=='skill')return ui.notifications.warn('A matching source Skill template is required');
       try {
-        if(existing?.sourceUuid) data=documentToEmbeddedItem(template);
-        else {const source=template;data=composeSpecialtyItem(source,family,{en:english,th:thai});}
+        const canonical=family.key+'|'+specialtyFamilyKey(english);
+        // A curated World override is a distinct owned Skill, not a raw
+        // compound source record copied with its old name.
+        if(existing?.sourceUuid && canonicalSkillKey(template)===canonical)
+          data=documentToEmbeddedItem(template);
+        else data=composeSpecialtyItem(template,family,{en:english,th:thai});
       } catch(error){return ui.notifications.warn(error.message);}
     } else {
       const item=await fromUuid(ref).catch(()=>null);
