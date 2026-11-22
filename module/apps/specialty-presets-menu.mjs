@@ -54,7 +54,7 @@ export class SpecialtyPresetsMenu extends App {
   }
   #row(group,entry,newRow=false){
     const source=Boolean(entry.sourceUuid);
-    const state=entry.hidden?'hidden':entry.state||'enabled';
+    const state=entry.state==='review'?'review':entry.hidden?'hidden':entry.state||'enabled';
     const origin=source?this.#tr('รายการจาก Compendium / World','Installed source item'):
       entry.source==='legacy'?this.#tr('Preset เดิม','Previous World preset'):this.#tr('ตัวเลือก World','World option');
     const statusText=this.#tr('ยังไม่ให้ผู้เล่นเลือกจนกว่าจะจัดการชื่อและยืนยัน','Review this source heading before enabling it');
@@ -64,7 +64,8 @@ export class SpecialtyPresetsMenu extends App {
       '<div class="brp-specialty-row-head"><span class="brp-specialty-source-kind">'+esc(origin)+'</span>'+
       (entry.sourceAmbiguous||entry.review?'<span class="brp-specialty-review-note">'+this.#tr('ต้องตรวจสอบ','Needs review')+'</span>':'')+
       (source?'<button type="button" data-open-source="'+esc(entry.sourceUuid)+'">'+this.#tr('เปิด Item ต้นฉบับ','Open source Item')+'</button>':'')+
-      (!source?'<button type="button" data-archive>'+this.#tr('ซ่อน','Archive')+'</button>':'')+'</div>'+
+      (!source?'<button type="button" data-archive>'+this.#tr('ซ่อน','Archive')+'</button>':'')+
+      (newRow?'<button type="button" data-remove-draft>'+this.#tr('ยกเลิกรายการใหม่','Remove draft')+'</button>':'')+'</div>'+
       '<div class="brp-specialty-row-fields">'+
       '<label>Specialty (English)<input type="text" data-en value="'+esc(entry.en||'')+'" maxlength="100" autocomplete="off"></label>'+
       '<label>Specialty (ไทย)<input type="text" data-th value="'+esc(entry.th||'')+'" maxlength="100" autocomplete="off"></label>'+
@@ -183,6 +184,9 @@ export class SpecialtyPresetsMenu extends App {
       holder.firstElementChild?.querySelector('[data-en]')?.focus();
     });
     root.querySelector('[data-specialty-rows]')?.addEventListener('click',async e=>{
+      if(e.target.closest('[data-remove-draft]')){
+        e.target.closest('[data-row]')?.remove();return;
+      }
       const archive=e.target.closest('[data-archive]');
       if(archive){
         const row=archive.closest('[data-row]');
