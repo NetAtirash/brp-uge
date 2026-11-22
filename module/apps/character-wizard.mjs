@@ -14,7 +14,7 @@ import { uniqueSkills, sameSkill, planMissingBaseSkills } from "../skill-foundat
 import { configuredStartingSkills } from "../skill-selection.mjs";
 import { availableSpecialtyFamilies, composeSpecialtyItem, analyzeSkillFamily, specialtyFamilyKey } from "../skill-specialties.mjs";
 import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor, specialtyNeedsReview } from "../specialty-registry.mjs";
-import { normalizeOccupationChoiceGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill } from "../occupation-choice-rules.mjs";
+import { normalizeOccupationChoiceGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill, occupationChoiceMetadataMissing } from "../occupation-choice-rules.mjs";
 import { canonicalSkillKey } from "../skill-foundation.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -577,8 +577,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const choiceStatus=this.#occupationChoiceStatus(prof);
     context.occupationChoicesValid=choiceStatus.valid;
     const occupationText=this.#plainRuleText((prof.description||'')+' '+(prof.descriptionTh||''));
-    context.occupationMetadataMissing=Boolean(prof.sourceUuid&&!choiceGroups.length &&
-      /(choose|any (skill|specialty)|เลือก|จากทักษะ|อย่างใดอย่างหนึ่ง|pick one|pick [0-9])/iu.test(occupationText));
+    context.occupationMetadataMissing=Boolean(prof.sourceUuid&&
+      occupationChoiceMetadataMissing(prof,occupationText));
     context.occupationHasChoiceGroups=choiceGroups.length>0;
     context.isCompletedActor=Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));
     context.allowRebuild=this.wizardData.allowRebuild;
@@ -1148,6 +1148,15 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       }
       const uiLang = game.settings.get("brp-uge", "uiLanguage") || "th";
       const prof = this.#getProfession() || {name:'',nameTh:'',description:'',descriptionTh:'',skillRefs:[],wealthRef:'',wealthEnabled:false};
+      // Rulebook choice clauses cannot be safely invented from free-text
+      // Occupation prose. Do not finish with missing professional choices.
+      const occupationText=this.#plainRuleText((prof.description||'')+' '+(prof.descriptionTh||''));
+      if(prof.sourceUuid && occupationChoiceMetadataMissing(prof,occupationText)){
+        ui.notifications.error(uiLang==='th'
+          ?'อาชีพนี้ยังไม่มี Choice Groups สำหรับตัวเลือกทักษะตามกฎ กรุณาให้ GM กำหนดก่อนบันทึก'
+          :'This Occupation is missing structured Skill Choice Groups. Ask the GM to configure them before saving.');
+        this.step=4;this.render();return;
+      }
       const choiceStatus=this.#occupationChoiceStatus(prof);
       if(!choiceStatus.valid){
         ui.notifications.error(choiceStatus.errors.join(' · '));
