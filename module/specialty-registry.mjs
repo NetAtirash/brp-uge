@@ -1,132 +1,190 @@
 /**
- * Effective Skill Specialty registry.
- * Compendium/World source Items are read only. GM may override *any* source
- * entry (including ambiguous composite examples) using a World-only overlay.
- * Incomplete source headings are visible in the manager but never offered
- * as concrete player specialties until a GM explicitly curates them.
+ * Effective registry for ONE template Skill Item per specialty-capable family.
+ *
+ * Source content authors publish a single Skill Family template and its
+ * explicitly verified book-default specialties as metadata on that Item.
+ * World/GM additions and edits are overlays, never new Compendium Items.
+ * Legacy multi-Item packs remain inspectable for migration; their examples
+ * are NOT automatically offered as book defaults to new characters.
  */
 import {analyzeSkillFamily,availableSpecialtyFamilies,readSpecialtyPresets,specialtyFamilyKey} from './skill-specialties.mjs';
+import {isSkillFamilyTemplate,verifiedTemplateDefaults} from './skill-family-templates.mjs';
 
-const str=v=>String(v??'').trim();
-const keyOf=v=>specialtyFamilyKey(str(v));
+const str=v=>String(v??'').trim(),keyOf=v=>specialtyFamilyKey(str(v));
 export const specialtyNeedsReview=value=>!str(value)||/[/／]|(?:^|\W)(?:various|any|multiple|other)(?:\W|$)/iu.test(str(value));
 const entryId=(family,name)=>keyOf(family)+'|'+keyOf(name);
+const states=new Set(['enabled','hidden','review']);
 
+const readEntry=(raw={})=>{
+  const en=str(raw?.en),key=keyOf(raw?.key||en);
+  const value=raw?.base;
+  const base=value===null||value===undefined||value===''?null:Number(value);
+  return {key,en,th:str(raw?.th),templateUuid:str(raw?.templateUuid),
+    base:Number.isSafeInteger(base)&&base>=0?base:null,
+    baseFormula:str(raw?.baseFormula),
+    state:states.has(raw?.state)?raw.state:'enabled'};
+};
+const readOverrides=raw=>{
+  const out={};
+  if(!raw||typeof raw!=='object'||Array.isArray(raw))return out;
+  for(const [k,v] of Object.entries(raw)){
+    if(!v||typeof v!=='object')continue;
+    out[k]={en:str(v.en),th:str(v.th),
+      state:states.has(v.state)?v.state:'enabled'};
+  }
+  return out;
+};
 export function readSpecialtyRegistry(raw) {
   let value=raw;
   if(typeof value==='string')try{value=JSON.parse(value);}catch{value={};}
-  const out={schemaVersion:2,families:{}};
+  const out={schemaVersion:3,families:{}};
   if(!value||typeof value!=='object'||Array.isArray(value))return out;
-  for(const [name,data] of Object.entries(value.families||{})){
-    const family=keyOf(name);
-    if(!family||!data||typeof data!=='object')continue;
-    const seen=new Set(),additions=[];
-    for(const e of Array.isArray(data.additions)?data.additions:[]){
-      const key=keyOf(e?.key||e?.en),en=str(e?.en);
-      if(!key||!en||seen.has(key))continue;
-      seen.add(key);
-      additions.push({key,en,th:str(e?.th),templateUuid:str(e?.templateUuid),
-        state:e?.state==='hidden'?'hidden':e?.state==='review'?'review':'enabled'});
-    }
-    const sourceOverrides={};
-    for(const [uuid,o] of Object.entries(data.sourceOverrides||{})){
-      if(!uuid||!o||typeof o!=='object')continue;
-      sourceOverrides[uuid]={en:str(o.en),th:str(o.th),
-        state:['enabled','hidden','review'].includes(o.state)?o.state:'enabled'};
-    }
-    out.families[family]={additions,sourceOverrides,
+  for(const [name,rawData] of Object.entries(value.families||{})){
+    const key=keyOf(name),data=rawData||{};
+    if(!key)continue;
+    const seen=new Set();
+    const additions=(Array.isArray(data.additions)?data.additions:[])
+      .map(readEntry).filter(o=>{
+        if(!o.key||!o.en||seen.has(o.key))return false;
+        seen.add(o.key);return true;
+      });
+    out.families[key]={
+      additions,
+      // Stable keys belong to template metadata, not to the mutable label.
+      bookOverrides:readOverrides(data.bookOverrides),
+      sourceOverrides:readOverrides(data.sourceOverrides),
       hidden:[...new Set((Array.isArray(data.hidden)?data.hidden:[]).map(keyOf).filter(Boolean))],
-      legacyMigrated:data.legacyMigrated===true};
+      legacyMigrated:data.legacyMigrated===true
+    };
   }
   return out;
 }
+const option=(raw,source,details={})=>{
+  const state=raw.state||'enabled';
+  const en=str(raw.en);
+  return {...raw,...details,key:keyOf(en),en,th:str(raw.th)||en,
+    state,hidden:state!=='enabled',review:state==='review',source,editable:true};
+};
 
+/** There is intentionally NO hardcoded list of Language/Knowledge/Science
+ * subskills in the Game System; book defaults must come from the content pack.
+ */
 export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
-  const overlays=readSpecialtyRegistry(raw),legacy=readSpecialtyPresets(oldPresets);
-  const result=[];
-  for(const group of availableSpecialtyFamilies(documents)){
-    const cfg=overlays.families[group.key]||{};
-    const hidden=new Set(cfg.hidden||[]);
-    const entries=[],ambiguous=[],nameKeys=new Set(),fingerprints=new Set();
-    for(const doc of group.templates){
-      const info=analyzeSkillFamily(doc);
-      if(!info)continue;
-      const originalEn=info.enSpecialty,originalTh=info.thSpecialty||originalEn;
-      const override=cfg.sourceOverrides?.[doc.uuid];
-      const en=override?.en||originalEn,th=override?.th||originalTh;
-      const sourceReview=specialtyNeedsReview(originalEn);
-      const needsReview=specialtyNeedsReview(en);
-      const state=override?.state|| (sourceReview?'review':'enabled');
-      const effectiveState=(needsReview && state==='enabled')?'review':state;
-      const key=keyOf(en);
-      if(sourceReview)ambiguous.push({name:originalEn||doc.name,sourceUuid:doc.uuid,
-        reason:'Example or compound heading: curate a concrete Specialty before use'});
-      fingerprints.add([doc.system?.category??'',doc.system?.base??'',doc.system?.baseFormula??''].join('|'));
-      if(!nameKeys.has(key)&&key)nameKeys.add(key);
-      entries.push({key,en,th,originalEn,originalTh,source:'compendium',
-        sourceUuid:doc.uuid,templateUuid:doc.uuid,
-        category:doc.system?.category||'',base:doc.system?.base??0,baseFormula:doc.system?.baseFormula||'',
-        state:effectiveState,hidden:hidden.has(key)||effectiveState!=='enabled',review:effectiveState==='review',
-        editable:true,sourceAmbiguous:sourceReview});
+  const cfg=readSpecialtyRegistry(raw),legacy=readSpecialtyPresets(oldPresets);
+  const families=availableSpecialtyFamilies(documents),result=[];
+  for(const family of families){
+    const meta=cfg.families[family.key]||{};
+    const canonical=family.canonicalTemplate;
+    const examples=family.legacyExamples||[];
+    const options=[],ambiguous=[],claimed=new Set();
+
+    if(canonical){
+      // One source Item can publish several verified starting choices, with
+      // different book base chance/formulas for Own vs Other Language.
+      for(const seed of verifiedTemplateDefaults(canonical)){
+        const change=meta.bookOverrides?.[seed.key]||{};
+        const en=change.en||seed.en;
+        const th=change.th||seed.th;
+        const state=change.state||seed.state||'enabled';
+        const resultOption=option({...seed,en,th,state},'book',{
+          bookKey:seed.key,originalEn:seed.en,originalTh:seed.th,
+          templateUuid:canonical.uuid,sourceUuid:canonical.uuid,
+          ruleNote:seed.ruleNote||'',base:seed.base,baseFormula:seed.baseFormula
+        });
+        // Invalid composites never become selectable even if a pack marks
+        // them enabled; GM may rename an option into a concrete specialty.
+        if(specialtyNeedsReview(resultOption.en)){
+          resultOption.state='review';resultOption.hidden=true;resultOption.review=true;
+        }
+        options.push(resultOption); claimed.add(resultOption.key);
+      }
+    }else{
+      // OLD packs (one Skill Item per subtype) are migration candidates, NOT
+      // implicit default selections. A World override can explicitly approve
+      // a legacy entry while its Compendium is being migrated.
+      for(const doc of examples){
+        const info=analyzeSkillFamily(doc);
+        const change=meta.sourceOverrides?.[doc.uuid];
+        const originalEn=info?.enSpecialty||'',en=change?.en||originalEn;
+        const state=change?.state||'review';
+        const parsed=option({en,th:change?.th||info?.thSpecialty||'',state},'legacy-source',{
+          sourceUuid:doc.uuid,templateUuid:doc.uuid,
+          originalEn,originalTh:info?.thSpecialty||'',sourceAmbiguous:true
+        });
+        if(specialtyNeedsReview(en))parsed.state='review';
+        parsed.hidden=parsed.state!=='enabled';parsed.review=parsed.state==='review';
+        options.push(parsed); claimed.add(parsed.key);
+        ambiguous.push({name:doc.system?.nameEn||doc.name,sourceUuid:doc.uuid,
+          reason:'Legacy per-specialty source Item; migrate to one Family template'});
+      }
     }
-    if(!cfg.legacyMigrated)for(const item of legacy[group.key]||[]){
-      const key=keyOf(item.en);
-      if(!key||nameKeys.has(key))continue;
-      nameKeys.add(key);
-      entries.push({key,en:item.en,th:item.th||item.en,originalEn:item.en,originalTh:item.th||item.en,
-        source:'legacy',sourceUuid:'',templateUuid:'',state:hidden.has(key)?'hidden':'enabled',
-        hidden:hidden.has(key),review:false,editable:true});
+    // Old world presets remain visible for editing, but are not assumed to
+    // be rulebook defaults. Explicit GM approval is required for use.
+    if(!meta.legacyMigrated)for(const preset of legacy[family.key]||[]){
+      const key=keyOf(preset.en);
+      if(!key||claimed.has(key))continue;
+      options.push(option({en:preset.en,th:preset.th,state:'review'},'legacy-preset',
+        {templateUuid:canonical?.uuid||''}));
+      claimed.add(key);
     }
-    for(const item of cfg.additions||[]){
-      const key=keyOf(item.en);
+    for(const entry of meta.additions||[]){
+      const key=keyOf(entry.en);
       if(!key)continue;
-      // A legacy entry gets upgraded to a World row when explicitly edited.
-      const idx=entries.findIndex(o=>o.key===key&&o.source!=='compendium');
-      const entry={...item,key,en:item.en,th:item.th||item.en,originalEn:item.en,originalTh:item.th||item.en,
-        source:'world',sourceUuid:'',state:item.state,
-        hidden:hidden.has(key)||item.state!=='enabled',review:item.state==='review',editable:true};
-      if(idx>=0)entries[idx]=entry;
-      else entries.push(entry);
+      // World entries may duplicate a book seed from historical versions.
+      // The source book seed always takes precedence, so no double choice.
+      if(options.some(o=>o.source==='book'&&o.key===key))continue;
+      const worldOption=option(entry,'world',{
+        templateUuid:entry.templateUuid||canonical?.uuid||''
+      });
+      if(specialtyNeedsReview(worldOption.en)){
+        worldOption.state='review';worldOption.review=true;worldOption.hidden=true;
+      }
+      const old=options.findIndex(o=>o.source==='legacy-preset'&&o.key===key);
+      if(old>=0)options[old]=worldOption;
+      else options.push(worldOption);
     }
-    result.push({...group,templates:group.templates,options:entries,
-      ambiguous,fingerprintConflict:fingerprints.size>1,sourceCount:group.templates.length,
-      activeCount:entries.filter(o=>!o.hidden).length});
+    for(const opt of options){
+      if((meta.hidden||[]).includes(opt.key))opt.hidden=true;
+    }
+    const usable=options.filter(o=>!o.hidden);
+    result.push({...family,templates:canonical?[canonical]:examples,
+      sourceCount:canonical?1:0,legacySourceCount:examples.length,
+      options,activeCount:usable.length,ambiguous,
+      missingSource:!canonical,requiresContentMigration:!canonical,
+      fingerprintConflict:family.ambiguousTemplate,
+      bookDefaultCount:options.filter(o=>o.source==='book').length});
   }
   const known=new Set(result.map(g=>g.key));
-  for(const key of new Set([...Object.keys(legacy),...Object.keys(overlays.families)])){
+  for(const key of Object.keys(cfg.families)){
     if(known.has(key))continue;
-    const cfg=overlays.families[key]||{},opts=(cfg.additions||[]).map(o=>({
-      ...o,source:'world',sourceUuid:'',hidden:o.state!=='enabled',review:o.state==='review',
-      editable:true
-    }));
-    result.push({key,enFamily:key,thFamily:key,templates:[],templateUuid:'',
-      options:opts,ambiguous:[],fingerprintConflict:false,sourceCount:0,
-      activeCount:opts.filter(o=>!o.hidden).length,missingSource:true});
+    const entries=(cfg.families[key].additions||[]).map(e=>option(e,'world'));
+    result.push({key,enFamily:key,thFamily:key,templates:[],canonicalTemplate:null,
+      options:entries,activeCount:entries.filter(o=>!o.hidden).length,
+      ambiguous:[],sourceCount:0,legacySourceCount:0,missingSource:true,
+      requiresContentMigration:true,fingerprintConflict:false,bookDefaultCount:0});
   }
   return result.sort((a,b)=>a.enFamily.localeCompare(b.enFamily));
 }
 export function eligibleSpecialtyOptions(registry,familyKey){
-  return (registry.find(group=>group.key===keyOf(familyKey))?.options||[]).filter(o=>!o.hidden);
+  return (registry.find(g=>g.key===keyOf(familyKey))?.options||[]).filter(o=>!o.hidden);
 }
 export function findSpecialtyCandidate(registry,identity){
-  const [family,...segments]=str(identity).split('|');
+  const [family,...parts]=str(identity).split('|');
   const group=registry.find(g=>g.key===keyOf(family));
-  const option=group?.options.find(o=>o.key===keyOf(segments.join('|'))&&!o.hidden);
+  const option=group?.options.find(o=>o.key===keyOf(parts.join('|'))&&!o.hidden);
   return group&&option?{family:group,option}:null;
 }
 export function specialtyTemplateFor(group,option,docs=[]){
-  const byUuid=new Map(docs.map(doc=>[doc.uuid,doc]));
-  if(option?.sourceUuid&&byUuid.has(option.sourceUuid))return byUuid.get(option.sourceUuid);
-  if(option?.templateUuid&&byUuid.has(option.templateUuid))return byUuid.get(option.templateUuid);
-  // Do not guess a template across incompatible source formulas; a curated
-  // source is safe only when the GM explicitly promoted its concrete identity.
-  if(group?.fingerprintConflict)return null;
-  const curated=group?.options?.find(o=>o.sourceUuid&&!o.hidden&&o.state==='enabled');
-  if(curated)return byUuid.get(curated.sourceUuid)||null;
-  const source=group?.templates?.find(doc=>!group.ambiguous.some(x=>x.sourceUuid===doc.uuid));
-  return source?byUuid.get(source.uuid)||null:null;
+  const sources=new Map(docs.map(doc=>[doc.uuid,doc]));
+  const canonical=group?.canonicalTemplate;
+  if(canonical && sources.has(canonical.uuid))return sources.get(canonical.uuid);
+  // Transitional legacy options require an explicit, approved GM choice.
+  if(option?.state!=='enabled')return null;
+  if(option?.templateUuid&&sources.has(option.templateUuid))return sources.get(option.templateUuid);
+  return null;
 }
 export function specialtyIdentity(item) {
   const info=analyzeSkillFamily(item);
-  return info?.supportsSpecialty && info.enSpecialty?entryId(info.enFamily,info.enSpecialty):'';
+  return info?.supportsSpecialty&&!info.isTemplate&&info.enSpecialty
+    ?entryId(info.enFamily,info.enSpecialty):'';
 }
