@@ -79,7 +79,7 @@
       <section class="full-row brp-occupation-choices-preview">
         <div class="brp-occupation-choice-heading">
           <strong>{{#if isTh}}เงื่อนไขเลือกทักษะตามอาชีพ{{else}}Occupational Skill Choices{{/if}}</strong>
-          {{#if item.isOwner}}<button type="button" class="brp-btn" data-action="editOccupationChoices">
+          {{#if isGM}}<button type="button" class="brp-btn" data-action="editOccupationChoices">
             <i class="fa-solid fa-list-check"></i> {{#if isTh}}จัดการทางเลือก{{else}}Manage Choices{{/if}}
           </button>{{/if}}
         </div>
