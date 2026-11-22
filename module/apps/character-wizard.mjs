@@ -742,12 +742,68 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   static #onSelectProfession(event, target) {
     event.preventDefault();
-    this.wizardData.professionId = target.dataset.profId;
-    this.wizardData.professionChanged = true;
-    this.wizardData.occRanks = {};
-    this.wizardData.occPowerRanks = {};
-    this.#syncStarterGear();
+    this.#changeProfession(target.dataset.profId||'');
     this.render();
+  }
+
+  static async #onSelectOccupationChoice(event,target) {
+    event.preventDefault();
+    const id=String(target.dataset.groupId||'');
+    const prof=this.#getProfession();
+    const group=normalizeOccupationChoiceGroups(prof?.skillChoiceGroups).find(g=>g.id===id);
+    if(!group)return;
+    const picker=this.element.querySelector('[data-occupation-choice-picker="'+CSS.escape(id)+'"]');
+    const key=String(picker?.value||'');
+    if(!key)return;
+    const previous=this.wizardData.choiceSelections[id]||[];
+    if(previous.includes(key))return ui.notifications.warn('This Skill was already selected');
+    if(previous.length>=group.count)return ui.notifications.warn('This occupation choice group is already full');
+    if(Object.entries(this.wizardData.choiceSelections).some(([groupId,keys])=>groupId!==id&&keys.includes(key)))
+      return ui.notifications.warn('This Skill is selected in another group');
+    let skill=this.skillCatalog.find(s=>canonicalSkillKey(s)===key);
+    if(!skill){
+      const candidate=findSpecialtyCandidate(this.specialtyRegistry,key);
+      if(!candidate)return ui.notifications.warn('This Specialty is no longer available');
+      const template=specialtyTemplateFor(candidate.family,candidate.option,this.librarySkillDocs);
+      if(!template)return ui.notifications.warn('A compatible source Skill template must be configured by the GM');
+      try {
+        if(candidate.option.sourceUuid)skill=documentToEmbeddedItem(template);
+        else skill=composeSpecialtyItem(template,candidate.family,{en:candidate.option.en,th:candidate.option.th});
+      }catch(error){return ui.notifications.warn(error.message);}
+      if(!this.skillCatalog.some(s=>sameSkill(s,skill)))this.skillCatalog.push(skill);
+      skill=this.skillCatalog.find(s=>sameSkill(s,skill));
+    }
+    if(!occupationGroupAllowsSkill(group,skill))return ui.notifications.warn('Skill is not eligible for this occupation choice');
+    this.wizardData.choiceSelections[id]=[...previous,key];
+    this.render();
+  }
+
+  static #onRemoveOccupationChoice(event,target) {
+    event.preventDefault();
+    const id=String(target.dataset.groupId||''),key=String(target.dataset.key||'');
+    const chosen=this.wizardData.choiceSelections[id]||[];
+    if(!chosen.includes(key))return;
+    this.wizardData.choiceSelections[id]=chosen.filter(x=>x!==key);
+    const index=this.skillCatalog.findIndex(s=>canonicalSkillKey(s)===key);
+    if(index>=0 && Number(this.wizardData.occRanks[index]||0)>0){
+      const reclaimed=Number(this.wizardData.occRanks[index]);
+      this.wizardData.occRanks[index]=0;
+      if(!this.wizardData.touchedSkillIndices.includes(index))this.wizardData.touchedSkillIndices.push(index);
+      ui.notifications.info('Returned '+reclaimed+' occupation points to the unallocated pool');
+    }
+    this.render();
+  }
+
+  static async #onUnlockRebuild(event) {
+    event.preventDefault();
+    if(!game.user?.isGM)return;
+    const Dialog=globalThis.foundry?.applications?.api?.DialogV2;
+    const confirmed=await Dialog?.confirm?.({
+      window:{title:'Rebuild a completed character?'},
+      content:'<p>Changes to a completed character can affect characteristics, resources and creation allocations. Make a World backup first. Historical advancements and Flavor Names will not be intentionally deleted.</p>',
+      yes:{label:'Unlock rebuild'},no:{label:'Keep protected'},rejectClose:false
+    });
+    if(confirmed){this.wizardData.allowRebuild=true;this.render();}
   }
 
   static #onAllocateSkill(event, target) {
@@ -757,6 +813,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const delta = Number(target.dataset.delta || 0);
     const tpl = this.skillCatalog[idx];
     if (!tpl) return;
+    if(pool==='occ'&&!this.#occupationChoiceStatus().valid){
+      return ui.notifications.warn('Choose all required Occupation Skill options before allocating occupation points');
+    }
     if(pool==='occ'&&!this.#isOccupationalSkill(tpl,this.#getProfession())) {
       return ui.notifications.warn('Occupation points must be spent on skills allowed by the selected occupation');
     }
