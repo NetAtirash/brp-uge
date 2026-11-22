@@ -200,6 +200,16 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       }
     }
     this.skillCatalog=uniqueSkills(this.skillCatalog);
+    // Reopened Actors must show existing allocations, not misleading empty
+    // budgets that would allow a second allocation of the same points.
+    if(this.targetActor?.getFlag?.('brp-uge','creationCompleted')){
+      this.skillCatalog.forEach((tpl,index)=>{
+        const own=this.targetActor.items?.find?.(item=>item.type==='skill'&&sameSkill(item,tpl));
+        if(!own)return;
+        this.wizardData.occRanks[index]=Number(own.system.occupationBonus||0);
+        this.wizardData.persRanks[index]=Number(own.system.personalBonus||0);
+      });
+    }
     this.catalogLoaded=true;
     if(!this.wizardData.selectedWeaponRefs.length&&!this.wizardData.selectedArmorRefs.length) this.#syncStarterGear();
   }
@@ -919,6 +929,14 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       return;
     }
     // Completed Actors must never be rebuilt from a reopened Wizard by accident.
+    if(actorDoc.getFlag?.('brp-uge','creationCompleted') && this.wizardData.professionChanged){
+      const saved=actorDoc.items?.find?.(item=>item.type==='occupation');
+      if(saved?.uuid!==this.wizardData.professionId && 
+        actorDoc.items?.some?.(item=>item.type==='skill'&&Number(item.system.occupationBonus||0)>0)){
+        ui.notifications.warn('Changing the Occupation of a completed Actor requires explicit point migration. Existing occupation points remain protected; use the GM skill editor or create a new Actor.');
+        this.step=4;this.render();return;
+      }
+    }
     if(actorDoc.getFlag?.('brp-uge','creationCompleted') &&
       (!this.wizardData.allowRebuild || !game.user?.isGM)) {
       ui.notifications.warn('Completed character protected. Use the GM Unlock Rebuild control in step 6.');
