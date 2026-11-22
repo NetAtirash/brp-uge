@@ -84,6 +84,12 @@ export class SpecialtyPresetsMenu extends App {
         '<select data-template '+(source?'disabled':'')+'>'+
           this.#templateOptions(group,entry.templateUuid||'')+
         '</select></label>'+
+      (!source?'<div class="brp-specialty-rule-overrides">'+
+        '<label>'+this.#tr('ฐาน % (เว้นว่างเพื่อใช้ค่า Template)','Base % (blank = template)')+
+        '<input data-base type="number" min="0" step="1" value="'+esc(entry.base??'')+'"></label>'+
+        '<label>'+this.#tr('สูตรฐาน (ถ้ามี)','Base formula (optional)')+
+        '<input data-base-formula type="text" value="'+esc(entry.baseFormula||'')+'" maxlength="100"></label>'+
+        '</div>':'')+
       '</div>'+
       (entry.review?'<small class="brp-manager-note">'+statusText+'</small>':'')+
       (book?'<small class="brp-manager-note">'+this.#tr('ค่ากฎตั้งต้น: ','Book rule base: ')+
@@ -167,7 +173,12 @@ export class SpecialtyPresetsMenu extends App {
         const templateUuid=node.querySelector('[data-template]')?.value||'';
         if(!templateUuid&&state==='enabled')
           throw new Error(this.#tr('เลือกแม่แบบค่ากฎสำหรับ ','Select rule template for ')+en);
-        additions.push({key:k,en,th,templateUuid,state});
+        const baseInput=safe(node.querySelector('[data-base]')?.value);
+        const base=baseInput===''?null:Number(baseInput);
+        if(base!==null&&(!Number.isSafeInteger(base)||base<0))
+          throw new Error(this.#tr('ค่าฐานต้องเป็นจำนวนเต็มไม่ติดลบ','Base chance must be a nonnegative integer'));
+        const baseFormula=safe(node.querySelector('[data-base-formula]')?.value);
+        additions.push({key:k,en,th,templateUuid,state,base,baseFormula});
       }
     }
     cfg.additions=additions;
