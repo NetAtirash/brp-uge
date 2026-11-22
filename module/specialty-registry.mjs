@@ -118,8 +118,11 @@ export function specialtyTemplateFor(group,option,docs=[]){
   const byUuid=new Map(docs.map(doc=>[doc.uuid,doc]));
   if(option?.sourceUuid&&byUuid.has(option.sourceUuid))return byUuid.get(option.sourceUuid);
   if(option?.templateUuid&&byUuid.has(option.templateUuid))return byUuid.get(option.templateUuid);
-  // Never silently base an arbitrary new specialty on composite source rules.
+  // Do not guess a template across incompatible source formulas; a curated
+  // source is safe only when the GM explicitly promoted its concrete identity.
   if(group?.fingerprintConflict)return null;
+  const curated=group?.options?.find(o=>o.sourceUuid&&!o.hidden&&o.state==='enabled');
+  if(curated)return byUuid.get(curated.sourceUuid)||null;
   const source=group?.templates?.find(doc=>!group.ambiguous.some(x=>x.sourceUuid===doc.uuid));
   return source?byUuid.get(source.uuid)||null:null;
 }
