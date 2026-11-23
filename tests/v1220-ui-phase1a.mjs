@@ -19,9 +19,10 @@ const oldStyles=[
   'styles/brp-v12110-flavor-chat.css',
   'styles/brp-v12111-specialty-management.css'
 ];
-assert.deepEqual(manifest.styles.slice(0,-1),oldStyles,
+assert.deepEqual(manifest.styles.slice(0,-2),oldStyles,
   'Legacy CSS cascade and load order must remain identical');
-assert.equal(manifest.styles.at(-1),'styles/brp-ui2-foundation.css');
+assert.equal(manifest.styles.at(-2),'styles/brp-ui2-foundation.css');
+assert.equal(manifest.styles.at(-1),'styles/brp-ui2-character-header.css');
 assert.equal(manifest.version,'1.21.11','No unreviewed stable version bump');
 assert.equal(manifest.compatibility.minimum,'14');
 
@@ -32,7 +33,10 @@ assert.match(source,/scope: 'client', config: true, type: Boolean, default: fals
 assert.match(source,/onChange: refreshUI2Preview/);
 const callback=source.slice(source.indexOf('function refreshUI2Preview(enabled)'),
   source.indexOf('Hooks.once("init"'));
-assert.match(callback,/syncUI2PreviewOpenSheets\(/);
+// The new HBS Header is structurally different. Never toggle CSS classes
+// on a stale Header DOM: save/close/reopen safely instead.
+assert.doesNotMatch(callback,/syncUI2PreviewOpenSheets\(/);
+assert.match(callback,/close and reopen the Character Sheet/);
 assert.doesNotMatch(callback,/\.render\(|prepareData\(|\.update\(/,
   'Preview setting must not rerender dirty forms or write Actor data');
 
@@ -105,4 +109,4 @@ assert.doesNotMatch(css,/(?:^|\n)\s*(?:body|:root|html\s*\{)/m,
   'No unscoped global reset or tokens');
 assert.doesNotMatch(read('system.json'),/docs\/ui-v2\/prototype/,
   'Standalone prototype must never load as a Foundry runtime asset');
-console.log('PASS Phase 1A: default-off client opt-in, scoped CSS, safe live toggle, unchanged Actor/legacy UI');
+console.log('PASS Phase 1A gate: default-off client opt-in, scoped CSS, safe reopen for structured Header, unchanged Actor/legacy UI');
