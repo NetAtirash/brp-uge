@@ -1,0 +1,133 @@
+/*
+ * BRP UGE UI2 FOUNDATION — Phase 1A, opt-in ONLY.
+ * Enabled by the local Client Setting "UI2 Foundation Preview".
+ * Intentionally inert unless Character Sheet root has .brp-ui2.
+ *
+ * Existing Notebook color/theme variables remain the source of truth.
+ * No global resets, selectors for other Foundry windows, @layer,
+ * !important, new font downloads, or release-specific overrides.
+ */
+
+/* Phase 1A: semantic aliases and design rhythm, scoped to Character Sheet. */
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 {
+  --ui-canvas: var(--brp-paper);
+  --ui-panel: var(--brp-panel);
+  --ui-inset: var(--brp-surface);
+  --ui-text: var(--brp-text);
+  --ui-text-muted: var(--brp-muted);
+  --ui-rule: var(--brp-border);
+  --ui-rule-strong: var(--brp-border-strong);
+  --ui-accent: var(--brp-accent);
+  --ui-selected: var(--brp-highlight);
+  --ui-focus: var(--brp-focus);
+  --ui-positive: var(--brp-success);
+  --ui-danger: var(--brp-danger);
+  --ui-heading-font: var(--brp-heading-font);
+  --ui-body-font: var(--brp-body-font);
+  --ui-number-font: var(--brp-numeric-font);
+
+  --ui-space-1: 4px;
+  --ui-space-2: 8px;
+  --ui-space-3: 12px;
+  --ui-space-4: 16px;
+  --ui-space-6: 24px;
+  --ui-space-8: 32px;
+  --ui-control-min-height: 38px;
+  --ui-card-radius: 6px;
+  --ui-focus-width: 3px;
+}
+
+/* Reusable primitives for a component-by-component migration.
+ * These classes are not yet used in the production Character Sheet; they
+ * establish one accountable owner for future components in Phases 1B–1D. */
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-panel {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: var(--ui-space-4);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-section-title {
+  margin: 0;
+  font: 700 16px/1.4 var(--ui-heading-font);
+  color: var(--ui-text);
+  overflow-wrap: anywhere;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-control {
+  box-sizing: border-box;
+  min-height: var(--ui-control-min-height);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid var(--ui-rule-strong);
+  border-radius: var(--ui-card-radius);
+  background: var(--ui-inset);
+  color: var(--ui-text);
+  font-family: var(--ui-body-font);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-action {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-2);
+  min-height: var(--ui-control-min-height);
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border: 1px solid var(--ui-rule-strong);
+  border-radius: var(--ui-card-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  font-family: var(--ui-body-font);
+  font-weight: 650;
+  cursor: pointer;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-action[aria-pressed="true"],
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-action[aria-selected="true"] {
+  border-color: var(--ui-accent);
+  background: var(--ui-selected);
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-muted {
+  color: var(--ui-text-muted);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-numeric {
+  font-family: var(--ui-number-font);
+  font-variant-numeric: tabular-nums;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* One safe existing UI improvement in preview: visible keyboard focus.
+ * No dimensions or layout changes to the legacy controls. */
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2
+  :is(.brp-header-icon, .brp-edit-switch, .tab-btn):focus-visible,
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2
+  :is(.brp-ui2-control, .brp-ui2-action):focus-visible {
+  outline: var(--ui-focus-width) solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
+/* Content-specific components will receive width/scroll rules in a later
+ * vertical slice, only after tests establish a single scroll owner. */
