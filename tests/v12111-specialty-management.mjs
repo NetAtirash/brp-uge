@@ -166,5 +166,8 @@ assert.match(css,/\.wiz-skill-row/);
 assert.match(css,/\.brp-wiz-choice-radio-list/);
 const manifest=JSON.parse(read('system.json'));
 assert.equal(manifest.version,'1.21.11');
-assert.equal(manifest.styles.at(-1),'styles/brp-v12111-specialty-management.css');
+// The 1.21.11 rules stylesheet keeps its relative cascade position;
+// UI2's opt-in token-only CSS follows it without changing the stable UI.
+assert.equal(manifest.styles.at(-2),'styles/brp-v12111-specialty-management.css');
+assert.equal(manifest.styles.at(-1),'styles/brp-ui2-foundation.css');
 console.log('PASS v1.21.11 Specialty registry, source safety, choice groups and Wizard integration');
