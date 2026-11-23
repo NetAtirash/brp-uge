@@ -5,7 +5,7 @@
  *
  * Existing Notebook color/theme variables remain the source of truth.
  * No global resets, selectors for other Foundry windows, @layer,
- * !important, new font downloads, or release-specific overrides.
+ * forced-priority overrides, new font downloads, or release-specific overrides.
  */
 
 /* Phase 1A: semantic aliases and design rhythm, scoped to Character Sheet. */
