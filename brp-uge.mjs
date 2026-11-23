@@ -28,6 +28,7 @@ import { configureStartingSkills } from "./module/skill-selection.mjs";
 import { StartingSkillsMenu } from "./module/apps/starting-skills-menu.mjs";
 import { SpecialtyPresetsMenu } from "./module/apps/specialty-presets-menu.mjs";
 import { installBRPSettingsUI } from "./module/apps/settings-organization.mjs";
+import { syncUI2PreviewOpenSheets } from "./module/ui-v2/preview.mjs";
 
 function refreshBRPWorldUI() {
   try {
@@ -44,6 +45,15 @@ function refreshBRPWorldUI() {
   } catch (err) {
     console.warn("BRP-UGE | Failed to refresh open sheets after setting change:", err);
   }
+}
+
+/**
+ * UI2 is per-client and a pure CSS scope toggle. Do not run
+ * refreshBRPWorldUI(): it prepares Actor data and rerenders edit forms.
+ */
+function refreshUI2Preview(enabled) {
+  const instances = foundry?.applications?.instances?.values?.() ?? [];
+  syncUI2PreviewOpenSheets(instances, enabled === true);
 }
 
 Hooks.once("init", async () => {
@@ -146,6 +156,15 @@ Hooks.once("init", async () => {
     onChange: () => applyPaperTheme()
   });
   applyPaperTheme();
+
+  // UI 2.0 Phase 1A foundation: opt-in, per CLIENT, default OFF.
+  // The flag only scopes CSS on Character Sheet; no rules or data migration.
+  game.settings.register('brp-uge', 'ui2Preview', {
+    name: 'UI 2.0 Foundation Preview / ทดลองโครงสร้าง UI ใหม่',
+    hint: 'เปิดเฉพาะผู้ใช้นี้ เพื่อทดลอง Design Tokens และ Focus Style บน Character Sheet ปิดได้ทันทีเพื่อกลับไปใช้ UI เดิม (ยังไม่ใช่การออกแบบชีทใหม่ทั้งหน้า)',
+    scope: 'client', config: true, type: Boolean, default: false,
+    onChange: refreshUI2Preview
+  });
 
   // GM-Only World Rules (Prevent players from modifying core campaign rules)
   game.settings.register("brp-uge", "itemTooltipLanguage", {
