@@ -15,6 +15,7 @@ import { sameSkill } from "../skill-foundation.mjs";
 import { availableSpecialtyFamilies, readSpecialtyPresets, composeSpecialtyItem, analyzeSkillFamily, specialtyFamilyKey } from "../skill-specialties.mjs";
 import { canonicalSkillKey } from "../skill-foundation.mjs";
 import { buildSpecialtyRegistry, specialtyTemplateFor } from "../specialty-registry.mjs";
+import { isUI2PreviewEnabled, syncUI2PreviewRoot } from "../ui-v2/preview.mjs";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
@@ -159,6 +160,8 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.ui = ui;
     context.uiLang = uiLang;
     context.isTh = isTh;
+    // A presentation-only client setting; never written to the Actor.
+    context.ui2Preview = isUI2PreviewEnabled(game.settings, this.document.type);
     context.isGM = Boolean(game.user?.isGM);
     context.derivedTips = derivedTips;
     context.canUseWizard = Boolean(game.user?.isGM || rules.allowPlayerCharacterWizard);
@@ -407,6 +410,9 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** @override */
   _onRender(context, options) {
     super._onRender(context, options);
+    // Preserve the stable DOM and input state; only toggle a CSS scope class.
+    syncUI2PreviewRoot(this.element, this.document.type,
+      isUI2PreviewEnabled(game.settings, this.document.type));
     applyBRPControlLanguage(this.element);
     // Specialty-specific controls are shown only after a family is chosen.
     for(const bar of this.element.querySelectorAll('.skill-add-bar')){
