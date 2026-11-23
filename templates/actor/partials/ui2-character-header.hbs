@@ -2,14 +2,14 @@
 <header class="brp-ui2-character-header" aria-label="{{#if isTh}}ข้อมูลตัวละครและเครื่องมือ{{else}}Character identity and tools{{/if}}">
   <div class="brp-ui2-header-main">
     <div class="brp-ui2-brand-region">
-      <div class="brp-banner-copy" aria-hidden="true">
+      <div class="brp-ui2-brand-copy" aria-hidden="true">
       <span class="brp-brand-overline">BASIC ROLEPLAYING</span>
       <span class="brp-brand-title">UNIVERSAL<br>GAME ENGINE</span>
       <span class="brp-brand-footnote">CHARACTER DOSSIER <span class="brp-brand-star">✦</span> BRP / UGE</span>
     </div>
     </div>
     <div class="brp-ui2-identity-region">
-      <div class="sidebar-identity brp-personal-identity">
+      <div class="brp-ui2-personal-identity">
       <div class="id-top-row">
         <img class="profile-img compact-img" src="{{actor.img}}" data-action="editImage" data-edit="img" data-tooltip="{{actor.name}}" />
         <div class="id-name-col">
@@ -20,7 +20,7 @@
     </div>
     </div>
     <div class="brp-ui2-tools-region">
-      <div class="brp-header-utilities brp-ui2-utility-row" role="group" aria-label="{{#if isTh}}เครื่องมือจัดการตัวละคร{{else}}Character utilities{{/if}}">
+      <div class="brp-ui2-utility-row" role="group" aria-label="{{#if isTh}}เครื่องมือจัดการตัวละคร{{else}}Character utilities{{/if}}">
     <button type="button" class="brp-header-icon brp-paper-toggle" data-action="togglePaperTheme" data-tooltip="{{#if isTh}}สลับสมุด Light / Dark{{else}}Switch notebook Light / Dark{{/if}}" aria-label="{{#if isTh}}สลับธีมสมุดบันทึก{{else}}Toggle notebook theme{{/if}}"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i></button>
     <button type="button" role="switch" class="brp-edit-switch {{#if editMode}}is-on{{/if}}" aria-checked="{{#if editMode}}true{{else}}false{{/if}}" aria-label="{{#if isTh}}โหมดแก้ไขชีท{{else}}Sheet edit mode{{/if}}" data-action="toggleEdit" data-tooltip="{{#if editMode}}{{ui.lockSheet}}{{else}}{{ui.editSheet}}{{/if}}"><span class="brp-switch-track"><span class="brp-switch-thumb"><i class="fa-solid fa-gear" aria-hidden="true"></i></span></span></button>
     {{#if canUseWizard}}<button type="button" class="brp-header-icon" data-action="openWizard" data-tooltip="{{ui.wizardTitle}}" aria-label="{{ui.wizardTitle}}"><i class="fa-solid fa-hat-wizard" aria-hidden="true"></i></button>{{/if}}
