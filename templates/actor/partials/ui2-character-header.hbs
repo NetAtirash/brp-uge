@@ -1,0 +1,71 @@
+{{! UI2 IdentityHeader — only rendered when client enables ui2Preview. }}
+<header class="brp-ui2-character-header" aria-label="{{#if isTh}}ข้อมูลตัวละครและเครื่องมือ{{else}}Character identity and tools{{/if}}">
+  <div class="brp-ui2-header-main">
+    <div class="brp-ui2-brand-region">
+      <div class="brp-banner-copy" aria-hidden="true">
+      <span class="brp-brand-overline">BASIC ROLEPLAYING</span>
+      <span class="brp-brand-title">UNIVERSAL<br>GAME ENGINE</span>
+      <span class="brp-brand-footnote">CHARACTER DOSSIER <span class="brp-brand-star">✦</span> BRP / UGE</span>
+    </div>
+    </div>
+    <div class="brp-ui2-identity-region">
+      <div class="sidebar-identity brp-personal-identity">
+      <div class="id-top-row">
+        <img class="profile-img compact-img" src="{{actor.img}}" data-action="editImage" data-edit="img" data-tooltip="{{actor.name}}" />
+        <div class="id-name-col">
+          <input class="char-name-input compact-name" name="name" type="text" value="{{actor.name}}" placeholder="ชื่อตัวละคร" {{#unless editMode}}readonly{{/unless}} />
+          <button type="button" class="brp-occupation-name" data-action="switchTab" data-tab="status" title="{{#if isTh}}ดูหรือเปลี่ยนอาชีพ{{else}}View / change profession{{/if}}">{{#if displayOccupation}}{{displayOccupation}}{{else}}{{#if isTh}}เลือกอาชีพ{{else}}Choose profession{{/if}}{{/if}} <i class="fa-solid fa-briefcase" aria-hidden="true"></i></button>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="brp-ui2-tools-region">
+      <div class="brp-header-utilities brp-ui2-utility-row" role="group" aria-label="{{#if isTh}}เครื่องมือจัดการตัวละคร{{else}}Character utilities{{/if}}">
+    <button type="button" class="brp-header-icon brp-paper-toggle" data-action="togglePaperTheme" data-tooltip="{{#if isTh}}สลับสมุด Light / Dark{{else}}Switch notebook Light / Dark{{/if}}" aria-label="{{#if isTh}}สลับธีมสมุดบันทึก{{else}}Toggle notebook theme{{/if}}"><i class="fa-solid fa-circle-half-stroke" aria-hidden="true"></i></button>
+    <button type="button" role="switch" class="brp-edit-switch {{#if editMode}}is-on{{/if}}" aria-checked="{{#if editMode}}true{{else}}false{{/if}}" aria-label="{{#if isTh}}โหมดแก้ไขชีท{{else}}Sheet edit mode{{/if}}" data-action="toggleEdit" data-tooltip="{{#if editMode}}{{ui.lockSheet}}{{else}}{{ui.editSheet}}{{/if}}"><span class="brp-switch-track"><span class="brp-switch-thumb"><i class="fa-solid fa-gear" aria-hidden="true"></i></span></span></button>
+    {{#if canUseWizard}}<button type="button" class="brp-header-icon" data-action="openWizard" data-tooltip="{{ui.wizardTitle}}" aria-label="{{ui.wizardTitle}}"><i class="fa-solid fa-hat-wizard" aria-hidden="true"></i></button>{{/if}}
+    {{#if isGM}}<button type="button" class="brp-header-icon brp-starting-skills-action" data-action="configureStartingSkills" title="{{#if isTh}}กำหนดทักษะตั้งต้นของชีท{{else}}Configure starting skills{{/if}}" data-tooltip="{{#if isTh}}เลือกทักษะที่จะเพิ่มให้ตัวละครใหม่ทุกตัว{{else}}Choose Skills added to new characters{{/if}}"><i class="fa-solid fa-list-check" aria-hidden="true"></i></button>{{/if}}
+    <button type="button" class="brp-header-icon" data-action="openCompendium" data-category="skills" data-tooltip="{{ui.compendium}}" aria-label="{{ui.compendium}}"><i class="fa-solid fa-book-open" aria-hidden="true"></i></button>
+    <button type="button" class="brp-header-icon" data-action="toggleResistance" data-tooltip="{{ui.resistTitle}}" aria-label="{{ui.resistTitle}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i></button>
+    <button type="button" class="brp-header-icon brp-exp-utility" data-action="runExp" data-tooltip="{{#if isTh}}ทดสอบการพัฒนาทักษะที่ทำเครื่องหมาย{{else}}Test checked skill improvements{{/if}}" aria-label="EXP ({{checkedCount}})"><i class="fa-solid fa-arrow-trend-up" aria-hidden="true"></i>{{#if checkedCount}}<span class="brp-utility-count">{{checkedCount}}</span>{{/if}}</button>
+  </div>
+    </div>
+  </div>
+  <div class="brp-ui2-header-secondary">
+    <div class="brp-ui2-summary-facts" role="group" aria-label="{{#if isTh}}ข้อมูลสำคัญ{{else}}Key character facts{{/if}}">
+      <span class="brp-ui2-fact"><span class="brp-ui2-fact-label">{{#if isTh}}อายุ{{else}}Age{{/if}}</span> <strong>{{#if system.age}}{{system.age}}{{else}}—{{/if}}</strong></span>
+      <span class="brp-ui2-fact"><span class="brp-ui2-fact-label">{{#if isTh}}ผู้เล่น{{else}}Player{{/if}}</span> <strong>{{#if system.playerName}}{{system.playerName}}{{else}}—{{/if}}</strong></span>
+    </div>
+    <div class="brp-ui2-metrics-region">
+      <div class="sidebar-combat-strip brp-banner-combat-strip brp-ui2-quick-metrics">
+      <div class="strip-metric" data-tooltip="{{derivedTips.dm}}">
+        <span>DM</span>
+        <strong class="accent">{{system.derived.damageModifier}}</strong>
+      </div>
+      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
+        <span>{{#if isTh}}เกราะ{{else}}Armor{{/if}}</span>
+        <strong>{{equippedAp}} AP</strong>
+      </div>
+      <div class="strip-metric" data-tooltip="{{derivedTips.ap}}">
+        <span>MOV</span>
+        <div class="step-group compact-step">
+          {{#if editMode}}
+            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="-1" data-min="0" data-max="30">−</button>
+          {{/if}}
+          <input class="strip-num" name="system.mov" type="number" value="{{system.mov}}" {{#unless editMode}}readonly{{/unless}} />
+          {{#if editMode}}
+            <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.mov" data-delta="1" data-min="0" data-max="30">+</button>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+  <details class="brp-ui2-profile-disclosure" data-ui2-profile {{#if ui2ProfileExpanded}}open{{/if}}>
+    <summary>
+      <span class="brp-ui2-profile-title">{{#if isTh}}ข้อมูลส่วนตัวเพิ่มเติม{{else}}Additional personal details{{/if}}</span>
+      <span class="brp-ui2-profile-hint">{{#if isTh}}เปิดดูหรือแก้ไขข้อมูลทั้งหมด{{else}}View or edit full character details{{/if}}</span>
+    </summary>
+    {{> "systems/brp-uge/templates/actor/partials/ui2-personal-details.hbs" }}
+  </details>
+</header>
