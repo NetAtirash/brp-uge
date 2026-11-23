@@ -1,0 +1,348 @@
+/*
+ * UI2 Character Header — Phase 1B, owned by this single component.
+ * Only applies to opt-in CHARACTER Actor sheets. The stable .brp-banner
+ * remains unmodified and is rendered when UI2 Preview is disabled.
+ *
+ * Uses semantic tokens from brp-ui2-foundation.css and keeps existing
+ * Foundry data-action paths, input names and typed values unchanged.
+ */
+
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-character-header {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  container-type: inline-size;
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  border-bottom: 1px solid var(--ui-rule-strong);
+  padding: var(--ui-space-3) var(--ui-space-4);
+  font-family: var(--ui-body-font);
+}
+
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-header-main {
+  display: grid;
+  grid-template-columns: minmax(110px, 142px) minmax(0, 1fr) minmax(210px, 248px);
+  align-items: center;
+  column-gap: var(--ui-space-4);
+  row-gap: var(--ui-space-2);
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-brand-region {
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  border-right: 2px solid var(--ui-accent);
+  padding-right: var(--ui-space-3);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-brand-copy .brp-brand-overline {
+  font-size: 10px;
+  letter-spacing: .10em;
+  color: var(--ui-text-muted);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-brand-copy .brp-brand-title {
+  display: block;
+  font: 700 clamp(15px, 1.5vw, 21px)/1.2 var(--ui-heading-font);
+  color: var(--ui-accent);
+  letter-spacing: .01em;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-brand-copy .brp-brand-footnote {
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  color: var(--ui-text-muted);
+}
+
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-identity-region,
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity {
+  min-width: 0;
+  width: 100%;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .id-top-row {
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  gap: var(--ui-space-3);
+  align-items: center;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .profile-img.compact-img {
+  display: block;
+  width: 90px;
+  max-width: 100%;
+  min-width: 0;
+  height: 90px;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border: 1px solid var(--ui-rule-strong);
+  border-radius: var(--ui-card-radius);
+  background: var(--ui-inset);
+  cursor: pointer;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .id-name-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .char-name-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+  min-height: 36px;
+  padding: 2px 5px;
+  color: var(--ui-text);
+  font: 700 clamp(19px, 2.0vw, 26px)/1.35 var(--ui-heading-font);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .char-name-input[readonly] {
+  border-color: transparent;
+  background: transparent;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-occupation-name {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 32px;
+  overflow-wrap: anywhere;
+  text-align: start;
+  color: var(--ui-accent);
+}
+
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tools-region {
+  min-width: 0;
+  align-self: center;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-utility-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-utility-row :is(.brp-header-icon, .brp-edit-switch) {
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 6px;
+  border-radius: var(--ui-card-radius);
+  border: 1px solid var(--ui-rule-strong);
+  background: var(--ui-inset);
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-utility-row
+  :is(.brp-header-icon, .brp-edit-switch):focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-header-secondary {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 330px);
+  align-items: stretch;
+  gap: var(--ui-space-3);
+  min-width: 0;
+  margin-top: var(--ui-space-3);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-summary-facts {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  flex-wrap: wrap;
+  gap: var(--ui-space-3);
+  min-width: 0;
+  border-top: 1px solid var(--ui-rule);
+  padding-top: var(--ui-space-2);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-fact {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+  min-width: 0;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-fact-label {
+  font-size: 12px;
+  color: var(--ui-text-muted);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-fact strong {
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-metrics-region {
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-quick-metrics {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
+  gap: var(--ui-space-1);
+  padding: var(--ui-space-2);
+  margin: 0;
+  background: var(--ui-inset);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-quick-metrics .strip-metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  padding: 2px;
+  text-align: center;
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-quick-metrics .strip-metric + .strip-metric {
+  border-left: 1px solid var(--ui-rule);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-quick-metrics .strip-metric :is(span,strong,input) {
+  color: var(--ui-text);
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-quick-metrics .strip-metric strong.accent {
+  color: var(--ui-accent);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-quick-metrics .step-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-quick-metrics input.strip-num {
+  box-sizing: border-box;
+  width: 38px;
+  max-width: 100%;
+  height: 28px;
+  padding: 2px 3px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-rule);
+  border-radius: 4px;
+}
+
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-disclosure {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: var(--ui-space-2);
+  border-top: 1px solid var(--ui-rule);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-disclosure > summary {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 3px;
+  color: var(--ui-accent);
+  font-weight: 700;
+  cursor: pointer;
+  list-style-position: inside;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-disclosure > summary:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-hint {
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-grid {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--ui-space-2) var(--ui-space-3);
+  padding: var(--ui-space-3);
+  margin-top: 2px;
+  min-width: 0;
+  background: var(--ui-inset);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-grid .brp-personal-fact {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 36px;
+  overflow-wrap: anywhere;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-grid :is(input,button) {
+  max-width: 100%;
+  min-width: 0;
+}
+
+@container (max-width: 900px) {
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-header-main {
+    grid-template-columns: minmax(105px, 130px) minmax(0, 1fr);
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tools-region {
+    grid-column: 1 / -1;
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-utility-row {
+    justify-content: flex-start;
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@container (max-width: 620px) {
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-character-header {
+    padding: var(--ui-space-2);
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-header-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-brand-region {
+    border-right: 0;
+    border-bottom: 1px solid var(--ui-rule);
+    padding: 0 0 var(--ui-space-2);
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-brand-copy {
+    flex-direction: row;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-header-secondary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@container (max-width: 420px) {
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .id-top-row {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 8px;
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .profile-img.compact-img {
+    width: 64px;
+    height: 64px;
+  }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
