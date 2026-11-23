@@ -10,11 +10,11 @@
     </div>
     <div class="brp-ui2-identity-region">
       <div class="brp-ui2-personal-identity">
-      <div class="id-top-row">
-        <img class="profile-img compact-img" src="{{actor.img}}" data-action="editImage" data-edit="img" data-tooltip="{{actor.name}}" />
-        <div class="id-name-col">
-          <input class="char-name-input compact-name" name="name" type="text" value="{{actor.name}}" placeholder="ชื่อตัวละคร" {{#unless editMode}}readonly{{/unless}} />
-          <button type="button" class="brp-occupation-name" data-action="switchTab" data-tab="status" title="{{#if isTh}}ดูหรือเปลี่ยนอาชีพ{{else}}View / change profession{{/if}}">{{#if displayOccupation}}{{displayOccupation}}{{else}}{{#if isTh}}เลือกอาชีพ{{else}}Choose profession{{/if}}{{/if}} <i class="fa-solid fa-briefcase" aria-hidden="true"></i></button>
+      <div class="brp-ui2-identity-line">
+        <img class="brp-ui2-portrait-img" src="{{actor.img}}" data-action="editImage" data-edit="img" data-tooltip="{{actor.name}}" />
+        <div class="brp-ui2-name-column">
+          <input class="brp-ui2-name-input" name="name" type="text" value="{{actor.name}}" placeholder="ชื่อตัวละคร" {{#unless editMode}}readonly{{/unless}} />
+          <button type="button" class="brp-ui2-occupation-link" data-action="switchTab" data-tab="status" title="{{#if isTh}}ดูหรือเปลี่ยนอาชีพ{{else}}View / change profession{{/if}}">{{#if displayOccupation}}{{displayOccupation}}{{else}}{{#if isTh}}เลือกอาชีพ{{else}}Choose profession{{/if}}{{/if}} <i class="fa-solid fa-briefcase" aria-hidden="true"></i></button>
         </div>
       </div>
     </div>
@@ -37,7 +37,7 @@
       <span class="brp-ui2-fact"><span class="brp-ui2-fact-label">{{#if isTh}}ผู้เล่น{{else}}Player{{/if}}</span> <strong>{{#if system.playerName}}{{system.playerName}}{{else}}—{{/if}}</strong></span>
     </div>
     <div class="brp-ui2-metrics-region">
-      <div class="sidebar-combat-strip brp-banner-combat-strip brp-ui2-quick-metrics">
+      <div class="brp-ui2-quick-metrics">
       <div class="strip-metric" data-tooltip="{{derivedTips.dm}}">
         <span>DM</span>
         <strong class="accent">{{system.derived.damageModifier}}</strong>
