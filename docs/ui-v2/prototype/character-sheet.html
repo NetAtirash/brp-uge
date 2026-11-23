@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="th" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BRP UGE — Character Notebook 2.0 / Phase 0 Prototype</title>
+  <link rel="stylesheet" href="./character-sheet.css">
+</head>
+<body>
+<main class="brp-ui2" aria-label="BRP UGE UI 2.0 design prototype" data-edit="off">
+  <section class="prototype-note" aria-label="Prototype status">
+    <div>
+      <div class="note-title"><span aria-hidden="true">◇</span> <span data-i18n-th="ต้นแบบการออกแบบ — Phase 0" data-i18n-en="Design prototype — Phase 0">ต้นแบบการออกแบบ — Phase 0</span></div>
+      <div class="note-text" data-i18n-th="ข้อมูลตัวละครสมมติสำหรับตรวจ Layout เท่านั้น ไม่เชื่อม Foundry และไม่มีการทอยเต๋าหรือบันทึกจริง" data-i18n-en="Fictional layout data only. Not connected to Foundry; no real dice rolls or saves.">ข้อมูลตัวละครสมมติสำหรับตรวจ Layout เท่านั้น ไม่เชื่อม Foundry และไม่มีการทอยเต๋าหรือบันทึกจริง</div>
+    </div>
+    <div class="demo-toolbar" role="group" aria-label="Prototype controls">
+      <button type="button" class="ui-btn" id="languageToggle" aria-pressed="false">EN / ไทย</button>
+      <button type="button" class="ui-btn" id="themeToggle" data-i18n-th="◐ เปลี่ยนธีม" data-i18n-en="◐ Switch theme">◐ เปลี่ยนธีม</button>
+    </div>
+  </section>
+
+  <article class="sheet" aria-label="Sample character sheet">
+    <header class="sheet-header">
+      <div class="brand" aria-label="BRP Universal Game Engine">
+        <div class="overline">BASIC ROLEPLAYING</div>
+        <strong>UNIVERSAL<br>GAME<br>ENGINE</strong>
+        <small>CHARACTER NOTEBOOK</small>
+      </div>
+      <div class="portrait" role="img" aria-label="Sample character portrait placeholder">✦</div>
+      <div class="identity">
+        <div class="overline" data-i18n-th="บันทึกตัวละคร" data-i18n-en="Character record">บันทึกตัวละคร</div>
+        <h1 data-i18n-th="มิรา กาลา" data-i18n-en="Mira Kala">มิรา กาลา</h1>
+        <p data-i18n-th="นักค้นคว้า · ตัวอย่างอาชีพ" data-i18n-en="Scholar · example occupation">นักค้นคว้า · ตัวอย่างอาชีพ</p>
+        <div class="identity-tags" aria-label="Character facts">
+          <span data-i18n-th="อายุ 27" data-i18n-en="Age 27">อายุ 27</span>
+          <span data-i18n-th="ผู้เล่น: ตัวอย่าง" data-i18n-en="Player: Sample">ผู้เล่น: ตัวอย่าง</span>
+        </div>
+      </div>
+      <div class="header-controls" role="group" aria-label="Character controls">
+        <button type="button" class="ui-btn" id="editToggle" aria-pressed="false" data-i18n-th="✎ แก้ไข" data-i18n-en="✎ Edit">✎ แก้ไข</button>
+        <button type="button" class="ui-btn" data-demo-action="wizard" data-i18n-th="✧ ตัวช่วย" data-i18n-en="✧ Wizard">✧ ตัวช่วย</button>
+        <button type="button" class="ui-btn" data-demo-action="compendium" data-i18n-th="▤ คลัง" data-i18n-en="▤ Library">▤ คลัง</button>
+        <span class="mode-indicator" id="modeIndicator" data-i18n-th="โหมดเล่น · อ่านและทอย" data-i18n-en="Play mode · read and roll">โหมดเล่น · อ่านและทอย</span>
+      </div>
+    </header>
+
+    <details class="personal-details" id="personalDetails">
+      <summary data-i18n-th="ข้อมูลส่วนตัวเพิ่มเติม — เปิดเมื่อต้องการ" data-i18n-en="More personal details — expand on demand">ข้อมูลส่วนตัวเพิ่มเติม — เปิดเมื่อต้องการ</summary>
+      <dl class="personal-grid">
+        <div><dt data-i18n-th="วัฒนธรรม" data-i18n-en="Culture">วัฒนธรรม</dt><dd data-i18n-th="ตัวอย่าง" data-i18n-en="Example">ตัวอย่าง</dd></div>
+        <div><dt data-i18n-th="มือถนัด" data-i18n-en="Handedness">มือถนัด</dt><dd data-i18n-th="ขวา" data-i18n-en="Right">ขวา</dd></div>
+        <div><dt data-i18n-th="ส่วนสูง" data-i18n-en="Height">ส่วนสูง</dt><dd>170 cm</dd></div>
+        <div><dt data-i18n-th="ฐานะ" data-i18n-en="Wealth">ฐานะ</dt><dd data-i18n-th="ข้อมูลสมมติ" data-i18n-en="Placeholder">ข้อมูลสมมติ</dd></div>
+      </dl>
+    </details>
+
+    <section class="summary" aria-label="Resources and characteristics">
+      <div class="resource-group">
+        <div class="resource-card">
+          <div class="overline">HP</div>
+          <div class="resource-value">10 <span>/ 10</span></div>
+          <div class="meter" role="meter" aria-label="Hit Points" aria-valuemin="0" aria-valuemax="10" aria-valuenow="10"><span style="width:100%"></span></div>
+        </div>
+        <div class="resource-card">
+          <div class="overline">PP</div>
+          <div class="resource-value">12 <span>/ 12</span></div>
+          <div class="meter" role="meter" aria-label="Power Points" aria-valuemin="0" aria-valuemax="12" aria-valuenow="12"><span style="width:100%"></span></div>
+        </div>
+        <div class="resource-card">
+          <div class="overline">MOV</div>
+          <div class="resource-value">10</div>
+          <div class="overline" data-i18n-th="การเคลื่อนที่" data-i18n-en="Movement">การเคลื่อนที่</div>
+        </div>
+      </div>
+      <div class="stats" aria-label="Example characteristics">
+        <div class="stat"><small>STR</small><strong>10</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="STR" aria-label="Example STR roll">50%</button></div>
+        <div class="stat"><small>CON</small><strong>12</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="CON" aria-label="Example CON roll">60%</button></div>
+        <div class="stat"><small>DEX</small><strong>14</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="DEX" aria-label="Example DEX roll">70%</button></div>
+        <div class="stat"><small>INT</small><strong>13</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="INT" aria-label="Example INT roll">65%</button></div>
+        <div class="stat"><small>POW</small><strong>11</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="POW" aria-label="Example POW roll">55%</button></div>
+        <div class="stat"><small>SIZ</small><strong>12</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="SIZ" aria-label="Example SIZ roll">60%</button></div>
+        <div class="stat"><small>APP</small><strong>10</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="APP" aria-label="Example APP roll">50%</button></div>
+        <div class="stat"><small>EDU</small><strong>14</strong><button class="stat-roll" type="button" data-demo-action="roll" data-roll-label="EDU" aria-label="Example EDU roll">70%</button></div>
+      </div>
+    </section>
+
+    <nav class="tabs" role="tablist" aria-label="Character pages" id="pageTabs">
+      <button type="button" role="tab" id="tab-skills" aria-controls="panel-skills" aria-selected="true" tabindex="0" data-tab="skills" data-i18n-th="ทักษะ" data-i18n-en="Skills">ทักษะ</button>
+      <button type="button" role="tab" id="tab-combat" aria-controls="panel-combat" aria-selected="false" tabindex="-1" data-tab="combat" data-i18n-th="ต่อสู้" data-i18n-en="Combat">ต่อสู้</button>
+      <button type="button" role="tab" id="tab-powers" aria-controls="panel-placeholder" aria-selected="false" tabindex="-1" data-tab="powers" data-i18n-th="พลัง" data-i18n-en="Powers">พลัง</button>
+      <button type="button" role="tab" id="tab-wounds" aria-controls="panel-placeholder" aria-selected="false" tabindex="-1" data-tab="wounds" data-i18n-th="บาดแผล" data-i18n-en="Wounds">บาดแผล</button>
+      <button type="button" role="tab" id="tab-inventory" aria-controls="panel-placeholder" aria-selected="false" tabindex="-1" data-tab="inventory" data-i18n-th="สิ่งของ" data-i18n-en="Inventory">สิ่งของ</button>
+      <button type="button" role="tab" id="tab-status" aria-controls="panel-placeholder" aria-selected="false" tabindex="-1" data-tab="status" data-i18n-th="สถานะ" data-i18n-en="Status">สถานะ</button>
+      <button type="button" role="tab" id="tab-advancement" aria-controls="panel-placeholder" aria-selected="false" tabindex="-1" data-tab="advancement" data-i18n-th="พัฒนา" data-i18n-en="Advancement">พัฒนา</button>
+      <button type="button" role="tab" id="tab-notes" aria-controls="panel-notes" aria-selected="false" tabindex="-1" data-tab="notes" data-i18n-th="บันทึก" data-i18n-en="Notes">บันทึก</button>
+    </nav>
+
+    <section class="workspace" role="tabpanel" id="panel-skills" aria-labelledby="tab-skills">
+      <div class="workspace-head">
+        <div><h2 data-i18n-th="ทักษะ" data-i18n-en="Skills">ทักษะ</h2><p class="subtitle" data-i18n-th="ตัวอย่าง Play View / Edit View พร้อมชื่อ Flavor และชื่อกฎ" data-i18n-en="Sample Play/Edit rows with Flavor and canonical rule names">ตัวอย่าง Play View / Edit View พร้อมชื่อ Flavor และชื่อกฎ</p></div>
+        <div class="toolbar"><label class="overline" for="skillSearch" data-i18n-th="ค้นหา" data-i18n-en="Search">ค้นหา</label><input class="search" type="search" id="skillSearch" placeholder="Search / ค้นหา" autocomplete="off"><button class="ui-btn" type="button" data-demo-action="add" data-i18n-th="+ เพิ่มทักษะ" data-i18n-en="+ Add Skill">+ เพิ่มทักษะ</button></div>
+      </div>
+      <div class="filters" aria-label="Skill filters">
+        <button type="button" aria-pressed="true" data-filter="all" data-i18n-th="ทั้งหมด" data-i18n-en="All">ทั้งหมด</button>
+        <button type="button" aria-pressed="false" data-filter="occupation" data-i18n-th="อาชีพ" data-i18n-en="Occupation">อาชีพ</button>
+        <button type="button" aria-pressed="false" data-filter="marked" data-i18n-th="ทำเครื่องหมาย" data-i18n-en="Marked">ทำเครื่องหมาย</button>
+      </div>
+      <ul class="skill-list" id="skillList" aria-label="Sample Skills">
+        <li class="skill-row" data-search="listen การฟัง" data-occupation="true" data-marked="false">
+          <div><div class="skill-title" data-i18n-th="การฟัง" data-i18n-en="Listen">การฟัง</div><div class="skill-meta">Listen · Skill</div></div>
+          <div class="skill-value">55%</div>
+          <div class="skill-actions"><button type="button" class="action-roll" data-demo-action="roll" data-roll-label="Listen" data-i18n-th="ทอย d100" data-i18n-en="Roll d100">ทอย d100</button></div>
+          <div class="skill-edit"><span data-i18n-th="แต้มอาชีพ: 20 · ส่วนตัว: 10" data-i18n-en="Occupation: 20 · Personal: 10">แต้มอาชีพ: 20 · ส่วนตัว: 10</span><label><input type="checkbox" disabled> <span data-i18n-th="ทำเครื่องหมาย" data-i18n-en="Mark">ทำเครื่องหมาย</span></label></div>
+        </li>
+        <li class="skill-row" data-search="art writing ศิลปะ การเขียน" data-occupation="false" data-marked="true">
+          <div><div class="skill-title" data-i18n-th="วาดอักษรพิธีกรรม" data-i18n-en="Ritual Calligraphy">วาดอักษรพิธีกรรม</div><div class="skill-meta" data-i18n-th="Art (Writing) · ชื่อกฎ" data-i18n-en="Art (Writing) · Rules name">Art (Writing) · ชื่อกฎ</div></div>
+          <div class="skill-value">40%</div>
+          <div class="skill-actions"><button type="button" class="action-roll" data-demo-action="roll" data-roll-label="Art (Writing)" data-i18n-th="ทอย d100" data-i18n-en="Roll d100">ทอย d100</button></div>
+          <div class="skill-edit"><span data-i18n-th="แต้มอาชีพ: 0 · ส่วนตัว: 35" data-i18n-en="Occupation: 0 · Personal: 35">แต้มอาชีพ: 0 · ส่วนตัว: 35</span><label><input type="checkbox" checked disabled> <span data-i18n-th="ทำเครื่องหมาย" data-i18n-en="Mark">ทำเครื่องหมาย</span></label></div>
+        </li>
+        <li class="skill-row" data-search="spot สังเกตการณ์" data-occupation="true" data-marked="false">
+          <div><div class="skill-title" data-i18n-th="สังเกตการณ์" data-i18n-en="Spot">สังเกตการณ์</div><div class="skill-meta">Spot · Skill</div></div>
+          <div class="skill-value">50%</div>
+          <div class="skill-actions"><button type="button" class="action-roll" data-demo-action="roll" data-roll-label="Spot" data-i18n-th="ทอย d100" data-i18n-en="Roll d100">ทอย d100</button></div>
+          <div class="skill-edit"><span data-i18n-th="แต้มอาชีพ: 25 · ส่วนตัว: 0" data-i18n-en="Occupation: 25 · Personal: 0">แต้มอาชีพ: 25 · ส่วนตัว: 0</span></div>
+        </li>
+        <li class="skill-row" data-search="research สืบค้นข้อมูล" data-occupation="true" data-marked="false">
+          <div><div class="skill-title" data-i18n-th="สืบค้นข้อมูล" data-i18n-en="Research">สืบค้นข้อมูล</div><div class="skill-meta">Research · Skill</div></div>
+          <div class="skill-value">45%</div>
+          <div class="skill-actions"><button type="button" class="action-roll" data-demo-action="roll" data-roll-label="Research" data-i18n-th="ทอย d100" data-i18n-en="Roll d100">ทอย d100</button></div>
+          <div class="skill-edit"><span data-i18n-th="แต้มอาชีพ: 10 · ส่วนตัว: 10" data-i18n-en="Occupation: 10 · Personal: 10">แต้มอาชีพ: 10 · ส่วนตัว: 10</span></div>
+        </li>
+      </ul>
+      <p class="section-note" data-i18n-th="ตัวอย่างการออกแบบ: ค่าเปอร์เซ็นต์ใช้ตัวเลขที่อ่านง่าย ส่วนปุ่มทอยแยกจากช่องแก้ไขอย่างชัดเจน ผลทอยจริงใช้ระบบ Foundry ไม่ได้อยู่ใน Prototype นี้" data-i18n-en="Design example: clear numeric targets, roll buttons distinct from editable fields. Actual rolls belong to Foundry and are not part of this prototype.">ตัวอย่างการออกแบบ: ค่าเปอร์เซ็นต์ใช้ตัวเลขที่อ่านง่าย ส่วนปุ่มทอยแยกจากช่องแก้ไขอย่างชัดเจน ผลทอยจริงใช้ระบบ Foundry ไม่ได้อยู่ใน Prototype นี้</p>
+      <p class="status-message" id="skillStatus" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="workspace" role="tabpanel" id="panel-combat" aria-labelledby="tab-combat" hidden>
+      <div class="workspace-head"><div><h2 data-i18n-th="พื้นที่ต่อสู้" data-i18n-en="Combat workspace">พื้นที่ต่อสู้</h2><p class="subtitle" data-i18n-th="พื้นที่สำหรับออกแบบ Combat Actions และสถานะเทิร์นใน Phase ถัดไป" data-i18n-en="Planned context for BRP combat actions and turn status">พื้นที่สำหรับออกแบบ Combat Actions และสถานะเทิร์นใน Phase ถัดไป</p></div></div>
+      <div class="placeholder" data-i18n-th="ต้นแบบ Phase 0 ยังไม่จำลอง Combat Logic — พื้นที่นี้ใช้ตรวจ Layout และ Navigation เท่านั้น" data-i18n-en="Phase 0 does not simulate BRP combat logic. This panel tests layout and navigation only.">ต้นแบบ Phase 0 ยังไม่จำลอง Combat Logic — พื้นที่นี้ใช้ตรวจ Layout และ Navigation เท่านั้น</div>
+    </section>
+
+    <section class="workspace" role="tabpanel" id="panel-notes" aria-labelledby="tab-notes" hidden>
+      <h2 data-i18n-th="บันทึก" data-i18n-en="Notes">บันทึก</h2>
+      <div class="placeholder" data-i18n-th="ข้อมูลตัวละครและสมุดบันทึกจริงจะถูกเก็บใน Actor เดิม — Prototype นี้ไม่บันทึกข้อมูล" data-i18n-en="The real character journal stays in the existing Actor. This prototype cannot save.">ข้อมูลตัวละครและสมุดบันทึกจริงจะถูกเก็บใน Actor เดิม — Prototype นี้ไม่บันทึกข้อมูล</div>
+    </section>
+
+    <section class="workspace" role="tabpanel" id="panel-placeholder" aria-label="Unmocked section" hidden>
+      <h2 id="placeholderHeading">—</h2>
+      <div class="placeholder" data-i18n-th="แท็บนี้ยังไม่อยู่ในขอบเขตต้นแบบ Phase 0 และไม่เปลี่ยนระบบเกมจริง" data-i18n-en="This tab is outside the Phase 0 prototype scope; the real game UI is unchanged.">แท็บนี้ยังไม่อยู่ในขอบเขตต้นแบบ Phase 0 และไม่เปลี่ยนระบบเกมจริง</div>
+    </section>
+    <footer class="demo-footer"><span>BRP UGE UI 2.0 / PHASE 0</span><span data-i18n-th="ทดลองรูปลักษณ์เท่านั้น · ไม่มีการบันทึก" data-i18n-en="Visual interaction only · no persistence">ทดลองรูปลักษณ์เท่านั้น · ไม่มีการบันทึก</span></footer>
+  </article>
+</main>
+<script src="./character-sheet.js" defer></script>
+</body>
+</html>
