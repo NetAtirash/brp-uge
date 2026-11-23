@@ -34,7 +34,8 @@
     "styles/brp-v1218-specialties.css",
     "styles/brp-v1219-workbench.css",
     "styles/brp-v12110-flavor-chat.css",
-    "styles/brp-v12111-specialty-management.css"
+    "styles/brp-v12111-specialty-management.css",
+    "styles/brp-ui2-foundation.css"
   ],
   "languages": [
     {
