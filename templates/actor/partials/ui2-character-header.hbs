@@ -11,9 +11,13 @@
     <div class="brp-ui2-identity-region">
       <div class="brp-ui2-personal-identity">
       <div class="brp-ui2-identity-line">
-        <img class="brp-ui2-portrait-img" src="{{actor.img}}" data-action="editImage" data-edit="img" data-tooltip="{{actor.name}}" />
+        <button type="button" class="brp-ui2-portrait-trigger" data-action="editImage" data-edit="img"
+          aria-label="{{#if isTh}}เลือกรูปตัวละคร {{actor.name}}{{else}}Choose portrait for {{actor.name}}{{/if}}"
+          data-tooltip="{{actor.name}}">
+          <img class="brp-ui2-portrait-img" src="{{actor.img}}" alt="" />
+        </button>
         <div class="brp-ui2-name-column">
-          <input class="brp-ui2-name-input" name="name" type="text" value="{{actor.name}}" placeholder="ชื่อตัวละคร" {{#unless editMode}}readonly{{/unless}} />
+          <input class="brp-ui2-name-input" name="name" type="text" value="{{actor.name}}" placeholder="{{#if isTh}}ชื่อตัวละคร{{else}}Character name{{/if}}" aria-label="{{#if isTh}}ชื่อตัวละคร{{else}}Character name{{/if}}" {{#unless editMode}}readonly{{/unless}} />
           <button type="button" class="brp-ui2-occupation-link" data-action="switchTab" data-tab="status" title="{{#if isTh}}ดูหรือเปลี่ยนอาชีพ{{else}}View / change profession{{/if}}">{{#if displayOccupation}}{{displayOccupation}}{{else}}{{#if isTh}}เลือกอาชีพ{{else}}Choose profession{{/if}}{{/if}} <i class="fa-solid fa-briefcase" aria-hidden="true"></i></button>
         </div>
       </div>
