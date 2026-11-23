@@ -28,7 +28,7 @@ import { configureStartingSkills } from "./module/skill-selection.mjs";
 import { StartingSkillsMenu } from "./module/apps/starting-skills-menu.mjs";
 import { SpecialtyPresetsMenu } from "./module/apps/specialty-presets-menu.mjs";
 import { installBRPSettingsUI } from "./module/apps/settings-organization.mjs";
-import { syncUI2PreviewOpenSheets } from "./module/ui-v2/preview.mjs";
+
 
 function refreshBRPWorldUI() {
   try {
@@ -48,12 +48,22 @@ function refreshBRPWorldUI() {
 }
 
 /**
- * UI2 is per-client and a pure CSS scope toggle. Do not run
- * refreshBRPWorldUI(): it prepares Actor data and rerenders edit forms.
+ * Phase 1B switches the actual Header Handlebars template, not only tokens.
+ * Do not mutate the class of an already-rendered opposite-layout Header:
+ * doing so leaves unmatched HTML and would risk discarding unsaved form data
+ * if we forcibly rerender the document. Users safely reopen the sheet.
  */
 function refreshUI2Preview(enabled) {
   const instances = foundry?.applications?.instances?.values?.() ?? [];
-  syncUI2PreviewOpenSheets(instances, enabled === true);
+  const openCharacters = [...instances].some(app =>
+    app?.constructor?.name === "BRPActorSheet"
+    && app.document?.type === "character"
+    && app.element?.querySelector?.(".brp-sheet"));
+  if (!openCharacters) return;
+  const isTh = game.settings.get("brp-uge", "uiLanguage") !== "en";
+  ui.notifications?.info(isTh
+    ? "เปลี่ยน UI2 Preview แล้ว กรุณาปิดและเปิดชีทตัวละครอีกครั้งหลังบันทึกข้อมูลที่แก้ค้างไว้"
+    : "UI2 Preview changed. Save any in-progress edits, then close and reopen the Character Sheet.");
 }
 
 Hooks.once("init", async () => {
@@ -161,7 +171,7 @@ Hooks.once("init", async () => {
   // The flag only scopes CSS on Character Sheet; no rules or data migration.
   game.settings.register('brp-uge', 'ui2Preview', {
     name: 'UI 2.0 Foundation Preview / ทดลองโครงสร้าง UI ใหม่',
-    hint: 'เปิดเฉพาะผู้ใช้นี้ เพื่อทดลอง Design Tokens และ Focus Style บน Character Sheet ปิดได้ทันทีเพื่อกลับไปใช้ UI เดิม (ยังไม่ใช่การออกแบบชีทใหม่ทั้งหน้า)',
+    hint: 'ทดลอง Character Header 2.0 เฉพาะผู้ใช้นี้ (ค่าเริ่มต้นปิด) บันทึกข้อมูลที่แก้ค้างอยู่ แล้วปิด/เปิดชีทใหม่เมื่อเปลี่ยนค่านี้ ไม่เปลี่ยนข้อมูล Actor',
     scope: 'client', config: true, type: Boolean, default: false,
     onChange: refreshUI2Preview
   });
