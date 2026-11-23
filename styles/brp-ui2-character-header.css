@@ -71,6 +71,24 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-i
   align-items: center;
   min-width: 0;
 }
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-portrait-trigger {
+  box-sizing: border-box;
+  display: block;
+  width: 90px;
+  max-width: 100%;
+  height: 90px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background: var(--ui-inset);
+  border: 1px solid var(--ui-rule-strong);
+  border-radius: var(--ui-card-radius);
+  cursor: pointer;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-portrait-trigger:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
 html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-portrait-img {
   display: block;
   width: 90px;
@@ -79,10 +97,9 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-i
   height: 90px;
   aspect-ratio: 1;
   object-fit: cover;
-  border: 1px solid var(--ui-rule-strong);
+  border: 0;
   border-radius: var(--ui-card-radius);
   background: var(--ui-inset);
-  cursor: pointer;
 }
 html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-name-column {
   display: flex;
@@ -338,6 +355,7 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-gr
     grid-template-columns: 64px minmax(0, 1fr);
     gap: 8px;
   }
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-portrait-trigger,
   html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-portrait-img {
     width: 64px;
     height: 64px;
