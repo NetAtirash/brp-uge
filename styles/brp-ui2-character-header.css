@@ -64,14 +64,14 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-i
   min-width: 0;
   width: 100%;
 }
-html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .id-top-row {
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-identity-line {
   display: grid;
   grid-template-columns: 90px minmax(0, 1fr);
   gap: var(--ui-space-3);
   align-items: center;
   min-width: 0;
 }
-html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .profile-img.compact-img {
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-portrait-img {
   display: block;
   width: 90px;
   max-width: 100%;
@@ -84,13 +84,13 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-i
   background: var(--ui-inset);
   cursor: pointer;
 }
-html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .id-name-col {
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-name-column {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
 }
-html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .char-name-input {
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-name-input {
   box-sizing: border-box;
   display: block;
   width: 100%;
@@ -104,11 +104,11 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-i
   white-space: normal;
   overflow-wrap: anywhere;
 }
-html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .char-name-input[readonly] {
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-name-input[readonly] {
   border-color: transparent;
   background: transparent;
 }
-html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-occupation-name {
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-occupation-link {
   box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
@@ -309,8 +309,8 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-gr
   }
 }
 @container (max-width: 620px) {
-  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-character-header {
-    padding: var(--ui-space-2);
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-header-main {
+    padding: 0;
   }
   html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-header-main {
     grid-template-columns: minmax(0, 1fr);
@@ -334,11 +334,11 @@ html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-profile-gr
   }
 }
 @container (max-width: 420px) {
-  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .id-top-row {
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-identity-line {
     grid-template-columns: 64px minmax(0, 1fr);
     gap: 8px;
   }
-  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .profile-img.compact-img {
+  html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-personal-identity .brp-ui2-portrait-img {
     width: 64px;
     height: 64px;
   }
