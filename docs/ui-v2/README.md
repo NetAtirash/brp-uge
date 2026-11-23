@@ -52,8 +52,12 @@ The audit reads local files only. Counts are static approximations; they do not 
 
 Phase 0 remains a documentation/prototype RFC. Phase 1A adds opt-in runtime groundwork on a separate feature branch: client-only preview setting, scoped CSS tokens and safe Character Sheet class gate. See [Phase 1A Foundations](PHASE1A-FOUNDATIONS.md). The stable UI remains default until a Foundry v14 live-world test passes.
 
+## Phase 1B — opt-in Character Header and personal dossier (separate stacked PR)
+
+The new Character Identity/Header is implemented as two preloaded Handlebars partials, with an accessible portrait button, responsive scoped CSS, and the full personal details behind an expandable section. **Default stable Header is unchanged.** Since UI2 now changes form markup, change the client Preview setting, **save any pending edits, then close/reopen the Character Sheet**; no unsafe forced rerender occurs. See [Phase 1B Character Header, testing & rollback](PHASE1B-CHARACTER-HEADER.md). Live Foundry v14 visual QA is still required before merging to Stable.
+
 ## Safety & provenance
 
-This personal project uses ChatGPT (OpenAI) assistance and is unofficial, as disclosed in the root README. The Phase 0 deliverables only add **docs**, an **isolated prototype**, a **read-only source audit tool**, and **offline tests**. Phase 1A separately introduces gated CSS and a client setting, but neither phase changes Actor/Item DataModels, rules, existing Worlds, or stable releases.
+This personal project uses ChatGPT (OpenAI) assistance and is unofficial, as disclosed in the root README. The Phase 0 deliverables only add **docs**, an **isolated prototype**, a **read-only source audit tool**, and **offline tests**. Phase 1A and Phase 1B introduce only opt-in Character UI components and a per-client setting; neither changes Actor/Item DataModels, rules, existing Worlds, or stable releases.
 
 This work draws structural ideas from Foundry D&D5e, PF2e, Tidy 5e Sheets and CoC7 sheet projects; it copies no third-party art, rulebook text, bundled fonts or proprietary icons.
