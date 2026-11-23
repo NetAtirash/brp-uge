@@ -48,8 +48,12 @@ The audit reads local files only. Counts are static approximations; they do not 
 - Keep optional art/palette in the separate Themes Module and rules/Skills in the external Compendium.
 - Use user-approved Foundry visual QA before merging any runtime UI changes.
 
+## Phase 1A — opt-in foundation (separate stacked PR)
+
+Phase 0 remains a documentation/prototype RFC. Phase 1A adds opt-in runtime groundwork on a separate feature branch: client-only preview setting, scoped CSS tokens and safe Character Sheet class gate. See [Phase 1A Foundations](PHASE1A-FOUNDATIONS.md). The stable UI remains default until a Foundry v14 live-world test passes.
+
 ## Safety & provenance
 
-This personal project uses ChatGPT (OpenAI) assistance and is unofficial, as disclosed in the root README. The current Phase 0 work only adds **docs**, an **isolated prototype**, a **read-only source audit tool**, and **offline tests**. It does not change \`system.json\`, installed CSS, Actor/Item DataModels, sheet templates, rules, existing Worlds, or stable releases.
+This personal project uses ChatGPT (OpenAI) assistance and is unofficial, as disclosed in the root README. The Phase 0 deliverables only add **docs**, an **isolated prototype**, a **read-only source audit tool**, and **offline tests**. Phase 1A separately introduces gated CSS and a client setting, but neither phase changes Actor/Item DataModels, rules, existing Worlds, or stable releases.
 
 This work draws structural ideas from Foundry D&D5e, PF2e, Tidy 5e Sheets and CoC7 sheet projects; it copies no third-party art, rulebook text, bundled fonts or proprietary icons.
