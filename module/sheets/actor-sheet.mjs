@@ -23,6 +23,7 @@ const { HandlebarsApplicationMixin } = foundry.applications.api;
 export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   #editMode = false;
   #resistanceOpen = false;
+  #ui2ProfileExpanded = false;
   #skillFilter = "";
   #noteFilter = "";
   #resistActiveStat = "pow";
@@ -102,7 +103,13 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static PARTS = {
     sheet: {
-      template: "systems/brp-uge/templates/actor/character-sheet.hbs"
+      template: "systems/brp-uge/templates/actor/character-sheet.hbs",
+      // Foundry v14 HandlebarsApplicationMixin preloads partials via PARTS.templates.
+      // The old Header remains inline and is untouched unless Preview is enabled.
+      templates: [
+        "systems/brp-uge/templates/actor/partials/ui2-character-header.hbs",
+        "systems/brp-uge/templates/actor/partials/ui2-personal-details.hbs"
+      ]
     }
   };
 
@@ -162,6 +169,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     context.isTh = isTh;
     // A presentation-only client setting; never written to the Actor.
     context.ui2Preview = isUI2PreviewEnabled(game.settings, this.document.type);
+    context.ui2ProfileExpanded = this.#ui2ProfileExpanded;
     context.isGM = Boolean(game.user?.isGM);
     context.derivedTips = derivedTips;
     context.canUseWizard = Boolean(game.user?.isGM || rules.allowPlayerCharacterWizard);
@@ -413,6 +421,11 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     // Preserve the stable DOM and input state; only toggle a CSS scope class.
     syncUI2PreviewRoot(this.element, this.document.type,
       isUI2PreviewEnabled(game.settings, this.document.type));
+    // This local disclosure state survives legitimate sheet rerenders (tabs,
+    // languages, item changes). It is NOT a saved Actor field.
+    this.element.querySelector('[data-ui2-profile]')?.addEventListener('toggle', event => {
+      this.#ui2ProfileExpanded = event.currentTarget.open;
+    });
     applyBRPControlLanguage(this.element);
     // Specialty-specific controls are shown only after a family is chosen.
     for(const bar of this.element.querySelectorAll('.skill-add-bar')){
