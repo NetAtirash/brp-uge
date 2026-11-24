@@ -1,0 +1,29 @@
+{{! UI2 Phase 1C: same effective/base characteristic data and roll actions. }}
+<!-- Compact 2-Column Characteristics Block -->
+    <div class="brp-ui2-characteristic-grid">
+      {{#each characteristicsList as |c|}}
+        <div class="char-mini-card" data-tooltip="{{c.tooltip}}">
+          <div class="char-mini-top">
+            <span class="char-key">{{c.short}}</span>
+            <div class="step-group compact-step">
+              {{#if @root.editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.characteristics.{{c.key}}.value" data-delta="-1" data-min="1" data-max="99">−</button>
+              {{/if}}
+              {{#if @root.editMode}}
+                <input name="system.characteristics.{{c.key}}.value" type="number" value="{{c.rawValue}}" />
+              {{else}}
+                <span class="brp-stat-effective-value" title="Base {{c.rawValue}} / Status {{c.delta}}">{{c.effectiveValue}}</span>
+              {{/if}}
+              {{#if @root.editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.characteristics.{{c.key}}.value" data-delta="1" data-min="1" data-max="99">+</button>
+              {{/if}}
+            </div>
+          </div>
+          {{#if c.delta}}<div class="brp-stat-adjustment" title="Status/age modifiers">{{#if @root.isTh}}สถานะ{{else}}Status{{/if}} {{c.delta}} · {{#if @root.isTh}}พื้นฐาน{{else}}Base{{/if}} {{c.rawValue}}</div>{{/if}}
+          <div class="brp-stat-actions brp-derived-roll">
+            <button type="button" class="brp-share-label" data-action="shareEntry" data-char="{{c.key}}" data-tooltip="{{#if @root.isTh}}ส่งข้อมูลลงแชท{{else}}Share information in chat{{/if}}">{{c.rollLabel}}</button>
+            <button type="button" class="brp-roll-value" data-action="rollChar" data-char="{{c.key}}" aria-label="Roll {{c.rollLabel}} ({{c.short}} × 5)">{{c.rollPct}}%</button>
+          </div>
+        </div>
+      {{/each}}
+    </div>
