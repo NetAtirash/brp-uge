@@ -168,10 +168,11 @@ const manifest=JSON.parse(read('system.json'));
 assert.equal(manifest.version,'1.21.11');
 // UI2 Header and token styles are appended, preserving the existing
 // 19-stylesheet cascade and 1.21.11 Specialty layer unchanged.
-assert.deepEqual(manifest.styles.slice(-4),[
+assert.deepEqual(manifest.styles.slice(-5),[
   'styles/brp-v12111-specialty-management.css',
   'styles/brp-ui2-foundation.css',
   'styles/brp-ui2-character-header.css',
-  'styles/brp-ui2-resources.css'
+  'styles/brp-ui2-resources.css',
+  'styles/brp-ui2-navigation.css'
 ]);
 console.log('PASS v1.21.11 Specialty registry, source safety, choice groups and Wizard integration');
