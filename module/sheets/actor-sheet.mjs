@@ -108,7 +108,9 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       // The old Header remains inline and is untouched unless Preview is enabled.
       templates: [
         "systems/brp-uge/templates/actor/partials/ui2-character-header.hbs",
-        "systems/brp-uge/templates/actor/partials/ui2-personal-details.hbs"
+        "systems/brp-uge/templates/actor/partials/ui2-personal-details.hbs",
+        "systems/brp-uge/templates/actor/partials/ui2-resource-cards.hbs",
+        "systems/brp-uge/templates/actor/partials/ui2-characteristics.hbs"
       ]
     }
   };
