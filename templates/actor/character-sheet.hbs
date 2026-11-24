@@ -67,6 +67,12 @@
     </div>
   </header>
   {{/if}}
+  {{#if ui2Preview}}
+    <aside class="brp-ui2-vitals" aria-label="{{#if isTh}}ทรัพยากรและคุณลักษณะ{{else}}Resources and characteristics{{/if}}">
+      {{> "systems/brp-uge/templates/actor/partials/ui2-resource-cards.hbs" }}
+      {{> "systems/brp-uge/templates/actor/partials/ui2-characteristics.hbs" }}
+    </aside>
+  {{else}}
   <aside class="sheet-sidebar">
 
 
@@ -196,6 +202,7 @@
       {{/each}}
     </div>
   </aside>
+  {{/if}}
   </section>
 
   <!-- RIGHT WORKSPACE: Compact Action Toolbar, Tabs, & Full-Height Content -->
