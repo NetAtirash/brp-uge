@@ -1,0 +1,244 @@
+/*
+ * Phase 1C — Character Resource & Characteristics Strip
+ * Component-owner CSS; no legacy version-specific selectors or priority hacks.
+ * Only rendered on opted-in Character Actor Sheets.
+ */
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-vitals {
+  box-sizing: border-box;
+  display: grid;
+  gap: var(--ui-space-3);
+  min-width: 0;
+  padding: var(--ui-space-3) var(--ui-space-4);
+  color: var(--ui-text);
+  background: var(--ui-canvas);
+  border-bottom: 1px solid var(--ui-rule);
+  container: brp-vitals / inline-size;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,210px),1fr));
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-card {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(58px,auto) minmax(80px,1fr) auto;
+  grid-template-areas: "label amount actions" "meter meter meter";
+  gap: 5px 10px;
+  align-items: center;
+  min-width: 0;
+  min-height: 66px;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  background: var(--ui-panel);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-heading {
+  grid-area: label;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-label {
+  font: 750 14px/1.2 var(--ui-heading-font);
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-hint {
+  font-size: 10px;
+  color: var(--ui-text-muted);
+  overflow-wrap: anywhere;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-value {
+  grid-area: amount;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-value input {
+  box-sizing: border-box;
+  width: 52px;
+  min-width: 0;
+  height: 32px;
+  padding: 2px 4px;
+  text-align: center;
+  color: var(--ui-text);
+  background: var(--ui-inset);
+  border: 1px solid var(--ui-rule);
+  border-radius: 4px;
+  font: 700 18px/1.2 var(--ui-number-font);
+  font-variant-numeric: tabular-nums;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-max {
+  color: var(--ui-text-muted);
+  white-space: nowrap;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-actions {
+  grid-area: actions;
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-action,
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-san-roll {
+  box-sizing: border-box;
+  min-height: 30px;
+  padding: 3px 7px;
+  color: var(--ui-accent);
+  background: var(--ui-inset);
+  border: 1px solid var(--ui-rule-strong);
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-step-group {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-step-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  min-width: 24px;
+  min-height: 30px;
+  padding: 2px;
+  border: 1px solid var(--ui-rule);
+  border-radius: 4px;
+  background: var(--ui-inset);
+  color: var(--ui-text);
+  cursor: pointer;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-meter {
+  box-sizing: border-box;
+  display: block;
+  grid-area: meter;
+  width: 100%;
+  height: 6px;
+  margin: 0;
+  appearance: none;
+  overflow: hidden;
+  border: 0;
+  border-radius: 5px;
+  background: var(--ui-inset);
+  color: var(--ui-positive);
+  accent-color: var(--ui-positive);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-meter::-webkit-progress-bar {
+  background: var(--ui-inset);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-meter::-webkit-progress-value {
+  background: var(--ui-positive);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-meter::-moz-progress-bar {
+  background: var(--ui-positive);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-grid {
+  display: grid;
+  grid-template-columns: repeat(8,minmax(0,1fr));
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 5px;
+  min-width: 0;
+  min-height: 94px;
+  padding: var(--ui-space-2);
+  border: 1px solid var(--ui-rule);
+  border-radius: var(--ui-card-radius);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-label {
+  font: 700 12px/1.4 var(--ui-body-font);
+  color: var(--ui-text-muted);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-value {
+  font: 800 21px/1.2 var(--ui-number-font);
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-top input {
+  box-sizing: border-box;
+  width: 47px;
+  min-width: 0;
+  padding: 3px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--ui-text);
+  background: var(--ui-inset);
+  border: 1px solid var(--ui-rule);
+  border-radius: 4px;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-adjustment {
+  min-height: 13px;
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 :is(.brp-ui2-share-action,.brp-ui2-roll-action) {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 29px;
+  padding: 3px 5px;
+  background: var(--ui-inset);
+  color: var(--ui-accent);
+  border: 1px solid var(--ui-rule);
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  cursor: pointer;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-roll-action {
+  flex: 0 0 auto;
+  font: 700 14px/1.2 var(--ui-number-font);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-vitals :is(button,input):focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+@container brp-vitals (max-width: 1080px) {
+  .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-grid {
+    grid-template-columns: repeat(4,minmax(0,1fr));
+  }
+}
+@container brp-vitals (max-width: 700px) {
+  .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-cards {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
+@container brp-vitals (max-width: 475px) {
+  .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-resource-cards {
+    grid-template-columns: minmax(0,1fr);
+  }
+  .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-characteristic-grid {
+    grid-template-columns: repeat(2,minmax(0,1fr));
+  }
+}
