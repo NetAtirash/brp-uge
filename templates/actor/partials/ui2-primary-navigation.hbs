@@ -1,0 +1,14 @@
+{{! Phase 1D: same eight page routes and switchTab actions, isolated from legacy tab styling. }}
+    <nav class="brp-ui2-primary-navigation" aria-label="{{#if isTh}}หน้าต่างข้อมูลตัวละคร{{else}}Character sheet pages{{/if}}">
+      <span class="brp-ui2-nav-heading"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> {{#if isTh}}หน้าต่างข้อมูล{{else}}Pages{{/if}}</span>
+      <div class="brp-ui2-tab-strip" role="group" aria-label="{{#if isTh}}เลือกหมวดข้อมูลตัวละคร{{else}}Choose character page{{/if}}">
+        <button type="button" class="brp-ui2-tab-item" {{#if isSkillsTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="skills"><i class="fa-solid fa-list-check" aria-hidden="true"></i> {{ui.tabSkills}}</button>
+        <button type="button" class="brp-ui2-tab-item" {{#if isCombatTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="combat"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> {{ui.tabCombat}}</button>
+        <button type="button" class="brp-ui2-tab-item" {{#if isPowersTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="powers"><i class="fa-solid fa-wand-sparkles" aria-hidden="true"></i> {{ui.tabPowers}}</button>
+        <button type="button" class="brp-ui2-tab-item" {{#if isWoundsTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="wounds"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i> {{ui.tabWounds}} {{#if totalIssueCount}}<span class="brp-ui2-tab-count">{{totalIssueCount}}</span>{{/if}}</button>
+        <button type="button" class="brp-ui2-tab-item" {{#if isInventoryTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="inventory"><i class="fa-solid fa-box-open" aria-hidden="true"></i> {{#if isTh}}สิ่งของ{{else}}Inventory{{/if}} <span class="brp-ui2-tab-count">{{inventoryCount}}</span></button>
+        <button type="button" class="brp-ui2-tab-item" {{#if isStatusTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="status"><i class="fa-solid fa-person-circle-exclamation" aria-hidden="true"></i> {{#if isTh}}สถานะ{{else}}Status{{/if}}</button>
+        <button type="button" class="brp-ui2-tab-item" {{#if isAdvancementTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="advancement"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> {{#if isTh}}บันทึกการพัฒนา{{else}}Advancement{{/if}}</button>
+        <button type="button" class="brp-ui2-tab-item" {{#if isNotesTab}}aria-current="page"{{/if}} data-action="switchTab" data-tab="notes"><i class="fa-solid fa-book-open" aria-hidden="true"></i> {{#if isTh}}บันทึก{{else}}Notes{{/if}}</button>
+      </div>
+    </nav>
