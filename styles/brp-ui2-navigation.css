@@ -1,0 +1,117 @@
+/*
+ * UI2 Phase 1D — Navigation & Layout contract.
+ * No global stylesheet overrides and no new vertical scroll owners.
+ * Legacy main sheet and nested workspaces remain untouched until real
+ * Foundry v14 QA validates an explicit scroll-container migration.
+ */
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-primary-navigation {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: max-content minmax(0,1fr);
+  gap: var(--ui-space-3);
+  align-items: center;
+  min-width: 0;
+  padding: var(--ui-space-2) var(--ui-space-3);
+  border-bottom: 1px solid var(--ui-rule-strong);
+  background: var(--ui-panel);
+  color: var(--ui-text);
+  container: brp-ui2-navigation / inline-size;
+  position: static;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-nav-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-space-2);
+  min-width: 0;
+  font: 700 12px/1.4 var(--ui-body-font);
+  color: var(--ui-text-muted);
+  white-space: nowrap;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-strip {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 3px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1px 1px 4px;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-item {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 39px;
+  max-width: 270px;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--ui-card-radius);
+  background: transparent;
+  color: var(--ui-text-muted);
+  font: 650 13px/1.35 var(--ui-body-font);
+  white-space: nowrap;
+  cursor: pointer;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-item i {
+  flex: 0 0 auto;
+  color: inherit;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-item[aria-current="page"] {
+  border-color: var(--ui-rule-strong);
+  background: var(--ui-selected);
+  color: var(--ui-accent);
+  font-weight: 750;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-item:hover:not([aria-current="page"]) {
+  background: var(--ui-inset);
+  color: var(--ui-text);
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-item:focus-visible {
+  outline: 3px solid var(--ui-focus);
+  outline-offset: 2px;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-count {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 2px 5px;
+  border-radius: 10px;
+  background: var(--ui-inset);
+  border: 1px solid var(--ui-rule);
+  color: var(--ui-text);
+  font: 700 11px/1.2 var(--ui-number-font);
+  font-variant-numeric: tabular-nums;
+}
+@container brp-ui2-navigation (max-width: 760px) {
+  .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-nav-heading {
+    display: none;
+  }
+  .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-item {
+    min-height: 39px;
+    max-width: none;
+  }
+}
+@container brp-ui2-navigation (max-width: 480px) {
+  .application.brp-uge .brp-sheet.brp-ui2 .brp-ui2-tab-item {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}
+
+/*
+ * Deliberate Phase 1D scroll boundary:
+ * - Horizontal navigation may scroll independently to reach all eight pages.
+ * - No vertical overflow is introduced on navigation or its tab strip.
+ * - The existing .sheet-body keeps the Foundry sheet's established vertical
+ *   scroll behavior until it can be migrated with visual QA / runtime metrics.
+ * - Do not add another sticky header without assessing the scroll owner.
+ */
