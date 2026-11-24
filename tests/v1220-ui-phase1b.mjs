@@ -13,13 +13,14 @@ const css=read('styles/brp-ui2-character-header.css');
 // All historical CSS rules are still loaded in exactly their original order.
 assert.equal(manifest.version,'1.21.11');
 assert.equal(manifest.compatibility.verified,'14');
-assert.deepEqual(manifest.styles.slice(-4),[
+assert.deepEqual(manifest.styles.slice(-5),[
   'styles/brp-v12111-specialty-management.css',
   'styles/brp-ui2-foundation.css',
   'styles/brp-ui2-character-header.css',
-  'styles/brp-ui2-resources.css'
+  'styles/brp-ui2-resources.css',
+  'styles/brp-ui2-navigation.css'
 ]);
-assert.equal(manifest.styles.length,22);
+assert.equal(manifest.styles.length,23);
 
 // Structural switch: a single Header per render, with the untouched stable
 // Header in the ELSE branch. Never duplicate active form fields.
