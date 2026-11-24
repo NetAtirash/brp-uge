@@ -50,7 +50,10 @@ assert.match(css,/@container brp-vitals \(max-width: 475px\)/);
 assert.match(css,/focus-visible/);
 assert.doesNotMatch(css,/!important/);
 assert.doesNotMatch(css,/(?:^|\n)\s*(?:body|:root|html)\s*\{/m);
-assert.equal(manifest.styles.at(-1),'styles/brp-ui2-resources.css');
+assert.deepEqual(manifest.styles.slice(-2),[
+  'styles/brp-ui2-resources.css',
+  'styles/brp-ui2-navigation.css'
+]);
 assert.equal(manifest.version,'1.21.11','UI-only Phase must not bump stable release');
 assert.ok(read('templates/actor/npc-sheet.hbs').includes('sheet-sidebar'));
 assert.doesNotMatch(read('templates/actor/npc-sheet.hbs'),/ui2-resource-cards/);
