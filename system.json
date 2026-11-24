@@ -37,7 +37,8 @@
     "styles/brp-v12111-specialty-management.css",
     "styles/brp-ui2-foundation.css",
     "styles/brp-ui2-character-header.css",
-    "styles/brp-ui2-resources.css"
+    "styles/brp-ui2-resources.css",
+    "styles/brp-ui2-navigation.css"
   ],
   "languages": [
     {
