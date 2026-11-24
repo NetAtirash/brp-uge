@@ -110,7 +110,8 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
         "systems/brp-uge/templates/actor/partials/ui2-character-header.hbs",
         "systems/brp-uge/templates/actor/partials/ui2-personal-details.hbs",
         "systems/brp-uge/templates/actor/partials/ui2-resource-cards.hbs",
-        "systems/brp-uge/templates/actor/partials/ui2-characteristics.hbs"
+        "systems/brp-uge/templates/actor/partials/ui2-characteristics.hbs",
+        "systems/brp-uge/templates/actor/partials/ui2-primary-navigation.hbs"
       ]
     }
   };
