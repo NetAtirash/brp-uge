@@ -10,7 +10,7 @@
                 <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.characteristics.{{c.key}}.value" data-delta="-1" data-min="1" data-max="99">−</button>
               {{/if}}
               {{#if @root.editMode}}
-                <input name="system.characteristics.{{c.key}}.value" type="number" value="{{c.rawValue}}" />
+                <input aria-label="{{c.short}} value" name="system.characteristics.{{c.key}}.value" type="number" value="{{c.rawValue}}" />
               {{else}}
                 <span class="brp-ui2-characteristic-value" title="Base {{c.rawValue}} / Status {{c.delta}}">{{c.effectiveValue}}</span>
               {{/if}}
@@ -22,7 +22,7 @@
           {{#if c.delta}}<div class="brp-ui2-characteristic-adjustment" title="Status/age modifiers">{{#if @root.isTh}}สถานะ{{else}}Status{{/if}} {{c.delta}} · {{#if @root.isTh}}พื้นฐาน{{else}}Base{{/if}} {{c.rawValue}}</div>{{/if}}
           <div class="brp-ui2-characteristic-actions brp-ui2-derived-roll">
             <button type="button" class="brp-ui2-share-action" data-action="shareEntry" data-char="{{c.key}}" data-tooltip="{{#if @root.isTh}}ส่งข้อมูลลงแชท{{else}}Share information in chat{{/if}}">{{c.rollLabel}}</button>
-            <button type="button" class="brp-ui2-roll-action" data-action="rollChar" data-char="{{c.key}}" aria-label="Roll {{c.rollLabel}} ({{c.short}} × 5)">{{c.rollPct}}%</button>
+            <button type="button" class="brp-ui2-roll-action" data-action="rollChar" data-char="{{c.key}}" aria-label="{{#if @root.isTh}}ทอย {{c.rollLabel}}{{else}}Roll {{c.rollLabel}}{{/if}} ({{c.short}} × 5)">{{c.rollPct}}%</button>
           </div>
         </div>
       {{/each}}
