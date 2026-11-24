@@ -207,6 +207,9 @@
 
   <!-- RIGHT WORKSPACE: Compact Action Toolbar, Tabs, & Full-Height Content -->
   <main class="sheet-main">
+    {{#if ui2Preview}}
+      {{> "systems/brp-uge/templates/actor/partials/ui2-primary-navigation.hbs" }}
+    {{else}}
     <nav class="sheet-navigation" aria-label="Character sheet pages">
       <span class="nav-heading"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> {{#if isTh}}หน้าต่างข้อมูล{{else}}Pages{{/if}}</span>
       <div class="sheet-tabs">
@@ -220,6 +223,7 @@
         <button type="button" class="tab-btn {{#if isNotesTab}}active{{/if}}" data-action="switchTab" data-tab="notes"><i class="fa-solid fa-book-open" aria-hidden="true"></i> {{#if isTh}}บันทึก{{else}}Notes{{/if}}</button>
       </div>
     </nav>
+    {{/if}}
 
     {{#if resistanceOpen}}
       <section class="resistance-drawer">
