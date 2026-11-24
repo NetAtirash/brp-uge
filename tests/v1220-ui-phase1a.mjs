@@ -19,12 +19,13 @@ const oldStyles=[
   'styles/brp-v12110-flavor-chat.css',
   'styles/brp-v12111-specialty-management.css'
 ];
-assert.deepEqual(manifest.styles.slice(0,-3),oldStyles,
+assert.deepEqual(manifest.styles.slice(0,-4),oldStyles,
   'Legacy CSS cascade and load order must remain identical');
-assert.deepEqual(manifest.styles.slice(-3),[
+assert.deepEqual(manifest.styles.slice(-4),[
   'styles/brp-ui2-foundation.css',
   'styles/brp-ui2-character-header.css',
-  'styles/brp-ui2-resources.css'
+  'styles/brp-ui2-resources.css',
+  'styles/brp-ui2-navigation.css'
 ]);
 assert.equal(manifest.version,'1.21.11','No unreviewed stable version bump');
 assert.equal(manifest.compatibility.minimum,'14');
