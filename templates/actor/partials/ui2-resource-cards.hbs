@@ -11,7 +11,7 @@
             {{#if editMode}}
               <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.hp.value" data-delta="-1" data-min="{{system.hp.min}}" data-max="{{system.hp.max}}">−</button>
             {{/if}}
-            <input name="system.hp.value" type="number" value="{{system.hp.value}}" />
+            <input aria-label="HP current" name="system.hp.value" type="number" value="{{system.hp.value}}" />
             {{#if editMode}}
               <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.hp.value" data-delta="1" data-min="{{system.hp.min}}" data-max="{{system.hp.max}}">+</button>
             {{/if}}
@@ -34,7 +34,7 @@
             {{#if editMode}}
               <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.pp.value" data-delta="-1" data-min="0" data-max="{{system.pp.max}}">−</button>
             {{/if}}
-            <input name="system.pp.value" type="number" value="{{system.pp.value}}" />
+            <input aria-label="PP current" name="system.pp.value" type="number" value="{{system.pp.value}}" />
             {{#if editMode}}
               <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.pp.value" data-delta="1" data-min="0" data-max="{{system.pp.max}}">+</button>
             {{/if}}
@@ -43,8 +43,8 @@
         </div>
         <progress class="brp-ui2-resource-meter" aria-label="PP" value="{{system.pp.value}}" max="{{system.pp.max}}"></progress>
         <div class="brp-ui2-resource-actions">
-          <button type="button" class="brp-ui2-resource-action" data-action="recoverPool" data-recover="pp25" title="ฟื้นฟู PP 25%">+25%</button>
-          <button type="button" class="brp-ui2-resource-action" data-action="recoverPool" data-recover="ppFull" title="ฟื้นฟู PP เต็ม">เต็ม</button>
+          <button type="button" class="brp-ui2-resource-action" data-action="recoverPool" data-recover="pp25" title="{{#if isTh}}ฟื้นฟู PP 25%{{else}}Recover PP 25%{{/if}}">+25%</button>
+          <button type="button" class="brp-ui2-resource-action" data-action="recoverPool" data-recover="ppFull" title="{{#if isTh}}ฟื้นฟู PP เต็ม{{else}}Recover full PP{{/if}}">{{#if isTh}}เต็ม{{else}}Full{{/if}}</button>
         </div>
       </div>
 
@@ -59,7 +59,7 @@
               {{#if editMode}}
                 <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.san.value" data-delta="-1" data-min="0" data-max="{{system.san.max}}">−</button>
               {{/if}}
-              <input name="system.san.value" type="number" value="{{system.san.value}}" />
+              <input aria-label="SAN current" name="system.san.value" type="number" value="{{system.san.value}}" />
               {{#if editMode}}
                 <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.san.value" data-delta="1" data-min="0" data-max="{{system.san.max}}">+</button>
               {{/if}}
@@ -84,7 +84,7 @@
               {{#if editMode}}
                 <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.fp.value" data-delta="-1" data-min="{{system.fp.min}}" data-max="{{system.fp.max}}">−</button>
               {{/if}}
-              <input name="system.fp.value" type="number" value="{{system.fp.value}}" />
+              <input aria-label="FP current" name="system.fp.value" type="number" value="{{system.fp.value}}" />
               {{#if editMode}}
                 <button type="button" class="brp-ui2-step-button" data-action="stepActorValue" data-path="system.fp.value" data-delta="1" data-min="{{system.fp.min}}" data-max="{{system.fp.max}}">+</button>
               {{/if}}
