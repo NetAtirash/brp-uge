@@ -1,0 +1,97 @@
+{{! UI2 Phase 1C: same Actor resource fields and actions, component-owned wrapper. }}
+<!-- Compact Vitals 2-Col Grid -->
+    <div class="brp-ui2-resource-cards">
+      <div class="pool-card compact-pool" data-tooltip="{{derivedTips.hp}}">
+        <div class="pool-top-row">
+          <span class="pool-label">HP</span>
+          <span class="pool-max-hint">MW ≥{{system.derived.majorWound}}</span>
+        </div>
+        <div class="pool-val">
+          <div class="step-group compact-step">
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.hp.value" data-delta="-1" data-min="{{system.hp.min}}" data-max="{{system.hp.max}}">−</button>
+            {{/if}}
+            <input name="system.hp.value" type="number" value="{{system.hp.value}}" />
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.hp.value" data-delta="1" data-min="{{system.hp.min}}" data-max="{{system.hp.max}}">+</button>
+            {{/if}}
+          </div>
+          <span class="pool-sep">/{{system.hp.max}}</span>
+        </div>
+        <progress class="brp-resource-meter" aria-label="HP" value="{{system.hp.value}}" max="{{system.hp.max}}"></progress>
+        <div class="pool-recovery-row">
+          <button type="button" class="mini-rec-btn" data-action="switchTab" data-tab="wounds" title="{{#if isTh}}รักษาผ่านทักษะ First Aid / Medicine{{else}}Treat via First Aid / Medicine{{/if}}"><i class="fa-solid fa-kit-medical"></i> {{#if isTh}}รักษา{{else}}Treat{{/if}}</button>
+        </div>
+      </div>
+
+      <div class="pool-card compact-pool" data-tooltip="{{derivedTips.pp}}">
+        <div class="pool-top-row">
+          <span class="pool-label">PP</span>
+          <span class="pool-max-hint">EXP +{{system.derived.expBonus}}%</span>
+        </div>
+        <div class="pool-val">
+          <div class="step-group compact-step">
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.pp.value" data-delta="-1" data-min="0" data-max="{{system.pp.max}}">−</button>
+            {{/if}}
+            <input name="system.pp.value" type="number" value="{{system.pp.value}}" />
+            {{#if editMode}}
+              <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.pp.value" data-delta="1" data-min="0" data-max="{{system.pp.max}}">+</button>
+            {{/if}}
+          </div>
+          <span class="pool-sep">/{{system.pp.max}}</span>
+        </div>
+        <progress class="brp-resource-meter" aria-label="PP" value="{{system.pp.value}}" max="{{system.pp.max}}"></progress>
+        <div class="pool-recovery-row">
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="pp25" title="ฟื้นฟู PP 25%">+25%</button>
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull" title="ฟื้นฟู PP เต็ม">เต็ม</button>
+        </div>
+      </div>
+
+      {{#if campaignRules.useSanity}}
+        <div class="pool-card compact-pool san-card" data-tooltip="{{derivedTips.san}}">
+          <div class="pool-top-row">
+            <span class="pool-label">SAN</span>
+            <button type="button" class="san-roll-btn" data-action="rollSanity">{{ui.rollSanBtn}}</button>
+          </div>
+          <div class="pool-val">
+            <div class="step-group compact-step">
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.san.value" data-delta="-1" data-min="0" data-max="{{system.san.max}}">−</button>
+              {{/if}}
+              <input name="system.san.value" type="number" value="{{system.san.value}}" />
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.san.value" data-delta="1" data-min="0" data-max="{{system.san.max}}">+</button>
+              {{/if}}
+            </div>
+            <span class="pool-sep">/{{system.san.max}}</span>
+          </div>
+        <progress class="brp-resource-meter" aria-label="SAN" value="{{system.san.value}}" max="{{system.san.max}}"></progress>
+          <div class="pool-recovery-row">
+            <button type="button" class="mini-rec-btn" data-action="switchTab" data-tab="wounds" title="{{#if isTh}}บำบัดผ่านทักษะจิตบำบัด{{else}}Psychotherapy treatment{{/if}}"><i class="fa-solid fa-brain"></i> {{#if isTh}}บำบัด{{else}}Therapy{{/if}}</button>
+          </div>
+        </div>
+      {{/if}}
+
+      {{#if campaignRules.useFatigue}}
+        <div class="pool-card compact-pool fp-card" data-tooltip="{{derivedTips.fp}}">
+          <div class="pool-top-row">
+            <span class="pool-label">FP</span>
+            <span class="pool-max-hint">STR+CON</span>
+          </div>
+          <div class="pool-val">
+            <div class="step-group compact-step">
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.fp.value" data-delta="-1" data-min="{{system.fp.min}}" data-max="{{system.fp.max}}">−</button>
+              {{/if}}
+              <input name="system.fp.value" type="number" value="{{system.fp.value}}" />
+              {{#if editMode}}
+                <button type="button" class="step-btn" data-action="stepActorValue" data-path="system.fp.value" data-delta="1" data-min="{{system.fp.min}}" data-max="{{system.fp.max}}">+</button>
+              {{/if}}
+            </div>
+            <span class="pool-sep">/{{system.fp.max}}</span>
+          </div>
+        <progress class="brp-resource-meter" aria-label="FP" value="{{system.fp.value}}" max="{{system.fp.max}}"></progress>
+        </div>
+      {{/if}}
+    </div>
