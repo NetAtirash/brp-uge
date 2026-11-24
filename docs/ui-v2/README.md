@@ -56,6 +56,14 @@ Phase 0 remains a documentation/prototype RFC. Phase 1A adds opt-in runtime grou
 
 The new Character Identity/Header is implemented as two preloaded Handlebars partials, with an accessible portrait button, responsive scoped CSS, and the full personal details behind an expandable section. **Default stable Header is unchanged.** Since UI2 now changes form markup, change the client Preview setting, **save any pending edits, then close/reopen the Character Sheet**; no unsafe forced rerender occurs. See [Phase 1B Character Header, testing & rollback](PHASE1B-CHARACTER-HEADER.md). Live Foundry v14 visual QA is still required before merging to Stable.
 
+## Phase 1C & 1D — end of foundation stage
+
+- [Phase 1C — Resources and Characteristics](PHASE1C-RESOURCE-CHARACTERISTICS.md): HP/PP/SAN/FP and characteristic displays in isolated opt-in components, preserving every Actor input and action.
+- [Phase 1D — Navigation and Layout](PHASE1D-NAVIGATION-LAYOUT.md): eight original pages, current-page indicators and horizontal-only tab scrolling; no unverified changes to the primary vertical scroll owner.
+- [Phase 1 readiness / Foundry QA gate](PHASE1-READINESS-GATE.md): combined checks and the deliberate **stopping point before Phase 2 Skills/Powers/Inventory UI redesign**.
+
+All of these are **stacked Draft PRs**, not released. Live Foundry v14 validation is mandatory before Stable merge.
+
 ## Safety & provenance
 
 This personal project uses ChatGPT (OpenAI) assistance and is unofficial, as disclosed in the root README. The Phase 0 deliverables only add **docs**, an **isolated prototype**, a **read-only source audit tool**, and **offline tests**. Phase 1A and Phase 1B introduce only opt-in Character UI components and a per-client setting; neither changes Actor/Item DataModels, rules, existing Worlds, or stable releases.
