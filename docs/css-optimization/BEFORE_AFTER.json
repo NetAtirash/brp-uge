@@ -1,0 +1,52 @@
+{
+  "baselineVersion": "1.21.11",
+  "sourceFiles": 19,
+  "productionStylesheetsBefore": 19,
+  "productionStylesheetsAfter": 1,
+  "cssSourceOrder": [
+    "styles/brp.css",
+    "styles/brp-refinement.css",
+    "styles/brp-bold.css",
+    "styles/brp-overview.css",
+    "styles/brp-editorial.css",
+    "styles/brp-compact-ribbon.css",
+    "styles/brp-integrated-ui.css",
+    "styles/brp-ui-consistency.css",
+    "styles/brp-thai-readability.css",
+    "styles/brp-personal-and-wizard.css",
+    "styles/brp-rulebook-reference.css",
+    "styles/brp-fa7-v14.css",
+    "styles/brp-paper.css",
+    "styles/brp-v1216-usability.css",
+    "styles/brp-v1217-layout.css",
+    "styles/brp-v1218-specialties.css",
+    "styles/brp-v1219-workbench.css",
+    "styles/brp-v12110-flavor-chat.css",
+    "styles/brp-v12111-specialty-management.css"
+  ],
+  "previous": {
+    "bytes": 300304,
+    "gzipBytes": 50557,
+    "brotliBytes": 41126,
+    "sha256": "f6a3a47c688e66a241c4256660b849d1a62cb186b1aee312366f1562a16f9d8e",
+    "forcedPriorityOccurrences": 2564
+  },
+  "optimized": {
+    "bytes": 259927,
+    "gzipBytes": 38518,
+    "brotliBytes": 31340,
+    "sha256": "474b7866b6f5710ce627e49a57015cd1e437708ed0a0d2a430f03d1d4ac2b891",
+    "forcedPriorityOccurrences": 2502
+  },
+  "savings": {
+    "files": 18,
+    "rawBytes": 40377,
+    "rawPercent": 13.45,
+    "gzipBytes": 12039,
+    "gzipPercent": 23.81,
+    "brotliBytes": 9786,
+    "brotliPercent": 23.8
+  },
+  "note": "Static CSS delivery size and request-count metrics only. No live Foundry VTT rendering/performance measurements. Original authored CSS files remain unchanged and in cascade order.",
+  "source": "main v1.21.11; visual prototype PRs #9–#13 are closed and excluded"
+}
