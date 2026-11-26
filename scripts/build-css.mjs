@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * BRP UGE CSS-only optimization.
- * Compile the original ordered 19 stylesheets into one distributable file.
- * Do NOT edit, sort, prune or assign @layer to existing rules. Never import
+ * Compile the ordered, active structural source owners into one distributable file.
+ * Do NOT sort or assign @layer to existing rules. Never import
  * Visual UI2 prototypes; stable v1.21.11 is the sole source of truth.
  *
  * Requires pinned Lightning CSS dev dependency (Node 22; npm ci).
@@ -25,11 +25,15 @@ const sourceSpec=JSON.parse(read('scripts/css-sources.json').toString('utf8'));
 const sources=sourceSpec.sourceStyles;
 const outputPath='styles/brp-runtime.min.css';
 const outputFile=join(root,outputPath);
-const expectedOldCount=19;
+const structurallyCleaned=Array.isArray(sourceSpec.baselineOriginalStyles);
+const expectedSourceCount=structurallyCleaned?7:19;
 if(manifest.id!=='brp-uge'||manifest.version!=='1.21.11')
   throw new Error('CSS optimizer must run against stable BRP UGE v1.21.11 only');
-if(sources.length!==expectedOldCount||new Set(sources).size!==sources.length)
-  throw new Error('Expected exactly 19 unique, ordered stylesheet sources');
+if(sources.length!==expectedSourceCount||new Set(sources).size!==sources.length)
+  throw new Error('Unexpected number of active stylesheet source files');
+if(structurallyCleaned && (sourceSpec.baselineOriginalStyles.length!==19 ||
+  sourceSpec.baselineOptimizedSha256!==JSON.parse(read('docs/css-optimization/BEFORE_AFTER.json')).optimized.sha256))
+  throw new Error('CSS source structure no longer matches the recorded PR #14 baseline');
 if(sources.some(p=>!p.startsWith('styles/')||p.includes('ui2')||p===outputPath||!existsSync(join(root,p))))
   throw new Error('CSS source list must be existing mainline styles, not UI2');
 if(!(manifest.styles.join('|')===sources.join('|')
@@ -69,6 +73,8 @@ const totals=b=>({
   sha256:hash(b)
 });
 const before=totals(combined),after=totals(bundled);
+if(structurallyCleaned && after.sha256!==sourceSpec.baselineOptimizedSha256)
+  throw new Error('Structural CSS cleanup changed runtime CSS bytes; refusing build');
 const pct=(a,b)=>Math.round((1-b/a)*10000)/100;
 const report={
   baselineVersion:manifest.version,
@@ -79,7 +85,7 @@ const report={
   previous:{...before,forcedPriorityOccurrences:(original.match(/!important/g)||[]).length},
   optimized:{...after,forcedPriorityOccurrences:(decoded.match(/!important/g)||[]).length},
   savings:{
-    files:expectedOldCount-1,
+    files:expectedSourceCount-1,
     rawBytes:before.bytes-after.bytes,
     rawPercent:pct(before.bytes,after.bytes),
     gzipBytes:before.gzipBytes-after.gzipBytes,
@@ -98,13 +104,16 @@ if(flags.has('--check')){
   const reportFile=join(root,'docs/css-optimization/BEFORE_AFTER.json');
   if(existsSync(reportFile)){
     const existing=JSON.parse(readFileSync(reportFile,'utf8'));
-    if(JSON.stringify(existing)!==JSON.stringify(report))
+    if(structurallyCleaned) {
+      if(existing.optimized.sha256!==after.sha256 || existing.productionStylesheetsBefore!==19)
+        throw new Error('Historical CSS delivery baseline changed');
+    }else if(JSON.stringify(existing)!==JSON.stringify(report))
       throw new Error('CSS metrics stale; run node scripts/build-css.mjs --report');
   }
 } else {
   writeFileSync(outputFile,bundled);
 }
-if(flags.has('--report')){
+if(flags.has('--report') && !structurallyCleaned){
   mkdirSync(join(root,'docs/css-optimization'),{recursive:true});
   writeFileSync(join(root,'docs/css-optimization/BEFORE_AFTER.json'),
     JSON.stringify(report,null,2)+'\n');
