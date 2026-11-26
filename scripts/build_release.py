@@ -63,10 +63,19 @@ def build(output_dir: Path, release_tag: str | None) -> None:
         z.writestr(f"{PACKAGE_ID}/system.json", manifest_bytes)
         for filename in RUNTIME_FILES:
             z.write(ROOT / filename, arcname=f"{PACKAGE_ID}/{filename}")
+        active_styles=set(source_manifest.get("styles", []))
         for dirname in RUNTIME_DIRS:
             for file in sorted((ROOT / dirname).rglob("*")):
-                if file.is_file():
-                    z.write(file, arcname=f"{PACKAGE_ID}/{file.relative_to(ROOT).as_posix()}")
+                if not file.is_file():
+                    continue
+                relative=file.relative_to(ROOT).as_posix()
+                # Authored CSS sources stay in Git but are not runtime assets
+                # when the manifest loads the optimized production bundle.
+                # This preserves original ZIP behavior on stable branches
+                # that still reference the individual source files.
+                if dirname=="styles" and file.suffix.lower()==".css" and relative not in active_styles:
+                    continue
+                z.write(file, arcname=f"{PACKAGE_ID}/{relative}")
 
     with zipfile.ZipFile(archive) as z:
         if z.testzip() is not None:
