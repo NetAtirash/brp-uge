@@ -116,8 +116,27 @@ for(const name of readdirSync(join(ROOT,'tests')).filter(f=>f.endsWith('.mjs')))
   const path=join(ROOT,'tests',name);
   const existing=readFileSync(path,'utf8');
   let changed=existing.replaceAll('originalCssSources','activeCssSources');
+  // Assert old source sections from their new, active CSS owner instead of
+  // testing an unrelated adjacent section in a concatenated owner group.
+  for(const [oldPath] of Object.entries(replacements)){
+    changed=changed.split("read('../"+oldPath+"')").join("readLegacyStyle('"+oldPath+"')");
+    changed=changed.split("read('"+oldPath+"')").join("readLegacyStyle('"+oldPath+"')");
+    changed=changed.split("fs.readFileSync(path.join(root,'"+oldPath+"'),'utf8')")
+      .join("readLegacyStyle('"+oldPath+"')");
+  }
+  if(changed.includes('readLegacyStyle(')){
+    const from="import {activeCssSources} from './css-source-manifest.mjs';";
+    if(changed.includes(from))
+      changed=changed.replace(from,"import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';");
+    else
+      changed="import {readLegacyStyle} from './css-source-manifest.mjs';\n"+changed;
+  }
   for(const [oldPath,newPath] of Object.entries(replacements))
     changed=changed.split(oldPath).join(newPath);
+  // Replace CSS reference strings used as section identifiers back to the
+  // original path, because readLegacyStyle maps provenance by old path.
+  for(const [oldPath,newPath] of Object.entries(replacements))
+    changed=changed.split("readLegacyStyle('"+newPath+"')").join("readLegacyStyle('"+oldPath+"')");
   if(name==='v1151-design-refinement.mjs')
     changed=changed.replace(
       "activeCssSources.slice(0,2),['styles/brp-core-components.css','styles/brp-core-components.css']",
