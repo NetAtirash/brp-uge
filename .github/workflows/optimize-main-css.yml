@@ -80,8 +80,10 @@ jobs:
           assert manifest["styles"]==["styles/brp-runtime.min.css"]
           assert manifest["version"]=="1.21.11"
           with zipfile.ZipFile("dist/brp-uge.zip") as f:
-            assert "brp-uge/styles/brp-runtime.min.css" in f.namelist()
+            css=[n for n in f.namelist() if n.startswith("brp-uge/styles/") and n.endswith(".css")]
+            assert css==["brp-uge/styles/brp-runtime.min.css"], f"Unused CSS included in optimized ZIP: {css}"
             assert f.read("brp-uge/system.json")
+          print(f"Optimized package size: {Path('dist/brp-uge.zip').stat().st_size:,} bytes")
           PY
 
       - name: Commit generated bundle, lockfile and before/after metrics
