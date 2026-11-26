@@ -49,8 +49,8 @@ const result=transform({
 const bundled=Buffer.from(result.code);
 const decoded=bundled.toString('utf8');
 const original=combined.toString('utf8');
-const remoteFontImports=original.match(/@import\s+url\(/g)||[];
-const resultFontImports=decoded.match(/@import\s+url\(/g)||[];
+const remoteFontImports=original.match(/@import\b/g)||[];
+const resultFontImports=decoded.match(/@import\b/g)||[];
 if(remoteFontImports.length!==resultFontImports.length)
   throw new Error('Google Font @import count changed during compilation');
 if(!decoded.includes('fonts.googleapis.com'))
