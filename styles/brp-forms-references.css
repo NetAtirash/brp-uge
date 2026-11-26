@@ -1,0 +1,244 @@
+/* SOURCE: styles/brp-thai-readability.css | owner: Thai forms and rule references */
+/* BRP UGE v1.18.2 — Thai readability: looped Thai glyphs across all system surfaces.
+   No WOFF/TTF is shipped. Google Fonts is optional; readable looped OS fallbacks remain.
+   Genre's English display headings and numeric typography are intentionally preserved. */
+html[data-brp-theme] .application.brp-uge,
+html[data-brp-theme] .brp-uge {
+  --brp-thai-ui-font:"Noto Sans Thai Looped","Sarabun","Tahoma","Noto Looped Thai",sans-serif;
+  --brp-body-font:var(--brp-thai-ui-font);
+  --font-sans:var(--brp-thai-ui-font);
+}
+
+/* Foundry application content and HTML forms, restricted to BRP UGE only. */
+html[data-brp-theme] .application.brp-uge .window-content,
+html[data-brp-theme] .application.brp-uge :is(.brp-sheet,.brp-item-sheet,.brp-wizard,.brp-compendium),
+html[data-brp-theme] .brp-uge :is(.sheet-body,.brp-item-sheet,.wiz-body,.comp-list) {
+  font-family:var(--brp-thai-ui-font)!important;
+}
+html[data-brp-theme] .application.brp-uge :is(input:not([type="number"]),textarea,select,button,label),
+html[data-brp-theme] .brp-uge :is(.skill-edit-name,.skill-play-row .link-btn,.brp-share-label,.skill-name,.item-label,.field-label,.hint-text,.empty-hint,.brp-readonly-value) {
+  font-family:var(--brp-thai-ui-font)!important;
+}
+/* Large English headings keep their genre identity. Noto Serif Thai provides looped Thai
+   where the chosen English display face lacks Thai glyphs. */
+html[data-brp-theme] .application.brp-uge :is(h1,h2,h3,.panel-header h3,.cat-header h3,.brp-brand-title,.char-name-input.compact-name) {
+  font-family:var(--brp-heading-font)!important;
+}
+/* Actual Thai text needs room for above/below marks. Avoid extra tracking on Thai labels.
+   No fixed new row heights: narrow-window edit mode remains safe. */
+html[data-brp-theme] .application.brp-uge :is(.skill-edit-name,.skill-play-row .link-btn,.brp-share-label,.item-label,.field-label,.comp-filter-field,.comp-result-summary,.brp-readonly-value) {
+  letter-spacing:normal!important;
+  line-height:1.5!important;
+}
+html[data-brp-theme] .application.brp-uge :is(.skill-edit-name,.skill-play-row .link-btn,.brp-share-label) {
+  font-size:13.5px!important;
+}
+html[data-brp-theme] .application.brp-uge :is(.cat-header,.panel-header,.skill-edit-heading,.skill-edit-row,.brp-skill-search-field) {
+  font-family:var(--brp-thai-ui-font)!important;
+}
+html[data-brp-theme] .application.brp-uge :is(.skill-edit-heading,.skill-edit-base,.skill-edit-cat,.skill-training-readonly,.pool-label,.char-key,.field-box.mini span) {
+  letter-spacing:normal!important;
+  line-height:1.45!important;
+}
+html[data-brp-theme] .application.brp-uge :is(.brp-btn,.mini-rec-btn,.tab-btn,.comp-filter-field,.step-btn) {
+  letter-spacing:normal!important;
+}
+/* Thai descriptions in chat and tooltips frequently live outside the sheet window. */
+html[data-brp-theme] :is(.brp-chat-card,.brp-tooltip,.brp-phase-hud,.brp-roll-dialog) {
+  font-family:var(--brp-thai-ui-font)!important;
+  line-height:1.5;
+}
+html[data-brp-theme] :is(.brp-chat-card,.brp-tooltip) :is(p,span,small,button,label,li) {
+  font-family:var(--brp-thai-ui-font)!important;
+  letter-spacing:normal;
+  line-height:1.5;
+}
+/* Preserve tabular numeric values and their original genre-specific digit font. */
+html[data-brp-theme] .application.brp-uge :is(.brp-stat-effective-value,.pool-val input,.brp-roll-value,.skill-total,.skill-edit-total) {
+  font-variant-numeric:tabular-nums;
+}
+
+
+/* SOURCE: styles/brp-personal-and-wizard.css | owner: Thai forms and rule references */
+/* BRP UGE v1.18.3: Rulebook Personal, Wizard presentation, and Foundry icon compatibility.
+   Placed last after existing v1.18.2 CSS; additive corrections only. */
+/* Font Awesome glyphs must never inherit the Thai text font. The Foundry
+   chrome also uses FA classes, so scope narrowly to this system's applications. */
+.application.brp-uge :is(.fa,.fas,.far,.fal,.fat,.fad,.fa-solid,.fa-regular,.fa-light),
+.brp-uge :is(.fa,.fas,.far,.fal,.fat,.fad,.fa-solid,.fa-regular,.fa-light) {
+  font-family:"Font Awesome 7 Pro","Font Awesome 7 Free","Font Awesome 6 Pro","Font Awesome 6 Free" !important;
+  font-style:normal!important;
+  font-variant:normal!important;
+  text-rendering:auto!important;
+  line-height:1!important;
+  font-weight:900!important;
+}
+.application.brp-uge :is(.far,.fa-regular){font-weight:400!important}
+/* Do not replace Foundry's global --font-sans or override icons outside BRP. */
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner {
+  display:grid!important;
+  grid-template-columns:minmax(136px, 190px) minmax(190px, 275px) minmax(340px, 1fr) auto!important;
+  grid-template-rows:minmax(0,1fr)!important;
+  align-items:center!important;
+  min-height:155px!important;
+  max-height:none!important;
+  gap:0!important;
+  padding:8px 12px!important;
+  overflow:visible!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy {
+  grid-column:1!important;grid-row:1!important;
+  display:flex!important;flex-direction:column!important;
+  min-width:0!important;flex:initial!important;padding:6px 10px 6px 8px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity {
+  grid-column:2!important;grid-row:1!important;
+  display:flex!important;align-items:center!important;
+  width:auto!important;min-width:0!important;max-width:none!important;
+  flex:initial!important;margin:0!important;padding:6px 10px!important;
+  background:rgba(5,10,18,.42)!important;border:0!important;box-shadow:none!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity .id-top-row {
+  display:flex;flex-wrap:nowrap;align-items:center;gap:9px;min-width:0;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity .id-name-col{min-width:0;flex:1}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-identity .char-name-input {
+  max-width:100%!important;width:100%;overflow:hidden;text-overflow:ellipsis;
+  font-size:clamp(17px,1.65vw,24px)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details {
+  grid-column:3!important;grid-row:1!important;min-width:0;max-width:none!important;
+  display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-auto-rows:minmax(34px,auto);gap:3px 10px!important;
+  margin:0!important;padding:4px 7px!important;
+  border-left:1px solid color-mix(in srgb,var(--brp-accent) 30%,transparent);
+  background:rgba(4,10,18,.58);border-radius:4px;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-fact {
+  display:flex!important;flex-direction:column!important;min-width:0!important;
+  margin:0!important;padding:2px 0!important;gap:1px!important;
+  font-family:var(--brp-thai-ui-font)!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-label {
+  font-size:10.5px!important;line-height:1.3!important;font-weight:600!important;
+  color:var(--brp-accent)!important;letter-spacing:normal!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-value {
+  display:block!important;max-width:100%;font-size:12.5px!important;font-weight:600!important;
+  color:#f6f0e8!important;line-height:1.32!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  background:transparent!important;border:0!important;box-shadow:none!important;
+  padding:0!important;margin:0!important;text-align:left;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-link{cursor:pointer!important}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-link:hover{color:var(--brp-tertiary)!important;text-decoration:underline}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-input {
+  box-sizing:border-box!important;display:block!important;width:100%!important;min-width:0!important;
+  max-width:100%!important;height:24px!important;line-height:20px!important;
+  font-size:12.5px!important;padding:2px 5px!important;margin:0!important;
+  border-radius:3px!important;background:rgba(7,12,20,.88)!important;
+  border:1px solid var(--brp-border)!important;color:#f9f1e4!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-description,
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-personal-distinctiveFeatures {grid-column:span 2}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities {
+  grid-column:4!important;grid-row:1!important;position:relative!important;
+  inset:auto!important;z-index:4!important;display:flex!important;flex-wrap:wrap!important;
+  justify-content:flex-end!important;align-items:flex-start!important;align-self:start!important;
+  max-width:none!important;gap:4px!important;margin:0!important;padding:2px!important;
+}
+html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner::after{bottom:4px!important}
+/* Allow wrapping when the application window gets narrow, rather than clipping inputs. */
+@media(max-width:1220px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner{
+    grid-template-columns:150px minmax(170px,230px) minmax(0,1fr) 100px!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities{justify-content:center!important}
+}
+@media(max-width:870px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner{
+    min-height:195px!important;grid-template-columns:130px minmax(0,1fr) 108px!important;
+    grid-template-rows:auto auto!important;max-height:none!important;}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy{grid-column:1!important;grid-row:1/3!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity{
+    grid-column:2!important;grid-row:1!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details{
+    grid-column:2/4!important;grid-row:2!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities{
+    grid-column:3!important;grid-row:1!important;align-self:start!important}
+}
+@media(max-width:570px){
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner{
+    grid-template-columns:minmax(0,1fr) 90px!important;grid-template-rows:auto auto!important;gap:3px!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner-copy{display:none!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .sidebar-identity.brp-personal-identity{grid-column:1!important;grid-row:1!important;margin:0!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-header-utilities{grid-column:2!important;grid-row:1!important}
+  html[data-brp-theme] .brp-uge .brp-sheet-v1175 .brp-banner .brp-personal-details{grid-column:1/-1!important;grid-row:2!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+/* Wizard: rulebook-oriented stepper; keep same underlying apps/actions. */
+html[data-brp-theme] .brp-uge .brp-wizard .wiz-stepper{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important}
+html[data-brp-theme] .brp-uge .brp-wizard .wiz-step-btn{
+  min-height:36px!important;height:auto!important;white-space:normal!important;
+  padding:5px 8px!important;text-align:center!important;border-radius:4px!important;
+  font-size:12px!important;line-height:1.35!important}
+html[data-brp-theme] .brp-uge .brp-wizard .wiz-grid-2{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px 13px!important;min-width:0!important}
+html[data-brp-theme] .brp-uge .brp-wizard .wiz-grid-2>.field-box{min-width:0!important}
+@media(max-width:620px){html[data-brp-theme] .brp-uge .brp-wizard .wiz-stepper{grid-template-columns:repeat(2,minmax(0,1fr))!important}html[data-brp-theme] .brp-uge .brp-wizard .wiz-grid-2{grid-template-columns:1fr!important}}
+
+
+/* SOURCE: styles/brp-rulebook-reference.css | owner: Thai forms and rule references */
+/* v1.19.0: searchable, in-app rulebook references without a separate rulebook window. */
+.brp-compendium-window .comp-row{position:relative;flex-wrap:wrap}
+.brp-compendium-window .comp-actions{flex-wrap:wrap;align-items:center}
+.brp-compendium-window .comp-rulebook-inline{display:inline-block;position:static;margin:0}
+.brp-compendium-window .comp-rulebook-inline>summary{cursor:pointer;display:inline-flex;gap:.4rem;align-items:center;padding:.35rem .52rem;border:1px solid var(--brp-border, #697078);border-radius:3px;font-size:.875rem;list-style:none;color:var(--brp-accent, #e9c47a)}
+.brp-compendium-window .comp-rulebook-inline>summary::-webkit-details-marker{display:none}
+.brp-compendium-window .comp-rulebook-inline[open]{flex-basis:100%;width:100%}
+.brp-compendium-window .comp-rulebook-inline[open]>.comp-rulebook-panel{position:relative;margin-top:.5rem;max-height:340px;overflow:auto;padding:.7rem .8rem;border-top:1px solid var(--brp-border,#697078);background:rgba(0,0,0,.12);color:var(--brp-text,#eef0ee);line-height:1.65}
+.brp-compendium-window .comp-rulebook-provenance{font-size:.82rem;font-weight:600;color:var(--brp-accent,#e9c47a);margin-bottom:.45rem}
+.brp-compendium-window .comp-rulebook-text{font-family:var(--brp-font-body, 'Noto Sans Thai Looped',Tahoma,sans-serif);white-space:pre-line;overflow-wrap:anywhere;font-size:.92rem;line-height:1.7}
+.brp-compendium-window .comp-rulebook-original{margin-top:.85rem;padding-top:.5rem;border-top:1px solid var(--brp-border,#697078)}
+.brp-compendium-window .comp-rulebook-original>summary{cursor:pointer;list-style:revert;font-size:.82rem;margin-bottom:.3rem}
+
+.brp-chat-card .brp-rule-reference-chat-text{white-space:pre-line;line-height:1.6;overflow-wrap:anywhere}
+
+/* v1.19.1: make source material readable on standard Item sheets, not just in the catalog browser. */
+.brp-item-sheet .brp-item-rulebook{margin:.45rem 0 .65rem;border:1px solid var(--brp-border,#697078);border-radius:5px;overflow:hidden}
+.brp-item-sheet .brp-item-rulebook-summary{display:flex;gap:.55rem;align-items:center;cursor:pointer;background:rgba(125,125,125,.14);padding:.6rem .8rem;font-size:.95rem;font-weight:700;list-style:inside}
+.brp-item-sheet .brp-item-rulebook-pages{font-size:.8rem;font-weight:500;margin-left:auto;white-space:nowrap;color:var(--brp-accent,#e9c47a)}
+.brp-item-sheet .brp-item-rulebook-body{padding:.8rem .9rem;max-height:420px;overflow:auto;overscroll-behavior:contain}
+.brp-item-sheet .brp-item-rulebook-source{display:flex;flex-wrap:wrap;gap:.25rem .6rem;align-items:center;font-size:.82rem;margin-bottom:.5rem;color:var(--brp-accent,#e9c47a)}
+.brp-item-sheet .brp-item-rulebook-source span{color:var(--brp-text,#eef0ee);opacity:.78}
+.brp-item-sheet .brp-item-rulebook-example strong{color:#b3c6d5}
+.brp-item-sheet .brp-item-rulebook-copy,.brp-item-sheet .brp-item-rulebook-english{font-size:.91rem;line-height:1.8;white-space:pre-line;overflow-wrap:anywhere;user-select:text}
+.brp-item-sheet .brp-item-rulebook-warning{padding:.55rem .6rem;margin:.45rem 0;border:1px solid #b88a45;border-radius:4px;color:#f5d69b;line-height:1.6;font-size:.86rem}
+.brp-item-sheet .brp-item-rulebook-original{margin-top:.7rem;border-top:1px solid var(--brp-border,#697078);padding-top:.5rem}
+.brp-item-sheet .brp-item-rulebook-original>summary,.brp-item-sheet .brp-item-rulebook-edit>summary{cursor:pointer;font-size:.84rem;line-height:1.5}
+.brp-item-sheet .brp-item-rulebook-english{margin:.6rem 0;max-height:260px;overflow:auto}
+.brp-item-sheet .brp-item-rulebook-note{display:block;opacity:.72;margin-top:.6rem;line-height:1.55}
+.brp-item-sheet .brp-item-rulebook-edit{border-top:1px solid var(--brp-border,#697078);padding-top:.7rem;margin-top:.4rem}
+.brp-item-sheet .brp-item-rulebook-edit-inner{display:grid;grid-template-columns:inherit;gap:inherit;margin-top:.6rem}
+.brp-item-sheet .brp-item-rulebook-edit-inner>label,.brp-item-sheet .brp-item-rulebook-edit-inner>textarea{grid-column:1/-1}
+.brp-item-sheet .brp-item-rulebook-edit-inner>textarea{min-height:8rem}
+
+.brp-compendium-window .comp-rulebook-warning{border:1px solid #b88a45;color:#f5d69b;padding:.5rem .65rem;border-radius:3px;line-height:1.55;margin:.35rem 0 .75rem}
+
+
+/* SOURCE: styles/brp-fa7-v14.css | owner: Thai forms and rule references */
+/* Foundry V14 / Font Awesome 7: icon face must beat Thai font overrides. */
+html[data-brp-theme] :is(.application.brp-uge,.brp-uge) :is(i.fa,i.fas,i.far,i.fal,i.fad,i.fa-solid,i.fa-regular,i.fa-light,i.fa-duotone),
+html[data-brp-theme] :is(.application.brp-uge,.brp-uge) :is(.fa,.fas,.far,.fal,.fad,.fa-solid,.fa-regular,.fa-light,.fa-duotone)::before {
+  font-family:"Font Awesome 7 Pro","Font Awesome 7 Free","Font Awesome 6 Pro","Font Awesome 6 Free" !important;
+  font-style:normal!important;
+  font-variant:normal!important;
+  text-transform:none!important;
+  letter-spacing:normal!important;
+  text-rendering:auto!important;
+  font-synthesis:none!important;
+  line-height:1!important;
+}
+html[data-brp-theme] :is(.application.brp-uge,.brp-uge) :is(i.fa-solid,i.fas,i.fa-duotone) {font-weight:900!important;}
+html[data-brp-theme] :is(.application.brp-uge,.brp-uge) :is(i.fa-regular,i.far) {font-weight:400!important;}

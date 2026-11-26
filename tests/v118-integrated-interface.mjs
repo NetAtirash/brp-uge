@@ -1,12 +1,12 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const root=new URL('../',import.meta.url);
 const read=(p)=>readFileSync(new URL(p,root),'utf8');
 const m=JSON.parse(read('system.json'));
 assert.match(m.version, /^\d+\.\d+\.\d+$/);
-assert.ok(originalCssSources.includes('styles/brp-integrated-ui.css'));
-const css=read('styles/brp-integrated-ui.css');
+assert.ok(activeCssSources.includes('styles/brp-ui-components.css'));
+const css=readLegacyStyle('styles/brp-integrated-ui.css');
 for(const key of ['.sheet-body','.item-row','.wound-row','.brp-status-row','.brp-item-sheet','.item-fields','.brp-wizard','.wiz-stepper','.wiz-prof-card','.brp-compendium','.comp-row','.brp-chat-card','.comp-filter-panel','.brp-combat-tracker-tools','.brp-macro-form'])assert.ok(css.includes(key),`Missing shared style ${key}`);
 for (const path of ['templates/actor/character-sheet.hbs','templates/actor/npc-sheet.hbs','templates/item/item-sheet.hbs','templates/apps/character-wizard.hbs','templates/apps/compendium-browser.hbs','templates/chat/roll-card.hbs','templates/chat/damage-card.hbs','templates/chat/combat-card.hbs']) assert.ok(read(path).length>100,path);
 for(const path of ['templates/actor/character-sheet.hbs','templates/actor/npc-sheet.hbs']){

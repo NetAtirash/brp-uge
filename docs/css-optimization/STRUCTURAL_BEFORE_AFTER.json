@@ -1,0 +1,60 @@
+{
+  "baselineVersion": "v1.21.11",
+  "baselineRuntimeSha256": "474b7866b6f5710ce627e49a57015cd1e437708ed0a0d2a430f03d1d4ac2b891",
+  "exactRuntimeCssByteParity": true,
+  "originalSourceFiles": [
+    "styles/brp.css",
+    "styles/brp-refinement.css",
+    "styles/brp-bold.css",
+    "styles/brp-overview.css",
+    "styles/brp-editorial.css",
+    "styles/brp-compact-ribbon.css",
+    "styles/brp-integrated-ui.css",
+    "styles/brp-ui-consistency.css",
+    "styles/brp-thai-readability.css",
+    "styles/brp-personal-and-wizard.css",
+    "styles/brp-rulebook-reference.css",
+    "styles/brp-fa7-v14.css",
+    "styles/brp-paper.css",
+    "styles/brp-v1216-usability.css",
+    "styles/brp-v1217-layout.css",
+    "styles/brp-v1218-specialties.css",
+    "styles/brp-v1219-workbench.css",
+    "styles/brp-v12110-flavor-chat.css",
+    "styles/brp-v12111-specialty-management.css"
+  ],
+  "activeSourceFiles": [
+    "styles/brp-core-components.css",
+    "styles/brp-character-shell.css",
+    "styles/brp-ui-components.css",
+    "styles/brp-forms-references.css",
+    "styles/brp-paper-theme.css",
+    "styles/brp-sheet-workbench.css",
+    "styles/brp-chat-specialties.css"
+  ],
+  "before": {
+    "files": 19,
+    "characters": 300210,
+    "lines": 6157,
+    "rules": 1740,
+    "declarations": 6447,
+    "important": 2564,
+    "selectorsCrossingFiles": 85
+  },
+  "after": {
+    "files": 7,
+    "characters": 301875,
+    "lines": 6188,
+    "rules": 1740,
+    "declarations": 6447,
+    "important": 2564,
+    "selectorsCrossingFiles": 58
+  },
+  "redundantCandidates": 0,
+  "removedDeclarations": 0,
+  "rejectedCandidates": 0,
+  "updatedHistoricalTests": 18,
+  "originalRuntimeBytes": 259927,
+  "newRuntimeBytes": 259927,
+  "note": "Source organization only. Runtime CSS is byte-identical to prior optimization. No visual UI2 and no live Foundry testing."
+}

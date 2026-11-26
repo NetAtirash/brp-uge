@@ -1,3 +1,4 @@
+/* SOURCE: styles/brp-integrated-ui.css | owner: Shared controls and UI consistency */
 /* BRP UGE 1.18.0 — Integrated Editorial UI
  * Consistent information density for every system interface.
  * Presentation only: data-action, form names, roll hooks and Handlebars data unchanged.
@@ -255,3 +256,195 @@ html[data-brp-theme] .brp-uge .comp-row {
 .brp-macro-form .brp-status-skill-checklist {padding:5px!important;border-width:0 0 1px!important;border-radius:0!important;}
 .brp-macro-form .brp-status-skill-checklist fieldset {border:0!important;border-top:1px solid var(--brp-border,#455b70)!important;padding:6px 2px!important;}
 .brp-macro-form :is(.brp-status-dialog,.brp-care-dialog) {gap:7px!important;}
+
+
+/* SOURCE: styles/brp-ui-consistency.css | owner: Shared controls and UI consistency */
+/* BRP UGE v1.18.1 — Editorial visual consistency: specifically fixes live v1.18 edit/play UI.
+   All interaction bindings, data paths and BRP math stay in the existing templates and controllers. */
+
+/* Base design primitives: square-minded controls, even padding and stable content boxes.
+   Real toggles stay pill-shaped; only action buttons change shape. */
+html[data-brp-theme] .application.brp-uge {
+  --brp-control-radius: 4px;
+  --brp-row-height: 34px;
+  --brp-skill-columns: minmax(195px, 1fr) 60px 60px 75px 75px 62px 68px 58px;
+}
+html[data-brp-theme] .application.brp-uge :is(.brp-btn,.icon-btn,.mini-rec-btn,.step-btn,.brp-attack-cta,.brp-power-use,.tab-btn,.skill-points-input,.brp-header-icon) {
+  border-radius:var(--brp-control-radius)!important;
+  box-sizing:border-box;line-height:1.25;vertical-align:middle;
+}
+html[data-brp-theme] .application.brp-uge :is(.sheet-body,.brp-item-sheet,.brp-wizard,.brp-compendium) :is(button,input,select,textarea) {
+  box-sizing:border-box;max-width:100%;
+}
+html[data-brp-theme] .application.brp-uge :is(.sheet-body,.brp-item-sheet,.brp-wizard,.brp-compendium) :is(label,.field-box) {
+  box-sizing:border-box; min-width:0;
+}
+/* Explicitly exempt the intentional sliding edit switch. */
+html[data-brp-theme] .application.brp-uge .brp-edit-switch,
+html[data-brp-theme] .application.brp-uge .brp-switch-track {border-radius:999px!important;}
+html[data-brp-theme] .application.brp-uge .brp-switch-thumb {border-radius:50%!important;}
+
+/* Characteristics — no outlined or filled numeric tile in play mode. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-card .brp-stat-effective-value {
+  display:inline-block!important;min-width:0!important;min-height:0!important;
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:none!important;padding:0!important;margin:0!important;
+  font:800 clamp(21px,1.7vw,27px)/1.15 var(--brp-numeric-font,inherit)!important;
+  color:var(--brp-text)!important;text-align:end;
+}
+/* Editing value is the ONLY numeric element that gets an input outline. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-top .step-group {min-width:0!important;gap:3px!important;max-width:100%;align-items:center;}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-top input[type="number"] {
+  width:44px!important;min-width:40px!important;max-width:44px!important;height:30px!important;
+  min-height:30px!important;margin:0!important;padding:2px 3px!important;
+  font-size:19px!important;text-align:center;border-radius:4px!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-top .step-btn {
+  width:18px!important;min-width:18px!important;max-width:18px!important;
+  height:27px!important;min-height:27px!important;margin:0!important;padding:0!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-card .brp-stat-actions {
+  display:flex!important;gap:5px!important;align-items:baseline!important;justify-content:space-between!important;
+  padding:2px 0 0!important;margin:0!important;border:0!important;min-width:0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-card .brp-stat-actions .brp-share-label {
+  color:var(--brp-muted)!important;font-size:12px!important;font-weight:600!important;
+  flex:1 1 auto!important;min-width:0!important;text-align:start!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-card .brp-stat-actions .brp-roll-value {
+  color:var(--brp-accent)!important;font-size:14px!important;font-weight:800!important;
+  border:0!important;background:transparent!important;border-radius:0!important;box-shadow:none!important;
+  padding:0 1px!important;min-height:22px!important;flex:none;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-card .brp-stat-actions :is(.brp-share-label,.brp-roll-value):hover {
+  color:var(--brp-tertiary)!important;text-decoration:underline;text-underline-offset:3px;
+}
+/* If a category modifier is present, keep it legible without growing the stat cell. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-card .brp-stat-adjustment {
+  color:var(--brp-muted)!important;font-size:10px!important;line-height:1.25!important;margin:1px 0;
+}
+
+/* Skill edit grid: identical 8-column template for header and every row.
+   Checkbox and skill name share the first column to avoid the former ninth implicit grid cell. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-heading,
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-category-block li.skill-edit-row {
+  display:grid!important;grid-template-columns:var(--brp-skill-columns)!important;
+  column-gap:6px!important;align-items:center!important;
+  width:100%!important;min-width:720px!important;max-width:none!important;
+  padding:5px 4px!important;margin:0!important;box-sizing:border-box!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-heading {
+  font-size:11px!important;line-height:1.35!important;color:var(--brp-muted)!important;
+  min-height:32px!important;border:0!important;border-bottom:1px solid var(--brp-border)!important;
+  border-radius:0!important;background:color-mix(in srgb,var(--brp-surface) 55%,transparent)!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-heading > span {
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center!important;min-width:0!important;
+  padding:3px 2px!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-heading > span:first-child {
+  justify-content:flex-start!important;text-align:left!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-category-block li.skill-edit-row {
+  min-height:39px!important;border:0!important;border-bottom:1px solid var(--brp-border)!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-row > * {min-width:0!important;max-width:100%;margin:0!important;box-sizing:border-box;}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-id-cell {
+  display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-id-cell .exp-toggle {
+  flex:0 0 22px!important;width:22px!important;min-width:22px!important;height:24px!important;
+  background:transparent!important;border:0!important;color:var(--brp-muted)!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-id-cell .exp-toggle.checked {color:var(--brp-tertiary)!important;}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-id-cell .skill-edit-name {
+  min-width:0!important;flex:1 1 auto;text-align:left!important;font-size:13px!important;line-height:1.35!important;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-row :is(.skill-edit-base,.skill-edit-cat,.skill-training-readonly,.skill-edit-total) {
+  display:flex;align-items:center;justify-content:center;min-height:29px;text-align:center!important;
+  font-size:12px!important;font-variant-numeric:tabular-nums;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-row .skill-training-readonly {
+  border:0!important;box-shadow:none!important;border-radius:0!important;background:transparent!important;
+  color:var(--brp-muted)!important;gap:4px;padding:2px 0!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 input.skill-points-input[type="number"] {
+  display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;
+  height:30px!important;min-height:30px!important;padding:4px 2px!important;margin:0!important;
+  text-align:center!important;font-size:13px!important;line-height:20px!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-row .skill-edit-total {
+  border:0!important;background:transparent!important;box-shadow:none!important;
+  color:var(--brp-accent)!important;padding:2px 0!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-row .skill-edit-actions {
+  display:flex;align-items:center;justify-content:flex-end;gap:3px;min-width:0;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-row .skill-edit-actions button {
+  flex:0 0 25px!important;width:25px!important;min-width:25px!important;height:26px!important;
+  padding:1px!important;margin:0!important;
+}
+/* Preserve row alignment on constrained width through just one horizontal scroll container in edit mode. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skills-columns.is-editing {overflow-x:auto!important;max-width:100%;min-width:0;scrollbar-width:thin;}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skills-columns.is-editing .skill-category-block {min-width:740px!important;}
+
+/* One search-field frame, one magnifier icon, no emoji or outer nested search card. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-sticky-wrap {
+  border:0!important;border-radius:0!important;box-shadow:none!important;
+  background:var(--brp-panel)!important;margin:0 0 6px!important;padding:3px 0 6px!important;
+  border-bottom:1px solid var(--brp-border)!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .tab-toolbar {
+  border:0!important;box-shadow:none!important;background:transparent!important;
+  margin:0!important;padding:2px 0!important;display:flex!important;align-items:center!important;gap:7px!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-search-field {
+  display:flex!important;align-items:center;gap:8px;flex:1 1 250px;min-width:150px;
+  height:34px!important;min-height:34px!important;border:1px solid var(--brp-border)!important;
+  border-radius:var(--brp-control-radius)!important;padding:0 9px!important;background:var(--brp-deep)!important;
+  box-shadow:none!important;color:var(--brp-muted)!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-search-field:focus-within {border-color:var(--brp-tertiary)!important;outline:1px solid var(--brp-tertiary);}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-search-field > i {display:inline!important;flex:none;font-size:13px;color:var(--brp-muted)!important;}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-search-field > input.skill-search-input[type="search"] {
+  display:block!important;width:100%!important;flex:1 1 0!important;min-width:0!important;max-width:none!important;
+  height:100%!important;min-height:0!important;margin:0!important;padding:0!important;
+  background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;
+  outline:0!important;font-size:13px!important;color:var(--brp-text)!important;
+}
+/* Section text labels should be comfortably inset and uniformly aligned. */
+html[data-brp-theme] .application.brp-uge .sheet-body :is(.panel-header,.cat-header) {padding:6px 5px!important;min-width:0;}
+html[data-brp-theme] .application.brp-uge .sheet-body :is(.panel-header h3,.cat-header h3) {margin:0!important;line-height:1.4!important;}
+html[data-brp-theme] .application.brp-uge .sheet-body :is(.brp-btn,.mini-rec-btn,.icon-btn) {margin:0;}
+html[data-brp-theme] .application.brp-uge .sheet-body :is(.brp-gm-guidance,.brp-context-guidance) {
+  font-size:12px!important;margin:3px 0 6px!important;padding:0!important;line-height:1.45!important;color:var(--brp-muted)!important;
+}
+@media(max-width:820px){
+  html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-grid {grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+  html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-sticky-wrap .tab-toolbar {flex-wrap:wrap!important;}
+  html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .brp-skill-search-field {flex-basis:100%!important;}
+}
+@media(max-width:620px){
+  html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-grid {grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+  html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-heading,
+  html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-row {min-width:720px!important;}
+}
+/* Column edges match exactly: old item-list padding created a 1–2px offset. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skills-columns.is-editing .skill-category-block > .item-list {
+  padding:0!important;margin:0!important;width:100%!important;
+}
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-edit-heading,
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .skill-category-block li.skill-edit-row {
+  border-left:0!important;border-right:0!important;
+}
+/* NPC template uses read-only numeric inputs instead of Character span values.
+   Keep the same unboxed statistic treatment in Play Mode. */
+html[data-brp-theme] .application.brp-uge .brp-sheet-v1175 .char-mini-top input[type="number"][readonly] {
+  border:0!important;border-radius:0!important;background:transparent!important;
+  box-shadow:none!important;outline:0!important;min-width:0!important;
+  width:44px!important;height:30px!important;padding:0!important;
+  font:800 clamp(21px,1.7vw,27px)/1.15 var(--brp-numeric-font,inherit)!important;
+  color:var(--brp-text)!important;text-align:right!important;
+}

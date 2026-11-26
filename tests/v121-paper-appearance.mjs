@@ -1,4 +1,4 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync, existsSync} from 'node:fs';
 import {PAPER_THEMES, normalizePaperTheme, currentPaperTheme, applyPaperTheme} from '../module/paper-appearance.mjs';
@@ -12,9 +12,9 @@ assert.equal(currentPaperTheme({get:()=> 'dark'}),'dark');
 const html={dataset:{brpGenre:'addon-controlled'}};
 assert.equal(applyPaperTheme({get:()=> 'light'},html),'light');
 assert.deepEqual(html.dataset,{brpGenre:'addon-controlled',brpTheme:'light'});
-assert.ok(originalCssSources.includes('styles/brp-paper.css') && originalCssSources.includes('styles/brp-v1216-usability.css') && originalCssSources.includes('styles/brp-v1219-workbench.css'));
-assert.match(read('styles/brp-paper.css'),/data-brp-theme="light"/);
-assert.match(read('styles/brp-paper.css'),/data-brp-theme="dark"/);
+assert.ok(activeCssSources.includes('styles/brp-paper-theme.css') && activeCssSources.includes('styles/brp-sheet-workbench.css') && activeCssSources.includes('styles/brp-sheet-workbench.css'));
+assert.match(readLegacyStyle('styles/brp-paper.css'),/data-brp-theme="light"/);
+assert.match(readLegacyStyle('styles/brp-paper.css'),/data-brp-theme="dark"/);
 assert.ok(!existsSync(new URL('../assets/themes',import.meta.url)));
 assert.ok(!existsSync(new URL('../assets/icons/scifi',import.meta.url)));
 assert.ok(!existsSync(new URL('../module/theme-system.mjs',import.meta.url)));

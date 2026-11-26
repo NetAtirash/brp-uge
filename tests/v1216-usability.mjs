@@ -1,4 +1,4 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {filterStartingSkills,decodeStartingSkillKeys,configuredStartingSkills} from '../module/skill-selection.mjs';
@@ -6,7 +6,7 @@ import {settingsGroupFor,settingPresentation} from '../module/apps/settings-orga
 const read=(p)=>readFileSync(new URL('../'+p, import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.ok(originalCssSources.includes('styles/brp-v1219-workbench.css'));
+assert.ok(activeCssSources.includes('styles/brp-sheet-workbench.css'));
 assert.match(manifest.manifest,/releases\/latest\/download\/system\.json/);
 assert.ok(manifest.download.endsWith(`/v${manifest.version}/brp-uge.zip`), 'Versioned release download must match the manifest version');
 const skills=[{type:'skill',name:'A',system:{nameEn:'Spot',referenceKey:'Spot'}}, {type:'skill',name:'B',system:{nameEn:'Dodge',referenceKey:'Dodge'}},{type:'skill',name:'C',system:{nameEn:'Spot',referenceKey:'Spot'}}];
@@ -28,7 +28,7 @@ for(const file of ['templates/actor/character-sheet.hbs','templates/actor/npc-sh
  assert.doesNotMatch(template,/\{\{skill\.englishName\}\}<\/small>/);
  assert.match(template,/title="\{\{#if skill\.showEnglishName\}\}\{\{skill\.englishName\}\}/);
 }
-const css=read('styles/brp-v1217-layout.css');
+const css=readLegacyStyle('styles/brp-v1217-layout.css');
 assert.match(css,/brp-banner-combat-strip/);
 assert.match(css,/grid-template-columns:116px/);
 assert.match(css,/brp-header-utilities/);
