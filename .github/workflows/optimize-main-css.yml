@@ -52,7 +52,7 @@ jobs:
           originals=json.loads(Path("scripts/css-sources.json").read_text(encoding="utf-8"))["sourceStyles"]
           assert len(originals)==19
           assert manifest["version"]=="1.21.11"
-          assert manifest["styles"]==originals, "Do not reorder or change stable original cascade"
+          assert manifest["styles"] in (originals,["styles/brp-runtime.min.css"]), "Unexpected CSS cascade"
           manifest["styles"]=["styles/brp-runtime.min.css"]
           manifest_path.write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
           PY
@@ -93,5 +93,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add system.json styles/brp-runtime.min.css package-lock.json docs/css-optimization/BEFORE_AFTER.json docs/css-optimization/BEFORE_AFTER.md
-          git commit -m "perf(css): replace 19 runtime CSS requests with audited optimized bundle [generated]"
-          git push origin HEAD:perf/v1.21.11-core-css-optimization
+          if git diff --cached --quiet; then
+            echo "Optimized artifacts already committed and reproducible."
+          else
+            git commit -m "perf(css): replace 19 runtime CSS requests with audited optimized bundle [generated]"
+            git push origin HEAD:perf/v1.21.11-core-css-optimization
+          fi
