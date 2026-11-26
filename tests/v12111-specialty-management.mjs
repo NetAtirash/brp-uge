@@ -1,3 +1,4 @@
+import {originalCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildSpecialtyRegistry,readSpecialtyRegistry,eligibleSpecialtyOptions,
@@ -166,5 +167,5 @@ assert.match(css,/\.wiz-skill-row/);
 assert.match(css,/\.brp-wiz-choice-radio-list/);
 const manifest=JSON.parse(read('system.json'));
 assert.equal(manifest.version,'1.21.11');
-assert.equal(manifest.styles.at(-1),'styles/brp-v12111-specialty-management.css');
+assert.equal(originalCssSources.at(-1),'styles/brp-v12111-specialty-management.css');
 console.log('PASS v1.21.11 Specialty registry, source safety, choice groups and Wizard integration');
