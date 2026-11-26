@@ -1,10 +1,11 @@
+import {originalCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const root=new URL('../',import.meta.url);
 const read=(s)=>fs.readFileSync(new URL(s,root),'utf8');
 const cfg=JSON.parse(read('system.json'));
 assert.match(cfg.version, /^\d+\.\d+\.\d+$/);
-assert.ok(cfg.styles.includes('styles/brp-editorial.css'));assert.ok(cfg.styles.includes('styles/brp-compact-ribbon.css'));
+assert.ok(originalCssSources.includes('styles/brp-editorial.css'));assert.ok(originalCssSources.includes('styles/brp-compact-ribbon.css'));
 const css=read('styles/brp-editorial.css');
 for(const selector of ['brp-sheet-v1174','char-mini-grid','sidebar-pools','sidebar-combat-strip','sheet-main','brp-derived-roll','brp-roll-value'])assert.ok(css.includes(selector),selector);
 for(const actor of ['character','npc']){
