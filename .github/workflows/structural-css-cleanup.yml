@@ -1,0 +1,78 @@
+name: CSS structural ownership migration and exact-parity verification
+on:
+  push:
+    branches:
+      - refactor/v1.21.11-css-structural-cleanup
+
+permissions:
+  contents: write
+
+concurrency:
+  group: brp-uge-css-structural-cleanup
+  cancel-in-progress: false
+
+jobs:
+  migrate-and-verify:
+    if: contains(github.event.head_commit.message, '[cleanup-core-css]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Lock and install pinned CSS compiler and parser
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts
+          npm ci
+      - name: Verify structural cleanup script syntax
+        run: |
+          node --check scripts/reorganize-css.mjs
+          node --check scripts/build-css.mjs
+      - name: Reorganize source files with exact CSS-byte parity
+        run: |
+          set -euo pipefail
+          node scripts/reorganize-css.mjs
+          node scripts/build-css.mjs --check
+          node scripts/build-css.mjs --report
+      - name: Validate historical and new CSS regression suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/css-structural-cleanup.mjs
+          node tests/css-runtime-optimization.mjs
+          for file in tests/*.mjs; do
+            echo "CHECK $file"
+            node "$file"
+          done
+      - name: Validate Foundry v14 package structure and exact stylesheet count
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release.py --tag v1.21.11 --output dist
+          python3 -m zipfile -t dist/brp-uge.zip
+          python3 - <<'PY'
+          import zipfile,json
+          with zipfile.ZipFile('dist/brp-uge.zip') as z:
+            css=[n for n in z.namelist() if n.startswith('brp-uge/styles/') and n.endswith('.css')]
+            assert css==['brp-uge/styles/brp-runtime.min.css'],css
+            manifest=json.loads(z.read('brp-uge/system.json'))
+            assert manifest['styles']==['styles/brp-runtime.min.css']
+            assert manifest['version']=='1.21.11'
+          print('PASS — packaged one canonical byte-identical runtime CSS')
+          PY
+      - name: Commit only after structural and package validations
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A styles scripts/css-sources.json tests docs/css-optimization/STRUCTURAL_BEFORE_AFTER.json docs/css-optimization/STRUCTURAL_BEFORE_AFTER.md package-lock.json
+          if git diff --cached --quiet; then
+            echo "No cleanup changes"
+            exit 1
+          fi
+          git commit -m "refactor(css): consolidate 19 maintained CSS sources into 7 owners with exact output parity"
+          git push origin HEAD:refactor/v1.21.11-css-structural-cleanup
