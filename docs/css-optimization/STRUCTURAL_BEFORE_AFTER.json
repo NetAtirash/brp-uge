@@ -56,7 +56,7 @@
   "updatedHistoricalTests": 18,
   "originalRuntimeBytes": 259927,
   "newRuntimeBytes": 259927,
-  "note": "Source organization only. Runtime CSS is byte-identical to prior optimization. No visual UI2 and no live Foundry testing.",
+  "note": "Consolidated 19 legacy source files into seven owned CSS files and removed 8 dead rule blocks (21 declarations/12 important) under byte-for-byte runtime parity; 137 potentially cascade-significant blocks retained. No Visual UI2 and no live Foundry test.",
   "attemptedRuleRemovals": 145,
   "removedRuleBlocks": 8,
   "rejectedRuleRemovals": 137
