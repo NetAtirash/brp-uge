@@ -1,11 +1,11 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf-8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.ok(originalCssSources.includes('styles/brp-v1219-workbench.css'));
-const css=read('styles/brp-v1217-layout.css');
+assert.ok(activeCssSources.includes('styles/brp-sheet-workbench.css'));
+const css=readLegacyStyle('styles/brp-v1217-layout.css');
 for(const match of ['grid-template-columns:116px','brp-banner-combat-strip','brp-header-utilities','brp-manager-controls'])assert.ok(css.includes(match),match);
 for(const kind of ['character','npc']){
   const t=read(`templates/actor/${kind}-sheet.hbs`);

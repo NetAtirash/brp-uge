@@ -1,6 +1,15 @@
 {
-  "description": "Authoritative legacy CSS cascade order; these sources are never reordered, removed, or edited by the CSS optimization pipeline.",
+  "description": "Seven canonical CSS source owners; original cascade order and runtime bytes preserved exactly.",
   "sourceStyles": [
+    "styles/brp-core-components.css",
+    "styles/brp-character-shell.css",
+    "styles/brp-ui-components.css",
+    "styles/brp-forms-references.css",
+    "styles/brp-paper-theme.css",
+    "styles/brp-sheet-workbench.css",
+    "styles/brp-chat-specialties.css"
+  ],
+  "baselineOriginalStyles": [
     "styles/brp.css",
     "styles/brp-refinement.css",
     "styles/brp-bold.css",
@@ -20,5 +29,69 @@
     "styles/brp-v1219-workbench.css",
     "styles/brp-v12110-flavor-chat.css",
     "styles/brp-v12111-specialty-management.css"
+  ],
+  "baselineOptimizedSha256": "474b7866b6f5710ce627e49a57015cd1e437708ed0a0d2a430f03d1d4ac2b891",
+  "ownershipGroups": [
+    {
+      "file": "styles/brp-core-components.css",
+      "owner": "Foundations, controls and forms",
+      "from": [
+        "styles/brp.css",
+        "styles/brp-refinement.css",
+        "styles/brp-bold.css"
+      ]
+    },
+    {
+      "file": "styles/brp-character-shell.css",
+      "owner": "Character header and editorial shell",
+      "from": [
+        "styles/brp-overview.css",
+        "styles/brp-editorial.css",
+        "styles/brp-compact-ribbon.css"
+      ]
+    },
+    {
+      "file": "styles/brp-ui-components.css",
+      "owner": "Shared controls and UI consistency",
+      "from": [
+        "styles/brp-integrated-ui.css",
+        "styles/brp-ui-consistency.css"
+      ]
+    },
+    {
+      "file": "styles/brp-forms-references.css",
+      "owner": "Thai forms and rule references",
+      "from": [
+        "styles/brp-thai-readability.css",
+        "styles/brp-personal-and-wizard.css",
+        "styles/brp-rulebook-reference.css",
+        "styles/brp-fa7-v14.css"
+      ]
+    },
+    {
+      "file": "styles/brp-paper-theme.css",
+      "owner": "Light and Dark paper tokens/themes",
+      "from": [
+        "styles/brp-paper.css"
+      ]
+    },
+    {
+      "file": "styles/brp-sheet-workbench.css",
+      "owner": "Usability, sheet layout and GM tools",
+      "from": [
+        "styles/brp-v1216-usability.css",
+        "styles/brp-v1217-layout.css",
+        "styles/brp-v1218-specialties.css",
+        "styles/brp-v1219-workbench.css"
+      ]
+    },
+    {
+      "file": "styles/brp-chat-specialties.css",
+      "owner": "Chat, Flavor and Specialty management",
+      "from": [
+        "styles/brp-v12110-flavor-chat.css",
+        "styles/brp-v12111-specialty-management.css"
+      ]
+    }
   ]
 }

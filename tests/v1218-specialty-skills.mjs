@@ -1,11 +1,11 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 const read=path=>fs.readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.ok(originalCssSources.includes('styles/brp-v1219-workbench.css'));
+assert.ok(activeCssSources.includes('styles/brp-sheet-workbench.css'));
 const {availableSpecialtyFamilies,analyzeSkillFamily,composeSpecialtyItem,readSpecialtyPresets}=await import('../module/skill-specialties.mjs');
 const {canonicalSkillKey,uniqueSkills,sameSkill,planMissingBaseSkills}=await import('../module/skill-foundation.mjs');
 

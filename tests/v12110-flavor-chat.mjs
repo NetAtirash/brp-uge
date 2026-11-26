@@ -1,4 +1,4 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { getDisplayItemName, getLocalizedName, getItemFlavorPresentation } from '../module/character-tools.mjs';
@@ -32,12 +32,12 @@ for(const f of ['module/sheets/actor-sheet.mjs','module/macros/brp-macros.mjs','
  assert.match(read(f),/getDisplayItemName/);
 const macro=read('module/macros/brp-macros.mjs');
 assert.doesNotMatch(macro,/brp-chat-heading" style="color:#f4f8ff/);
-const css=read('styles/brp-v12110-flavor-chat.css');
+const css=readLegacyStyle('styles/brp-v12110-flavor-chat.css');
 assert.match(css,/data-brp-theme="light"/);assert.match(css,/data-brp-theme="dark"/);
 assert.match(css,/--brp-chat-ink: #2c211d/);assert.match(css,/--brp-chat-ink: #f4eadb/);
 assert.match(css,/#chat-log/);
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version,/^1\.21\.(?:10|11)$/);
-assert.ok(originalCssSources.includes('styles/brp-v12110-flavor-chat.css'));
+assert.ok(activeCssSources.includes('styles/brp-chat-specialties.css'));
 assert.match(manifest.download,/v1\.21\.(?:10|11)\/brp-uge\.zip/);
 console.log('PASS v1.21.10 flavor names, non-destructive identity and light/dark advancement chat');

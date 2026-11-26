@@ -1,0 +1,71 @@
+name: Core CSS source integrity and structural parity
+on:
+  push:
+    branches:
+      - refactor/v1.21.11-css-structural-cleanup
+  pull_request:
+    paths:
+      - '.github/workflows/css-source-integrity.yml'
+      - 'styles/**'
+      - 'scripts/build-css.mjs'
+      - 'scripts/css-sources.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tests/css-*.mjs'
+      - 'docs/css-optimization/**'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-css:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install pinned CSS validation toolchain
+        run: npm ci
+      - name: Rebuild CSS in memory and verify exact runtime parity
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/build-css.mjs --check
+          node tests/css-runtime-optimization.mjs
+          node tests/css-structural-cleanup.mjs
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('docs/css-optimization/STRUCTURAL_BEFORE_AFTER.json').read_text())
+          assert len(data['activeSourceFiles'])==7
+          assert data['exactRuntimeCssByteParity'] is True
+          assert data['removedRuleBlocks']==8
+          assert data['after']['important']==2552
+          assert data['after']['selectorsCrossingFiles']==57
+          PY
+      - name: Validate all BRP logic and original UI regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in tests/*.mjs; do node "$f"; done
+      - name: Validate Foundry ZIP contains the single canonical stylesheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release.py --tag v1.21.11 --output dist
+          python3 -m zipfile -t dist/brp-uge.zip
+          python3 - <<'PY'
+          import zipfile
+          with zipfile.ZipFile('dist/brp-uge.zip') as z:
+            styles=[x for x in z.namelist() if x.startswith('brp-uge/styles/') and x.endswith('.css')]
+            assert styles==['brp-uge/styles/brp-runtime.min.css'],styles
+          PY
+      - name: Upload validated package for manual Foundry QA (not a release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: brp-uge-css-qa-${{ github.sha }}
+          path: dist/brp-uge.zip
+          if-no-files-found: error
+          retention-days: 14

@@ -1,4 +1,4 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildSpecialtyRegistry,readSpecialtyRegistry,eligibleSpecialtyOptions,
@@ -161,11 +161,11 @@ assert.ok(!manager.includes("readonly'),"), 'all source names should be editable
 assert.match(manager,/settings.set\('brp-uge','specialtyRegistry'/);
 const app=read('module/apps/occupation-choice-editor.mjs');
 assert.match(app,/system.skillChoiceGroups/);
-const css=read('styles/brp-v12111-specialty-management.css');
+const css=readLegacyStyle('styles/brp-v12111-specialty-management.css');
 assert.match(css,/\.brp-specialty-manager-v3/);
 assert.match(css,/\.wiz-skill-row/);
 assert.match(css,/\.brp-wiz-choice-radio-list/);
 const manifest=JSON.parse(read('system.json'));
 assert.equal(manifest.version,'1.21.11');
-assert.equal(originalCssSources.at(-1),'styles/brp-v12111-specialty-management.css');
+assert.equal(activeCssSources.at(-1),'styles/brp-chat-specialties.css');
 console.log('PASS v1.21.11 Specialty registry, source safety, choice groups and Wizard integration');

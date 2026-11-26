@@ -1,3 +1,4 @@
+import {readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {buildSpecialtyRegistry,eligibleSpecialtyOptions,findSpecialtyCandidate} from '../module/specialty-registry.mjs';
@@ -88,7 +89,7 @@ assert.doesNotMatch(hbs,/data-personal-specialty-picker/,
 assert.match(hbs,/data-action="refreshWizardSpecialties"/);
 assert.match(hbs,/availableSpecialtyCount/);
 assert.match(hbs,/data-personal-family-specialties/);
-const css=read('styles/brp-v12111-specialty-management.css');
+const css=readLegacyStyle('styles/brp-v12111-specialty-management.css');
 assert.match(css,/\.brp-wiz-specialty-group\[hidden\]/);
 assert.match(css,/\.brp-wiz-specialty-option input\[type="radio"\]/);
 assert.match(css,/\.brp-wiz-step4-progress,[\s\S]*?\.wiz-budget-bar\s*\{/);

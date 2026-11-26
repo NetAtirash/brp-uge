@@ -1,12 +1,12 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 const root=path.resolve(import.meta.dirname,'..');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'system.json'),'utf8'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.ok(originalCssSources.includes('styles/brp-overview.css'));
-const css=fs.readFileSync(path.join(root,'styles/brp-overview.css'),'utf8');
+assert.ok(activeCssSources.includes('styles/brp-character-shell.css'));
+const css=readLegacyStyle('styles/brp-overview.css');
 for(const name of ['character','npc']){
  const html=fs.readFileSync(path.join(root,`templates/actor/${name}-sheet.hbs`),'utf8');
  assert.ok(html.includes('brp-persistent-top'));

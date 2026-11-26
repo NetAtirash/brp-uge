@@ -1,4 +1,4 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources} from './css-source-manifest.mjs';
 /* Regression suite for 1.16 interaction semantics, carried into 1.17. */
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -6,7 +6,7 @@ import {buildShareEntryCard} from '../module/chat/share-entry.mjs';
 const read=(p)=>readFileSync(new URL(p,import.meta.url),'utf8');
 const cfg=JSON.parse(read('../system.json'));
 assert.match(cfg.version, /^\d+\.\d+\.\d+$/);
-assert.ok(originalCssSources.includes('styles/brp-bold.css') && originalCssSources.includes('styles/brp-overview.css'));
+assert.ok(activeCssSources.includes('styles/brp-core-components.css') && activeCssSources.includes('styles/brp-character-shell.css'));
 for(const path of ['../templates/actor/character-sheet.hbs','../templates/actor/npc-sheet.hbs']) {
   const s=read(path);
   assert.equal((s.match(/class="brp-banner"/g)||[]).length,1);

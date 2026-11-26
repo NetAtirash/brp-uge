@@ -33,7 +33,7 @@ assert.match(wizard,/professionMissingSkillCount/);
 const hbs=readFileSync(new URL('../templates/apps/character-wizard.hbs',import.meta.url),'utf8');
 assert.match(hbs,/professionLinkedSkillCount/);
 assert.match(hbs,/professionMissingSkillCount/);
-const css=readFileSync(new URL('../styles/brp-paper.css',import.meta.url),'utf8');
+const css=readFileSync(new URL('../styles/brp-paper-theme.css',import.meta.url),'utf8');
 assert.match(css,/--brp-paper:#101316/);
 assert.match(css,/--brp-paper-wash:rgba\(8,11,14,\.88\)/);
 console.log('PASS v1.21.5: cross-pack provenance, baseline occupation Skills and dark charcoal palette');

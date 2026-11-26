@@ -6,9 +6,12 @@
   "scripts": {
     "css:build": "node scripts/build-css.mjs --report",
     "css:check": "node scripts/build-css.mjs --check",
-    "test:css": "node tests/css-runtime-optimization.mjs"
+    "test:css": "node tests/css-runtime-optimization.mjs",
+    "test:css-structure": "node tests/css-structural-cleanup.mjs",
+    "css:structure:check": "node scripts/build-css.mjs --check && node tests/css-structural-cleanup.mjs"
   },
   "devDependencies": {
-    "lightningcss": "1.33.0"
+    "lightningcss": "1.33.0",
+    "postcss": "8.5.6"
   }
 }

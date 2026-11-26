@@ -1,13 +1,13 @@
-import {originalCssSources} from './css-source-manifest.mjs';
+import {activeCssSources,readLegacyStyle} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const base=new URL('../',import.meta.url);
 const read=file=>readFileSync(new URL(file,base),'utf8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.ok(originalCssSources.includes('styles/brp-thai-readability.css'));
-const type=read('styles/brp-thai-readability.css');
-const google=read('styles/brp.css');
+assert.ok(activeCssSources.includes('styles/brp-forms-references.css'));
+const type=readLegacyStyle('styles/brp-thai-readability.css');
+const google=readLegacyStyle('styles/brp.css');
 for(const family of ['Noto Sans Thai Looped','Sarabun','Tahoma','Noto Looped Thai']){
  assert.ok(type.includes(family), family);
 }

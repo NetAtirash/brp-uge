@@ -1,3 +1,73 @@
+/* SOURCE: styles/brp-v12110-flavor-chat.css | owner: Chat, Flavor and Specialty management */
+/* v1.21.10 — BRP chat cards and Flavor Name UX. The old dark-only CSS
+   forced white text even when the notebook Light theme was selected. */
+html[data-brp-theme="light"] :is(#chat-log .chat-message, .chat-message).brp-styled-chat {
+  --brp-chat-ink: #2c211d;
+  --brp-chat-muted: #54473d;
+  --brp-chat-heading: #85292c;
+  --brp-chat-wash: #f9f0de;
+  --brp-chat-border: #b79e81;
+  --brp-chat-header: #eadbc4;
+  background: var(--brp-chat-wash) !important;
+  color: var(--brp-chat-ink) !important;
+  border-color: var(--brp-chat-border) !important;
+}
+html[data-brp-theme="dark"] :is(#chat-log .chat-message, .chat-message).brp-styled-chat {
+  --brp-chat-ink: #f4eadb;
+  --brp-chat-muted: #d6c7b5;
+  --brp-chat-heading: #efb0a4;
+  --brp-chat-wash: #191718;
+  --brp-chat-border: #695952;
+  --brp-chat-header: #292426;
+  background: var(--brp-chat-wash) !important;
+  color: var(--brp-chat-ink) !important;
+  border-color: var(--brp-chat-border) !important;
+}
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .message-header {
+  background: var(--brp-chat-header) !important;
+  border-color: var(--brp-chat-border) !important;
+  color: var(--brp-chat-ink) !important;
+}
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .message-content,
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .message-content .brp-chat-card,
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .message-content .brp-chat-card :is(p,li,ul,ol,span,div,b,strong,small,blockquote),
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .message-header :is(.message-sender,.message-metadata),
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .brp-chat-card .brp-chat-metric {
+  color: var(--brp-chat-ink) !important;
+  text-shadow: none !important;
+}
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .message-content .brp-chat-card :is(h1,h2,h3,h4,.brp-chat-heading,.card-header),
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .brp-chat-card .brp-chat-heading {
+  color: var(--brp-chat-heading) !important;
+  background: none !important;
+  text-shadow: none !important;
+}
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .brp-chat-card :is(.card-actor,.brp-chat-foot,.degree-sub,.target-sub,.brp-rule-reference-chat-text),
+html[data-brp-theme] :is(#chat-log .chat-message, .chat-message).brp-styled-chat .message-metadata {
+  color: var(--brp-chat-muted) !important;
+}
+html[data-brp-theme] .brp-uge .brp-flavor-editor {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  margin: 10px 0 12px;
+  border: 1px solid var(--brp-border, #a28b78);
+  background: var(--brp-panel, #f6eddf);
+  border-radius: 6px;
+}
+html[data-brp-theme] .brp-uge .brp-flavor-intro {display:grid;gap:4px;}
+html[data-brp-theme] .brp-uge .brp-flavor-intro strong {font-size:13px;color:var(--brp-accent, #953336);}
+html[data-brp-theme] .brp-uge .brp-flavor-intro small,
+html[data-brp-theme] .brp-uge .brp-flavor-reference {color:var(--brp-secondary-text, #49382d);font-size:11px;}
+html[data-brp-theme] .brp-uge .brp-flavor-inputs {display:grid;grid-template-columns:minmax(0,1fr);gap:8px;}
+html[data-brp-theme] .brp-uge.brp-show-all-languages .brp-flavor-inputs {grid-template-columns:repeat(2,minmax(0,1fr));}
+html[data-brp-theme] .brp-uge.brp-show-all-languages .brp-flavor-inputs label.brp-language-secondary {display:grid!important;}
+html[data-brp-theme] .brp-uge .brp-flavor-inputs label {display:grid;gap:4px;min-width:0;font-size:11px;}
+html[data-brp-theme] .brp-uge .brp-flavor-inputs input {min-width:0;width:100%;}
+html[data-brp-theme] .brp-uge .brp-flavor-reference strong {color:var(--brp-text,#30251e);}
+@media (max-width:640px) {html[data-brp-theme] .brp-uge.brp-show-all-languages .brp-flavor-inputs {grid-template-columns:1fr;}}
+
+/* SOURCE: styles/brp-v12111-specialty-management.css | owner: Chat, Flavor and Specialty management */
 /* v1.21.11 — Specialty/Occupation Choice workspaces. Inherit notebook tokens. */
 html[data-brp-theme] .brp-uge :is(.brp-specialty-manager-v2,.brp-choice-editor){
   display:flex;flex-direction:column;gap:13px;min-height:100%;padding:16px;
