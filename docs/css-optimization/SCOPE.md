@@ -20,3 +20,5 @@ All historical CSS tests now inspect the immutable original source-style list. R
 ## Structural cleanup continuation
 
 The active CSS is reorganized into seven ordered, responsibility-owned source files in a separate review branch. The cleanup is allowed to delete only declarations that pass **byte-for-byte Lightning CSS output comparison** against the already validated compiled runtime. Source ownership, generated metrics and comprehensive regression tests are required before merging. Unapproved UI2 visual work remains closed and excluded.
+
+Validation note: migrated historical tests now extract each original source section from its canonical owner, preventing false positives from unrelated adjacent selectors.
