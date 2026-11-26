@@ -5,12 +5,12 @@ Runtime CSS SHA-256 (before and after): 474b7866b6f5710ce627e49a57015cd1e437708e
 | Source metric | Before | After | Difference |
 | --- | ---: | ---: | ---: |
 | Active authored CSS files | 19 | 7 | -12 (63.16%) |
-| Source CSS lines | 6157 | 6188 | 31 |
-| CSS declarations | 6447 | 6447 | -0 |
-| Source !important declarations | 2564 | 2564 | -0 |
-| Cross-file shared selectors | 85 | 58 | -27 |
-| Exact duplicate declarations removed | 0 | 0 | 0 unsafe candidates rejected |
-| Runtime CSS bytes | 259927 | 259927 | Identical |
+| Source CSS lines | 6,157 | 6,165 | +8 |
+| CSS declarations | 6,447 | 6,426 | **−21** |
+| Source !important declarations | 2,564 | 2,552 | **−12** |
+| Cross-file shared selectors | 85 | 57 | **−28** |
+| Redundant rule blocks | — | 8 removed | 137 unsafe candidates rejected |
+| Runtime CSS bytes | 259,927 | 259,927 | **Byte-identical** |
 
 All seven active files are editable, responsibility-owned styles in the original cascade order. Source provenance is documented in the ownership manifest and CSS section comments when compiler parity permits.
 
