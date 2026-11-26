@@ -1,10 +1,11 @@
+import {originalCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const root = new URL('../', import.meta.url);
 const read = (file) => readFileSync(new URL(file, root), 'utf8');
 const pack = JSON.parse(read('system.json'));
 assert.match(pack.version, /^\d+\.\d+\.\d+$/);
-assert.ok(pack.styles.includes('styles/brp-ui-consistency.css'));
+assert.ok(originalCssSources.includes('styles/brp-ui-consistency.css'));
 const template = read('templates/actor/character-sheet.hbs');
 assert.match(template, /class="brp-skill-id-cell"/);
 assert.match(template, /class="skill-edit-heading"/);

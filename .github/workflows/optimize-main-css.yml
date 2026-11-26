@@ -1,0 +1,101 @@
+name: Compile and validate BRP UGE CSS-only optimization
+on:
+  push:
+    branches:
+      - perf/v1.21.11-core-css-optimization
+
+permissions:
+  contents: write
+
+concurrency:
+  group: brp-uge-css-only-optimize
+  cancel-in-progress: false
+
+jobs:
+  build-css-only:
+    if: contains(github.event.head_commit.message, '[build-core-css]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout optimization branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Pin reproducible CSS toolchain and install
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts
+          npm ci
+
+      - name: Compile and audit original 19 CSS stylesheets
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check scripts/build-css.mjs
+          node scripts/build-css.mjs --report
+          node scripts/build-css.mjs --check
+
+      - name: Switch manifest CSS delivery from 19 ordered sources to compiled bundle
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest_path=Path("system.json")
+          manifest=json.loads(manifest_path.read_text(encoding="utf-8"))
+          originals=json.loads(Path("scripts/css-sources.json").read_text(encoding="utf-8"))["sourceStyles"]
+          assert len(originals)==19
+          assert manifest["version"]=="1.21.11"
+          assert manifest["styles"] in (originals,["styles/brp-runtime.min.css"]), "Unexpected CSS cascade"
+          manifest["styles"]=["styles/brp-runtime.min.css"]
+          manifest_path.write_text(json.dumps(manifest,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+          PY
+
+      - name: Run CSS optimizer tests and all existing system tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/css-runtime-optimization.mjs
+          for test in tests/*.mjs; do
+            echo "Running $test"
+            node "$test"
+          done
+
+      - name: Package and inspect the optimized Foundry v14 Game System
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/build_release.py --tag v1.21.11 --output dist
+          python3 -m zipfile -t dist/brp-uge.zip
+          python3 - <<'PY'
+          import json,zipfile
+          from pathlib import Path
+          manifest=json.loads(Path("dist/system.json").read_text(encoding="utf-8"))
+          assert manifest["styles"]==["styles/brp-runtime.min.css"]
+          assert manifest["version"]=="1.21.11"
+          with zipfile.ZipFile("dist/brp-uge.zip") as f:
+            css=[n for n in f.namelist() if n.startswith("brp-uge/styles/") and n.endswith(".css")]
+            assert css==["brp-uge/styles/brp-runtime.min.css"], f"Unused CSS included in optimized ZIP: {css}"
+            assert f.read("brp-uge/system.json")
+          print(f"Optimized package size: {Path('dist/brp-uge.zip').stat().st_size:,} bytes")
+          PY
+
+      - name: Commit generated bundle, lockfile and before/after metrics
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add system.json styles/brp-runtime.min.css package-lock.json docs/css-optimization/BEFORE_AFTER.json docs/css-optimization/BEFORE_AFTER.md
+          if git diff --cached --quiet; then
+            echo "Optimized artifacts already committed and reproducible."
+          else
+            git commit -m "perf(css): replace 19 runtime CSS requests with audited optimized bundle [generated]"
+            git push origin HEAD:perf/v1.21.11-core-css-optimization
+          fi

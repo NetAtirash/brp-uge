@@ -1,11 +1,12 @@
+import {originalCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read = p => readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.ok(manifest.styles.includes('styles/brp-personal-and-wizard.css'));
-assert.ok(manifest.styles.includes('styles/brp-fa7-v14.css'));
-assert.ok(manifest.styles.includes('styles/brp-v1219-workbench.css'));
+assert.ok(originalCssSources.includes('styles/brp-personal-and-wizard.css'));
+assert.ok(originalCssSources.includes('styles/brp-fa7-v14.css'));
+assert.ok(originalCssSources.includes('styles/brp-v1219-workbench.css'));
 const wizard=read('module/apps/character-wizard.mjs');
 const wizardHbs=read('templates/apps/character-wizard.hbs');
 const model=read('module/data-models.mjs');

@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "brp-uge-css-optimizer",
+  "version": "1.0.0",
+  "description": "Dev-only deterministic CSS optimization; never bundled into Foundry Game System.",
+  "scripts": {
+    "css:build": "node scripts/build-css.mjs --report",
+    "css:check": "node scripts/build-css.mjs --check",
+    "test:css": "node tests/css-runtime-optimization.mjs"
+  },
+  "devDependencies": {
+    "lightningcss": "1.33.0"
+  }
+}

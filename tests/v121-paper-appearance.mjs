@@ -1,3 +1,4 @@
+import {originalCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync, existsSync} from 'node:fs';
 import {PAPER_THEMES, normalizePaperTheme, currentPaperTheme, applyPaperTheme} from '../module/paper-appearance.mjs';
@@ -11,7 +12,7 @@ assert.equal(currentPaperTheme({get:()=> 'dark'}),'dark');
 const html={dataset:{brpGenre:'addon-controlled'}};
 assert.equal(applyPaperTheme({get:()=> 'light'},html),'light');
 assert.deepEqual(html.dataset,{brpGenre:'addon-controlled',brpTheme:'light'});
-assert.ok(m.styles.includes('styles/brp-paper.css') && m.styles.includes('styles/brp-v1216-usability.css') && m.styles.includes('styles/brp-v1219-workbench.css'));
+assert.ok(originalCssSources.includes('styles/brp-paper.css') && originalCssSources.includes('styles/brp-v1216-usability.css') && originalCssSources.includes('styles/brp-v1219-workbench.css'));
 assert.match(read('styles/brp-paper.css'),/data-brp-theme="light"/);
 assert.match(read('styles/brp-paper.css'),/data-brp-theme="dark"/);
 assert.ok(!existsSync(new URL('../assets/themes',import.meta.url)));
