@@ -5,6 +5,7 @@ on:
       - refactor/v1.21.11-css-structural-cleanup
   pull_request:
     paths:
+      - '.github/workflows/css-source-integrity.yml'
       - 'styles/**'
       - 'scripts/build-css.mjs'
       - 'scripts/css-sources.json'
@@ -61,3 +62,10 @@ jobs:
             styles=[x for x in z.namelist() if x.startswith('brp-uge/styles/') and x.endswith('.css')]
             assert styles==['brp-uge/styles/brp-runtime.min.css'],styles
           PY
+      - name: Upload validated package for manual Foundry QA (not a release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: brp-uge-css-qa-${{ github.sha }}
+          path: dist/brp-uge.zip
+          if-no-files-found: error
+          retention-days: 14
