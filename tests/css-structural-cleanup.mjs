@@ -23,6 +23,15 @@ assert.deepEqual(manifest.styles,['styles/brp-runtime.min.css']);
 assert.equal(metrics.before.files,19);
 assert.equal(metrics.after.files,7);
 assert.equal(metrics.exactRuntimeCssByteParity,true);
+assert.equal(metrics.removedRuleBlocks,8,
+  'Reproducible rule-level structural cleanup must not silently regress');
+assert.equal(metrics.removedRuleBlocks+metrics.rejectedRuleRemovals,metrics.attemptedRuleRemovals);
+assert.ok(metrics.after.declarations<metrics.before.declarations);
+assert.ok(metrics.after.important<metrics.before.important);
+assert.ok(metrics.after.selectorsCrossingFiles<metrics.before.selectorsCrossingFiles);
+assert.equal(metrics.after.selectorsCrossingFiles,57);
+assert.equal(metrics.after.rules,1732);
+
 assert.ok(metrics.after.declarations<=metrics.before.declarations);
 assert.ok(metrics.after.important<=metrics.before.important);
 assert.ok(metrics.after.rules<=metrics.before.rules);
