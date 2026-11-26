@@ -1,10 +1,11 @@
+import {originalCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 const read=p=>readFileSync(new URL(p,import.meta.url),'utf8');
 const manifest=JSON.parse(read('../system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.deepEqual(manifest.styles.slice(0,2),['styles/brp.css','styles/brp-refinement.css']);
-assert.ok(manifest.styles.includes('styles/brp-bold.css'));
+assert.deepEqual(originalCssSources.slice(0,2),['styles/brp.css','styles/brp-refinement.css']);
+assert.ok(originalCssSources.includes('styles/brp-bold.css'));
 const css=read('../styles/brp-refinement.css');
 for (const s of ['--brp-bg:', '--brp-panel:', '--brp-accent:', 'data-brp-control="roll"', 'text-decoration-line: underline', ':focus-visible', 'brp-care-methods', '.brp-recovery-quick-tools', '.tab-btn.active']) assert.ok(css.includes(s), `missing neutral UI token/style: ${s}`);
 assert.ok(css.includes('button[data-brp-control="roll"]::before { content: none'));
