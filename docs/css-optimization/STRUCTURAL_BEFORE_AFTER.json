@@ -43,12 +43,12 @@
   },
   "after": {
     "files": 7,
-    "characters": 301875,
-    "lines": 6188,
-    "rules": 1740,
-    "declarations": 6447,
-    "important": 2564,
-    "selectorsCrossingFiles": 58
+    "characters": 300759,
+    "lines": 6165,
+    "rules": 1732,
+    "declarations": 6426,
+    "important": 2552,
+    "selectorsCrossingFiles": 57
   },
   "redundantCandidates": 0,
   "removedDeclarations": 0,
@@ -56,5 +56,8 @@
   "updatedHistoricalTests": 18,
   "originalRuntimeBytes": 259927,
   "newRuntimeBytes": 259927,
-  "note": "Source organization only. Runtime CSS is byte-identical to prior optimization. No visual UI2 and no live Foundry testing."
+  "note": "Source organization only. Runtime CSS is byte-identical to prior optimization. No visual UI2 and no live Foundry testing.",
+  "attemptedRuleRemovals": 145,
+  "removedRuleBlocks": 8,
+  "rejectedRuleRemovals": 137
 }

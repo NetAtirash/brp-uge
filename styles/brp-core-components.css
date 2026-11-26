@@ -892,12 +892,6 @@
     justify-content: center;
   }
 
-  .brp-uge .exp-toggle.checked {
-    background: #dc2626;
-    border-color: #dc2626;
-    color: #ffffff;
-  }
-
   .brp-uge .icon-btn.danger:hover {
     background: #2c1014;
     border-color: #dc2626;
@@ -979,6 +973,7 @@
   }
 
   /* Compendium Browser */
+
   .brp-uge .comp-top {
     display: flex;
     justify-content: space-between;
@@ -1062,6 +1057,7 @@
   }
 
   /* Priority-Sorted Dark Mode Chat Roll Cards */
+
   .brp-chat-card {
     border: 1px solid #2d3548;
     background: #11151e;
@@ -1402,10 +1398,6 @@
     font-size: 12px;
   }
 
-  .brp-uge .wiz-skill-row.is-occ {
-    background: #1a1418;
-  }
-
   .brp-uge .wiz-skill-name {
     flex: 1;
     display: flex;
@@ -1493,6 +1485,7 @@
   }
 
   /* Foundry Sidebar Combat Tracker 4-Phase Extension */
+
   .brp-combat-phase-bar {
     margin: 6px;
     padding: 8px;
@@ -2113,7 +2106,6 @@
 .brp-combatant-extra .brp-c-status { font-size:10px; color:#bdcddd; }
 .brp-combatant-extra .brp-c-hidden { color:#8398ac; font-style:italic; }
 .brp-combatant-extra .brp-c-done { min-width:28px; min-height:25px!important; border-radius:6px; background:#1b2533; color:#e2e8f0; }
-.brp-combatant-extra .brp-c-done.checked { background:#23563d; color:#c1f7d5; border-color:#34784e; }
 .brp-combatant-extra .brp-c-def { margin-left:auto; }
 .brp-combatant-extra .brp-c-mini { min-width:27px!important; height:24px!important; min-height:24px!important; border-radius:4px; }
 #brp-scene-phase-hud {
@@ -2141,6 +2133,7 @@
 .brp-combat-phase-bar .brp-queue-chip { background:#25374b; color:#d5e9ff; border:1px solid #406080; border-radius:999px; padding:3px 7px; font:600 10px 'Noto Sans Thai Looped','Sarabun','Tahoma','Noto Looped Thai',sans-serif; }
 .brp-combat-phase-bar .brp-queue-empty { color:#778ba2; font-size:10px; }
 .brp-combatant-extra .brp-c-delay { width:48px!important; flex:0 0 48px; text-align:center; }
+
 #brp-scene-phase-hud .brp-hud-turn { font-weight:750; font-size:11px; margin-top:7px; color:#fff; }
 
 .brp-uge .brp-sheet-combat-status { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:9px 11px; margin-bottom:9px; background:#1d2d40; border:1px solid #44617b; border-radius:8px; color:#e5f0fa; font-size:11px; }
@@ -2249,9 +2242,7 @@
 }
 #chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card li { line-height:1.55; margin:3px 0; overflow-wrap:anywhere; }
 #chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card ul { padding-left:18px; margin:7px 0; }
-#chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card .brp-chat-kicker { color:#8fe1bf; }
 #chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card .brp-chat-metric { color:#fff; }
-#chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card .brp-chat-foot { color:#bdd0e2; }
 #chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card .degree-sub { color:#d8e5f2; }
 #chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card .card-actor { color:#becfe3; }
 #chat-log .chat-message.brp-styled-chat .message-content .brp-chat-card .target-sub { color:#dae7f9; }
@@ -2732,6 +2723,7 @@ body:has(.window-app.dialog:not(.minimized):not([hidden])) #brp-scene-phase-hud 
 .brp-uge .tab-count-badge { background: #555f6d !important; color: #f2f4f8 !important; }
 .brp-uge .sheet-toolbar .brp-btn:is(.is-active,[aria-pressed="true"]),
 .brp-uge .brp-btn.is-active { background: #3d4654 !important; border-color: #8893a3 !important; }
+
 .brp-uge .exp-toggle.checked { color: #dcc49f !important; }
 
 /* Recovery: four equal method choices, not a red 'primary' First Aid button. */
@@ -2986,7 +2978,6 @@ html[data-brp-theme] .brp-uge .brp-brand-footnote {
   letter-spacing:.19em;
   color:#d3c9af!important;
 }
-html[data-brp-theme] .brp-uge .brp-brand-star { color:var(--brp-accent)!important; }
 html[data-brp-theme] .brp-uge .brp-banner .sidebar-identity {
   position:relative;
   flex:1;
@@ -3252,6 +3243,7 @@ html[data-brp-theme] .brp-uge .comp-top {
 }
 html[data-brp-theme] .brp-uge .comp-top h2 {color:#fff3da!important;text-shadow:0 2px 8px #000!important;}
 html[data-brp-theme] .brp-uge .wiz-stepper {padding:11px!important;}
+
 html[data-brp-theme] .brp-uge .wiz-prof-card.selected {border-color:var(--brp-accent)!important;background:var(--brp-highlight)!important;}
 
 /* Strongly themed buttons, input, selectable controls and tooltips. */

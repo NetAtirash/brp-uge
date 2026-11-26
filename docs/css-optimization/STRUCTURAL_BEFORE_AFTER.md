@@ -17,3 +17,13 @@ All seven active files are editable, responsibility-owned styles in the original
 The 19 original active source files were consolidated into the seven new canonical files. The runtime bundle remains exactly the same as the previously validated optimization, so no visual behavior, layout, CSS specificity, browser download size or runtime performance improvement is claimed from source reorganization.
 
 The previous delivery optimization measurements are separately recorded in BEFORE_AFTER.json. Live Foundry v14 visual and interactive parity testing remains necessary before merging to stable.
+
+## Exact-parity duplicate selector / override audit
+
+Repeated-selector rule-block candidates tested: 145.
+Blocks safely removable without altering ANY runtime CSS byte: 8.
+Candidates rejected because they would change runtime CSS: 137.
+Remaining important declarations in canonical source: 2552.
+
+All rejected candidates are intentionally preserved. Their cascade priority
+cannot be lowered without changing compiled CSS and real Foundry v14 visual QA.

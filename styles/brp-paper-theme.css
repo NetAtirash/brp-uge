@@ -118,10 +118,6 @@ html[data-brp-theme] .application.brp-uge :is(.brp-brand-overline,.brp-brand-foo
   color:var(--brp-muted)!important;
 }
 /* Index-card header: a plain ledger, not a game-genre painting. */
-html[data-brp-theme] .brp-uge .brp-sheet.brp-sheet-shell {
-  grid-template-rows:156px minmax(0,1fr)!important;
-  gap:10px 13px!important;
-}
 html[data-brp-theme] .brp-uge .brp-banner {
   border:1px solid var(--brp-border-strong)!important;
   border-radius:var(--brp-corner)!important;
