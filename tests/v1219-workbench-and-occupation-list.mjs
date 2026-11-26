@@ -1,3 +1,4 @@
+import {originalCssSources} from './css-source-manifest.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -6,7 +7,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 const read=path=>readFileSync(resolve(root,path),'utf8');
 const manifest=JSON.parse(read('system.json'));
 assert.match(manifest.version, /^\d+\.\d+\.\d+$/);
-assert.ok(manifest.styles.includes('styles/brp-v1219-workbench.css'));
+assert.ok(originalCssSources.includes('styles/brp-v1219-workbench.css'));
 for(const file of ['module/apps/skill-points-editor.mjs','module/skill-points-utils.mjs','styles/brp-v1219-workbench.css'])assert.ok(read(file).length>100,file);
 const wizard=read('templates/apps/character-wizard.hbs');
 const wizardLogic=read('module/apps/character-wizard.mjs');
