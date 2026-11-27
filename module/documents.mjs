@@ -115,7 +115,7 @@ export class BRPActor extends Actor {
     if (deductHp && loss > 0) {
       await ChatMessage.implementation.create({
         speaker: ChatMessage.getSpeaker({ actor: this }),
-        content: `<div class="brp-chat-card is-fail"><div class="card-header"><strong>${escapeForChat(this.name)}</strong> บันทึกบาดแผล: <strong>${escapeForChat(String(title || (getNameLanguage() === "en" ? "Wound" : "บาดแผล")))}</strong></div><div class="card-actor">ลด HP อัตโนมัติ <strong>−${loss}</strong> · เหลือ <strong>${nextHp}/${this.system.hp?.max ?? 10}</strong></div></div>`
+        content: `<div class="brp-chat-card is-fail"><div class="card-header"><strong>${escapeForChat(this.name)}</strong> ${getNameLanguage() === "en" ? "Wound" : "บันทึกบาดแผล"}: <strong>${escapeForChat(String(title || (getNameLanguage() === "en" ? "Wound" : "บาดแผล")))}</strong></div><div class="card-actor">${getNameLanguage() === "en" ? "HP lost" : "HP ที่เสีย"} <strong>−${loss}</strong> · <strong>${nextHp}/${this.system.hp?.max ?? 10}</strong></div></div>`
       });
     }
     return res;
@@ -183,7 +183,7 @@ export class BRPActor extends Actor {
     if (deductSan && loss > 0) {
       await ChatMessage.implementation.create({
         speaker: ChatMessage.getSpeaker({ actor: this }),
-        content: `<div class="brp-chat-card is-fail"><div class="card-header"><strong>${escapeForChat(this.name)}</strong> บันทึกอาการทางจิต: <strong>${escapeForChat(String(title || "อาการเสียสติ"))}</strong></div><div class="card-actor">ลด SAN อัตโนมัติ <strong>−${loss}</strong> · เหลือ <strong>${nextSan}/${this.system.san?.max ?? 99}</strong></div></div>`
+        content: `<div class="brp-chat-card is-fail"><div class="card-header"><strong>${escapeForChat(this.name)}</strong> ${getNameLanguage() === "en" ? "Mental condition" : "บันทึกอาการทางจิต"}: <strong>${escapeForChat(String(title || (getNameLanguage() === "en" ? "Mental condition" : "อาการทางจิต")))}</strong></div><div class="card-actor">${getNameLanguage() === "en" ? "SAN lost" : "SAN ที่เสีย"} <strong>−${loss}</strong> · <strong>${nextSan}/${this.system.san?.max ?? 99}</strong></div></div>`
       });
     }
     return res;
@@ -214,9 +214,9 @@ export class BRPActor extends Actor {
     const insanities = foundry.utils.deepClone(this.system.insanities ?? []);
     const wound = wounds.find(w => w.id === targetId);
     const mental = insanities.find(c => c.id === targetId);
-    if (method !== "psychotherapy" && !wound && method !== "natural") throw new Error("กรุณาเลือกบาดแผลก่อนรักษา");
-    if (method === "psychotherapy" && !mental) throw new Error("กรุณาเลือกอาการทางจิตก่อนบำบัด");
-    if (method === "firstAid" && wound.firstAidAttempted) throw new Error("First Aid สามารถพยายามได้เพียงครั้งเดียวต่อบาดแผล");
+    if (method !== "psychotherapy" && !wound && method !== "natural") throw new Error(getNameLanguage() === "en" ? "Select a wound" : "เลือกบาดแผล");
+    if (method === "psychotherapy" && !mental) throw new Error(getNameLanguage() === "en" ? "Select a mental condition" : "เลือกอาการทางจิต");
+    if (method === "firstAid" && wound.firstAidAttempted) throw new Error(getNameLanguage() === "en" ? "First Aid already attempted for this wound" : "บาดแผลนี้เคยปฐมพยาบาลแล้ว");
     const degree = rollResult?.degree ?? (method === "natural" ? "success" : "failure");
     const successful = ["success", "special", "critical"].includes(degree);
     const th = getNameLanguage() !== "en";
@@ -241,7 +241,7 @@ export class BRPActor extends Actor {
       formula = firstAidFormula(degree);
       if (degree === "fumble") {
         patch["system.hp.value"] = Math.max(this.system.hp.min, this.system.hp.value - 1);
-        outcome = "Fumble: −1 HP";
+        outcome = "−1 HP";
       }
     } else if (method === "medicine") {
       if (choice === "accelerate" && rollResult?.isSuccess) {

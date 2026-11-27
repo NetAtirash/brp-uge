@@ -1,6 +1,7 @@
 /** Uniform affordances across Actor/NPC/Item/Wizard forms.
  * The DOM annotations are presentation-only and never mutate form values. */
 export function applyBRPControlLanguage(root){
+  const th = globalThis.game?.settings?.get?.('brp-uge','uiLanguage') !== 'en';
   if(!root?.querySelectorAll)return;
   for(const el of root.querySelectorAll('input:not([type="hidden"]),select,textarea')){
     if(el.type==='checkbox'||el.type==='radio'){
@@ -19,10 +20,10 @@ export function applyBRPControlLanguage(root){
     const action=String(btn.dataset.action||'');
     if(/^shareEntry$/i.test(action)){
       btn.dataset.brpControl='share';
-      btn.title ||= 'Share details / ส่งข้อมูลลงแชท';
+      btn.title ||= th ? 'ส่งข้อมูลลงแชท' : 'Share details';
     }else if(/^roll|check|resist|attack|cast|exp/i.test(action)||btn.matches('.roll-char-compact,.skill-roll-icon,[data-roll]')){
       btn.dataset.brpControl='roll';
-      btn.title ||= 'Roll / ทอยลูกเต๋า';
+      btn.title ||= th ? 'ทอยลูกเต๋า' : 'Roll';
     }else if(/edit|create|delete|remove|add|toggle|update|allocate|set/i.test(action)){
       btn.dataset.brpControl='edit-action';
     }else if(/switchTab|nextStep|prevStep/i.test(action)){
