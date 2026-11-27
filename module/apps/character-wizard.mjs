@@ -17,7 +17,7 @@ import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor, s
 import { normalizeOccupationChoiceGroups, resolveOccupationTemplateGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill, occupationChoiceMetadataMissing } from "../occupation-choice-rules.mjs";
 import { canonicalSkillKey } from "../skill-foundation.mjs";
 import {isSkillFamilyTemplate} from "../skill-family-templates.mjs";
-import {wizardSpecialtyFamilies,wizardOccupationFamilyChoices} from "../wizard-specialty-choices.mjs";
+import {wizardSpecialtyFamilies,wizardOccupationFamilyChoices,countedChoiceChange} from "../wizard-specialty-choices.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -26,6 +26,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     super(options);
     this.targetActor = options.actor;
     this.step = 1;
+    this.occupationStage = 1;
+    this.choiceBusy = false;
     this.skillCatalog = [];
     this.librarySkillDocs = [];
     this.specialtyRegistry = [];
@@ -118,6 +120,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       rollSingleChar: BRPCharacterWizard.#onRollSingleChar,
       stepChar: BRPCharacterWizard.#onStepChar,
       selectProfession: BRPCharacterWizard.#onSelectProfession,
+      goOccupationStage: BRPCharacterWizard.#onGoOccupationStage,
       openOccupationChoiceSetup: BRPCharacterWizard.#onOpenOccupationChoiceSetup,
       selectOccupationChoice: BRPCharacterWizard.#onSelectOccupationChoice,
       removeOccupationChoice: BRPCharacterWizard.#onRemoveOccupationChoice,
@@ -468,13 +471,17 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.personalityChoices=Object.entries(PERSONALITY_TYPES).map(([key,value])=>({key,label:isTh?value.th:value.en,selected:this.wizardData.personalityType===key}));
     context.personalityLabel=context.personalityChoices.find(p=>p.selected)?.label || "";
     context.personalityCount=personality.size;
-    context.personalityAvailable=this.skillCatalog.map((s,index)=>({index,label:getDisplayItemName(s,uiLang),selected:personality.has(s.system?.referenceKey||s.system?.nameEn||s.name)}));
+    context.personalityEnabled=this.wizardData.personalityType!=='none';
+    context.personalityAvailable=this.skillCatalog.map((s,index)=>({s,index})).filter(({s})=>!isSkillFamilyTemplate(s)&&!specialtyNeedsReview(analyzeSkillFamily(s)?.enSpecialty||'') || !analyzeSkillFamily(s)?.supportsSpecialty).map(({s,index})=>{
+      const selected=personality.has(s.system?.referenceKey||s.system?.nameEn||s.name);
+      return {index,label:getDisplayItemName(s,uiLang),selected,disabled:!selected&&personality.size>=13};
+    }).sort((a,b)=>a.label.localeCompare(b.label,uiLang));
     context.personalitySelected=context.personalityAvailable.filter(s=>s.selected);
     context.isTh = isTh;
     context.step = this.step;
     for (let i=1;i<=6;i++) context[`isStep${i}`] = this.step===i;
     context.steps = [
-      { num:1, label:isTh?"1. ชื่อและ Characteristics":"1. Name & Characteristics", active:this.step===1 },
+      { num:1, label:isTh?"1. ชื่อและคุณลักษณะ":"1. Name & Characteristics", active:this.step===1 },
       { num:2, label:isTh?"2. พลัง (เสริม)":"2. Powers (Optional)", active:this.step===2 },
       { num:3, label:isTh?"3. อายุและบุคลิก":"3. Age & Derived", active:this.step===3 },
       { num:4, label:isTh?"4. อาชีพและทักษะ":"4. Profession & Skills", active:this.step===4 },
@@ -615,7 +622,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       return {...group,label:isTh?(group.labelTh||group.labelEn):(group.labelEn||group.labelTh),
         familySpecialtyOptions,
         selected:selected.map(key=>({key,label:candidates.get(key)?.label||key})),
-        candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label)),
+        candidates:[...new Map([...candidates,...selected.filter(key=>!candidates.has(key)).map(key=>[key,{key,label:key}])]).values()].map(c=>({...c,selected:selected.includes(c.key),disabled:!selected.includes(c.key)&&(selected.length>=group.count||Object.entries(uiChoices).some(([id,keys])=>id!==group.id&&keys.includes(c.key)))})).sort((a,b)=>a.label.localeCompare(b.label,uiLang)),
         pickerChoices:[...pickerChoices.values()].sort((a,b)=>a.label.localeCompare(b.label)),
         complete:selected.length===group.count,selectedCount:selected.length};
     });
@@ -638,12 +645,18 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       const skill=this.skillCatalog[index];
       const info=analyzeSkillFamily(skill);
       return isSkillFamilyTemplate(skill)?
-        (isTh?info.thFamily:info.enFamily)+' — '+(isTh?'เลือก Specialty':'Choose Specialty'):
+        (isTh?info.thFamily:info.enFamily)+' — '+(isTh?'เลือกความเชี่ยวชาญ':'Choose specialty'):
         getDisplayItemName(skill,uiLang);
     });
     context.professionLinkedSkillCount=professionSkillCoverage.linked.length;
     context.professionMissingSkillCount=professionSkillCoverage.missing.length;
     context.professionHasLinkedSkills=Boolean(prof?.sourceUuid && professionSkillCoverage.linked.length);
+    context.occupationStage=this.occupationStage;
+    context.occupationStage1=this.occupationStage===1;
+    context.occupationStage2=this.occupationStage===2;
+    context.occupationStage3=this.occupationStage===3;
+    context.occupationStageReady=choiceStatus.valid&&!context.occupationMetadataMissing&&!context.professionMissingSkillCount;
+    context.occupationStages=[{num:1,label:isTh?'เลือกอาชีพ':'Choose occupation'},{num:2,label:isTh?'เลือกทักษะอาชีพ':'Choose occupation skills'},{num:3,label:isTh?'จัดสรรแต้มทักษะ':'Allocate skill points'}].map(s=>({...s,active:s.num===this.occupationStage,complete:s.num<this.occupationStage,disabled:s.num===3&&!context.occupationStageReady}));
     // Do not flood creation with every Compendium Skill (Art (...),
     // Science (...), etc.). A Specialty is visible for point allocation only
     // after occupation selection, personal selection, or existing Actor use.
@@ -744,41 +757,11 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         this.render();
       });
     }
-    // Server-rendered Specialty options. The Handlebars DOM already contains
-    // the current GM-approved choices, so a failed JS injection can never
-    // leave an otherwise populated Registry with an empty <select>.
-    for(const choices of this.element.querySelectorAll('[data-occupation-skill-options]')){
-      const id=choices.dataset.occupationSkillOptions;
-      const radios=[...choices.querySelectorAll('[data-occupation-kind-radio]')];
-      const fields=[...choices.querySelectorAll('[data-occupation-specialty-field]')];
-      const update=(persist=false)=>{
-        const selected=radios.find(r=>r.checked)?.value||'';
-        if(persist){
-          this.wizardData.occupationFamilyDrafts[id]=selected;
-          this.wizardData.occupationSpecialtyDrafts[id]='';
-        }
-        const family=selected.startsWith('family:')?selected.slice(7):'';
-        for(const field of fields){
-          const active=!!family&&field.dataset.familyKey===family;
-          field.hidden=!active;
-          const selected=this.wizardData.occupationSpecialtyDrafts[id]||'';
-          for(const radio of field.querySelectorAll('[data-occupation-specialty-option]')){
-            radio.checked=active&&radio.value===selected;
-          }
-        }
-      };
-      const previous=this.wizardData.occupationFamilyDrafts[id]||'';
-      const saved=radios.find(r=>r.value===previous);
-      if(saved)saved.checked=true;
-      for(const radio of radios)radio.addEventListener('change',()=>update(true));
-      for(const field of fields){
-        for(const radio of field.querySelectorAll('[data-occupation-specialty-option]')){
-          radio.addEventListener('change',()=>{
-            if(radio.checked)this.wizardData.occupationSpecialtyDrafts[id]=radio.value;
-          });
-        }
-      }
-      update();
+    for(const input of this.element.querySelectorAll('[data-occupation-choice-checkbox]')){
+      input.addEventListener('change',event=>BRPCharacterWizard.#onSelectOccupationChoice.call(this,event,input));
+    }
+    for(const input of this.element.querySelectorAll('[data-personality-skill-checkbox]')){
+      input.addEventListener('change',event=>BRPCharacterWizard.#onTogglePersonalitySkill.call(this,event,input));
     }
     const personalFamily=this.element.querySelector('[data-personal-family-picker]');
     if(personalFamily){
@@ -867,19 +850,18 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     this.wizardData.personalitySkillKeys=[...(PERSONALITY_TYPES[this.wizardData.personalityType].keys)];
     this.render();
   }
-  static #onAddPersonalitySkill(event) {
-    event.preventDefault();
-    if(this.wizardData.personalitySkillKeys.length>=13)return ui.notifications.warn('BRP Personality: 13 skills maximum');
-    const chosen=String(this.element.querySelector('[data-wiz-personality-select]')?.value||'');
-    if(!chosen)return;
-    const idx=Number(chosen);
-    const src=this.skillCatalog[idx];if(!src)return;
+  static #onAddPersonalitySkill(event) { event.preventDefault(); }
+  static async #onTogglePersonalitySkill(event,input) {
+    const src=this.skillCatalog[Number(input.dataset.index)];
+    if(!src||this.wizardData.personalityType==='none'||isSkillFamilyTemplate(src))return;
+    const info=analyzeSkillFamily(src);
+    if(info?.supportsSpecialty&&specialtyNeedsReview(info.enSpecialty))return;
     const key=src.system.referenceKey||src.system.nameEn||src.name;
-    if(!this.wizardData.personalitySkillKeys.includes(key)){
-      this.wizardData.personalitySkillKeys.push(key);
-      this.wizardData.touchedPersonality=true;
-    }
-    this.render();
+    const next=countedChoiceChange(this.wizardData.personalitySkillKeys,key,input.checked,13);
+    if(!next.ok){input.checked=!input.checked;return;}
+    this.wizardData.personalitySkillKeys=next.keys;
+    this.wizardData.touchedPersonality=true;
+    await this.#renderChoiceChange(input);
   }
   static #onRemovePersonalitySkill(event,target) {
     event.preventDefault();
@@ -898,16 +880,40 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   static #onPrevStep(event) {
     event.preventDefault();
+    if(this.step===4&&this.occupationStage>1){this.occupationStage--;this.render();return;}
     this.step = Math.max(1, this.step - 1);
     this.render();
   }
 
   static #onNextStep(event) {
     event.preventDefault();
+    if(this.step===4&&this.occupationStage<3){this.#setOccupationStage(this.occupationStage+1);return;}
     this.step = Math.min(6, this.step + 1);
     this.render();
   }
 
+  #setOccupationStage(stage) {
+    if(stage===3){
+      const prof=this.#getProfession();
+      const missing=prof?.sourceUuid&&occupationChoiceMetadataMissing(prof,this.#plainRuleText((prof.description||'')+' '+(prof.descriptionTh||'')));
+      const coverage=occupationSkillCoverage(this.skillCatalog,prof?.skillRefs??[]);
+      if(missing||coverage.missing.length||!this.#occupationChoiceStatus(prof).valid){
+        this.occupationStage=2;this.render();return;
+      }
+    }
+    this.occupationStage=Math.clamp(stage,1,3);this.render();
+  }
+  static #onGoOccupationStage(event,target) {event.preventDefault();this.#setOccupationStage(Number(target.dataset.stage));}
+  async #renderChoiceChange(input) {
+    const scroll=this.element.querySelector('.wiz-body')?.scrollTop||0;
+    const group=input.dataset.groupId;
+    const key=input.dataset.key;
+    const index=input.dataset.index;
+    await this.render();
+    const body=this.element.querySelector('.wiz-body');if(body)body.scrollTop=scroll;
+    const replacement=[...this.element.querySelectorAll('[data-occupation-choice-checkbox],[data-personality-skill-checkbox]')].find(e=>group?e.dataset.groupId===group&&e.dataset.key===key:e.dataset.index===index);
+    replacement?.focus({preventScroll:true});
+  }
   static async #onRollAllChars(event) {
     event.preventDefault();
     await this.#confirmAndRollCharacteristics();
@@ -981,33 +987,32 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   }
 
   static async #onSelectOccupationChoice(event,target) {
-    event.preventDefault();
-    this.#refreshSpecialtyRegistry();
-    const id=String(target.dataset.groupId||'');
+    if(this.choiceBusy){target.checked=!target.checked;return;}
+    const id=String(target.dataset.groupId||''),key=String(target.dataset.key||'');
     const prof=this.#getProfession();
     const group=resolveOccupationTemplateGroups(prof,this.librarySkillDocs).find(g=>g.id===id);
     if(!group)return;
-    const picker=this.element.querySelector('[data-occupation-kind-radio="'+CSS.escape(id)+'"]:checked');
-    const choice=String(picker?.value||'');
-    const family=choice.startsWith('family:')?choice.slice(7):'';
-    const subtype=[...this.element.querySelectorAll('[data-occupation-specialty-option]:checked')]
-      .find(radio=>radio.dataset.occupationSpecialtyOption===id&&radio.dataset.familyKey===family);
-    const key=family?family+'|'+String(subtype?.value||''):
-      choice.startsWith('specialty:')?choice.slice(10):
-      choice.startsWith('skill:')?choice.slice(6):'';
-    if(!key||key.endsWith('|'))return ui.notifications.warn(
-      'Select a Skill Family and concrete Specialty before confirming your occupation choice');
     const previous=this.wizardData.choiceSelections[id]||[];
-    if(previous.includes(key))return ui.notifications.warn('This Skill was already selected');
-    if(previous.length>=group.count)return ui.notifications.warn('This occupation choice group is already full');
-    if(Object.entries(this.wizardData.choiceSelections).some(([groupId,keys])=>groupId!==id&&keys.includes(key)))
-      return ui.notifications.warn('This Skill is selected in another group');
-    let skill;
-    try{skill=await this.#ensureSkillCandidate(key);}
-    catch(error){return ui.notifications.warn(error.message);}
-    if(!occupationGroupAllowsSkill(group,skill))return ui.notifications.warn('Skill is not eligible for this occupation choice');
-    this.wizardData.choiceSelections[id]=[...previous,key];
-    this.render();
+    const excluded=Object.entries(this.wizardData.choiceSelections).filter(([groupId])=>groupId!==id).flatMap(([,keys])=>keys);
+    const next=countedChoiceChange(previous,key,target.checked,group.count,excluded);
+    if(!next.ok){target.checked=!target.checked;return;}
+    this.choiceBusy=true;
+    try{
+      if(target.checked){
+        const skill=await this.#ensureSkillCandidate(key);
+        if(!occupationGroupAllowsSkill(group,skill))throw new Error('Skill unavailable');
+      }
+      this.wizardData.choiceSelections[id]=next.keys;
+      if(!target.checked){
+        const index=this.skillCatalog.findIndex(s=>canonicalSkillKey(s)===key);
+        if(index>=0&&!this.#isOccupationalSkill(this.skillCatalog[index],prof)){
+          this.wizardData.occRanks[index]=0;
+          if(!this.wizardData.touchedSkillIndices.includes(index))this.wizardData.touchedSkillIndices.push(index);
+        }
+      }
+      await this.#renderChoiceChange(target);
+    }catch(error){target.checked=!target.checked;ui.notifications.warn(error.message);}
+    finally{this.choiceBusy=false;}
   }
 
   static async #onRefreshWizardSpecialties(event){

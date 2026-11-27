@@ -23,3 +23,13 @@ export function wizardOccupationFamilyChoices(registry=[],choiceGroup={},languag
   return wizardSpecialtyFamilies(registry,language)
     .filter(group=>allowed.has(group.key));
 }
+
+/** Pure bounded checkbox selection, preserving order and rejecting duplicates across groups. */
+export function countedChoiceChange(previous,key,checked,max,excluded=[]){
+  const keys=[...new Set(previous||[])];
+  if(!key)return {ok:false,keys};
+  if(!checked)return {ok:true,keys:keys.filter(k=>k!==key)};
+  if(keys.includes(key))return {ok:true,keys};
+  if(keys.length>=max||excluded.includes(key))return {ok:false,keys};
+  return {ok:true,keys:[...keys,key]};
+}

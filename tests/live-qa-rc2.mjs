@@ -9,7 +9,7 @@ assert.match(wizard,/No options available/);
 assert.match(wizard,/No specialties available/);
 assert.match(wizard,/occupationMetadataMissing/);
 assert.match(wizard,/data-action="refreshWizardSpecialties"/);
-assert.match(wizard,/data-action="selectOccupationChoice"/);
+assert.match(wizard,/data-occupation-choice-checkbox/);
 assert.doesNotMatch(sheet,/Treated · Awaiting closure/);
 assert.match(sheet,/{{w.careStatus}}/);
 assert.match(sheet,/{{c.careStatus}}/);

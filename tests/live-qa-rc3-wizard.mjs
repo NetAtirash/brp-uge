@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {countedChoiceChange} from '../module/wizard-specialty-choices.mjs';
+const read=p=>readFileSync(new URL('../'+p,import.meta.url),'utf8');
+assert.deepEqual(countedChoiceChange(['a'],'b',true,2),{ok:true,keys:['a','b']});
+assert.deepEqual(countedChoiceChange(['a','b'],'c',true,2),{ok:false,keys:['a','b']});
+assert.deepEqual(countedChoiceChange(['a'],'b',true,2,['b']),{ok:false,keys:['a']});
+assert.deepEqual(countedChoiceChange(['a','b'],'a',false,2),{ok:true,keys:['b']});
+assert.deepEqual(countedChoiceChange(['a'],'a',true,2),{ok:true,keys:['a']});
+const hbs=read('templates/apps/character-wizard.hbs');
+assert.match(hbs,/type="checkbox" data-occupation-choice-checkbox/);
+assert.match(hbs,/type="checkbox" data-personality-skill-checkbox/);
+for(const n of [1,2,3])assert.match(hbs,new RegExp('occupationStage'+n));
+assert.match(hbs,/{{#if s.isOcc}}\s*<span class="sr-only">/);
+assert.doesNotMatch(hbs,/ความเชี่ยวชาญ: {{availableSpecialtyCount}}|data-wiz-personality-select/);
+console.log('PASS: bounded checkbox selections, explicit Wizard stages and occupation-only allocation');

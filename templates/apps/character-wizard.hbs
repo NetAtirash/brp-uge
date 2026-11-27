@@ -154,22 +154,28 @@
         <h3>{{#if isTh}}บุคลิก{{else}}Personality{{/if}}</h3>
         <div class="wiz-personality-config"><label>{{#if isTh}}รูปแบบบุคลิก{{else}}Personality package{{/if}}</label>
           <select data-wiz-personality>{{#each personalityChoices as |p|}}<option value="{{p.key}}" {{#if p.selected}}selected{{/if}}>{{p.label}}</option>{{/each}}</select>
-          <div class="brp-ref-picker"><select data-wiz-personality-select><option value="">{{#if isTh}}เลือกทักษะจากคลัง{{else}}Choose Skill{{/if}}</option>{{#each personalityAvailable as |o|}}<option value="{{o.index}}">{{o.label}}</option>{{/each}}</select>
-            <button type="button" class="brp-btn" data-action="addPersonalitySkill">+ 20%</button></div>
-          <div class="wiz-picked-list">{{#each personalitySelected as |o|}}<div class="wiz-picked-row"><div class="wiz-picked-heading"><strong>{{o.label}}</strong><button type="button" class="icon-btn danger" data-action="removePersonalitySkill" data-index="{{o.index}}" title="{{#if @root.isTh}}ลบทักษะ{{else}}Remove skill{{/if}}">×</button></div></div>{{/each}}</div>
-          <strong>{{personalityCount}} / {{#if (eq wizardData.personalityType "none")}}0{{else}}13{{/if}} {{#if isTh}}ทักษะ{{else}}skills{{/if}}</strong>
+          {{#if personalityEnabled}}
+          <fieldset class="brp-wiz-choice-group">
+            <legend>{{#if isTh}}เลือกทักษะบุคลิก 13 ทักษะ (+20%){{else}}Choose 13 personality skills (+20%){{/if}} · {{personalityCount}}/13</legend>
+            <div class="brp-wiz-specialty-options">
+              {{#each personalityAvailable as |o|}}
+              <label class="brp-wiz-specialty-option"><input type="checkbox" data-personality-skill-checkbox data-index="{{o.index}}" {{#if o.selected}}checked{{/if}} {{#if o.disabled}}disabled{{/if}}> <span>{{o.label}}</span></label>
+              {{/each}}
+            </div>
+          </fieldset>
+          {{/if}}
         </div>
       </div>
     {{/if}}
     {{#if isStep4}}
-      <div class="brp-wiz-step4-progress" role="status">
-        <span class="{{#if selectedProfession.sourceUuid}}is-complete{{/if}}"><b>1</b> {{#if isTh}}เลือกอาชีพ{{else}}Choose occupation{{/if}}</span>
-        <span class="{{#if occupationChoicesValid}}is-complete{{/if}}"><b>2</b> {{#if isTh}}เลือกทักษะและ Specialty{{else}}Resolve Skill choices{{/if}}</span>
-        <span><b>3</b> {{#if isTh}}แจกแต้มอาชีพและแต้มส่วนตัว{{else}}Allocate occupation/personal points{{/if}}</span>
-      </div>
-      <div class="panel-card wiz-section">
-        <h3>{{#if isTh}}เลือกอาชีพและจัดสรรทักษะ{{else}}Occupation & Skills{{/if}}</h3>
-        <div class="wiz-drop-hint" data-wiz-drop-item="occupation">{{#if isTh}}ลาก Occupation Item จาก Items Directory / Compendium มาวางที่นี่ได้{{else}}Drop an Occupation Item here from Items Directory / Compendium{{/if}}</div>
+      <nav class="brp-wiz-step4-progress" aria-label="{{#if isTh}}ขั้นตอนอาชีพและทักษะ{{else}}Occupation and skill stages{{/if}}">
+        {{#each occupationStages as |s|}}
+          <button type="button" class="brp-btn {{#if s.active}}is-active{{/if}}" data-action="goOccupationStage" data-stage="{{s.num}}" {{#if s.active}}aria-current="step"{{/if}} {{#if s.disabled}}disabled{{/if}}>{{s.num}}. {{s.label}}{{#if s.complete}} ✓{{/if}}</button>
+        {{/each}}
+      </nav>
+      {{#if occupationStage1}}
+      <div class="panel-card wiz-section" data-wiz-drop-item="occupation">
+        <h3>1. {{#if isTh}}เลือกอาชีพ{{else}}Choose occupation{{/if}}</h3>
         <div class="wiz-occupation-layout">
           <div class="wiz-occupation-catalog" role="group" aria-label="{{#if isTh}}รายการอาชีพ{{else}}Occupation catalog{{/if}}">
             <label class="wiz-occupation-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input type="search" data-wiz-prof-search value="{{professionFilter}}" autocomplete="off" dir="auto" placeholder="{{#if isTh}}ค้นหาอาชีพ...{{else}}Search occupations...{{/if}}" aria-label="{{#if isTh}}ค้นหาอาชีพ{{else}}Search occupations{{/if}}"></label>
@@ -205,89 +211,54 @@
           </section>
         </div>
       </div>
-      {{#if occupationMetadataMissing}}
-      {{#if isGM}}
-      <div class="panel-card wiz-occupation-setup-warning" role="alert">
-        <strong><i class="fa-solid fa-triangle-exclamation"></i> {{#if isTh}}อาชีพนี้ยังไม่ได้กำหนดเงื่อนไขการเลือกทักษะ{{else}}Occupation choice rules are not configured{{/if}}</strong>
-        {{#if isGM}}<button type="button" class="brp-btn" data-action="openOccupationChoiceSetup"><i class="fa-solid fa-gear"></i> {{#if isTh}}เปิดอาชีพเพื่อกำหนดทางเลือก{{else}}Configure this Occupation{{/if}}</button>{{/if}}
-      </div>
       {{/if}}
-      {{/if}}
-      {{#if professionChoiceGroups.length}}
+      {{#if occupationStage2}}
       <div class="panel-card wiz-section brp-wiz-occupation-choices">
-        <h3>{{#if isTh}}เลือกทักษะและ Specialty ของอาชีพก่อนแบ่งแต้ม{{else}}Resolve Occupation Skill Choices before allocating points{{/if}}</h3>
+        <h3>2. {{#if isTh}}เลือกทักษะอาชีพ{{else}}Choose occupation skills{{/if}}</h3>
+        {{#if professionFixedSkillNames.length}}
+        <div class="brp-wiz-fixed-skills"><strong>{{#if isTh}}ทักษะที่ได้รับ{{else}}Granted skills{{/if}}</strong>
+          <div class="brp-wiz-choice-chips">{{#each professionFixedSkillNames as |name|}}<span class="brp-wiz-choice-chip">{{name}}</span>{{/each}}</div>
+        </div>
+        {{/if}}
+        {{#if occupationMetadataMissing}}
+          <div class="wiz-occupation-setup-warning" role="alert">
+            <strong>{{#if isTh}}ตัวเลือกทักษะของอาชีพนี้ยังไม่พร้อม{{else}}Occupation skill choices unavailable{{/if}}</strong>
+            {{#if isGM}}<button type="button" class="brp-btn" data-action="openOccupationChoiceSetup">{{#if isTh}}กำหนดตัวเลือกทักษะ{{else}}Configure skill choices{{/if}}</button>{{else}}<span>{{#if isTh}}เลือกอาชีพอื่น{{else}}Choose another occupation{{/if}}</span>{{/if}}
+          </div>
+        {{/if}}
+        {{#if professionMissingSkillCount}}<p role="alert">{{#if isTh}}ทักษะที่ไม่พร้อม{{else}}Unavailable skills{{/if}}: {{professionMissingSkillCount}}</p>{{/if}}
         {{#each professionChoiceGroups as |g|}}
-          <section class="brp-wiz-choice-group">
-            <header>
-              <strong>{{g.label}}</strong>
-              <span class="{{#if g.complete}}is-complete{{else}}is-pending{{/if}}">{{g.selectedCount}} / {{g.count}}</span>
-            </header>
-            <div class="brp-wiz-choice-workflow" data-occupation-skill-options="{{g.id}}">
-              <strong class="brp-wiz-choose-label">{{#if @root.isTh}}1. ติ๊กเลือกทักษะที่ต้องการ{{else}}1. Select an allowed Skill{{/if}}</strong>
-              <div class="brp-wiz-choice-radio-list" role="radiogroup" aria-label="{{g.label}}">
-                {{#each g.pickerChoices as |c|}}
-                  <label class="brp-wiz-choice-radio">
-                    <input type="radio" name="wiz-choice-{{g.id}}" data-occupation-kind-radio="{{g.id}}" value="{{c.value}}">
-                    <span>{{c.label}}</span>
-                  </label>
-                {{/each}}
-              </div>
-              <div class="brp-wiz-choice-picker">
-                {{#each g.familySpecialtyOptions as |f|}}
-                  <fieldset class="brp-wiz-specialty-group" data-occupation-specialty-field="{{g.id}}" data-family-key="{{f.key}}" hidden>
-                    <legend>{{#if @root.isTh}}2. เลือก Specialty ของ {{f.label}} ({{f.count}}){{else}}2. Choose {{f.label}} Specialty ({{f.count}}){{/if}}</legend>
-                    <div class="brp-wiz-specialty-options">
-                      {{#each f.specialties as |specialty|}}
-                        <label class="brp-wiz-specialty-option">
-                          <input type="radio" name="wiz-occupation-specialty-{{g.id}}-{{f.key}}" value="{{specialty.key}}" data-occupation-specialty-option="{{g.id}}" data-family-key="{{f.key}}">
-                          <span>{{specialty.label}}</span>
-                        </label>
-                      {{/each}}
-                    </div>
-                  </fieldset>
-                {{/each}}
-                <button type="button" class="brp-btn" data-action="selectOccupationChoice" data-group-id="{{g.id}}">
-                  <i class="fa-solid fa-check"></i> {{#if @root.isTh}}ยืนยัน / เพิ่มตัวเลือก{{else}}Confirm this choice{{/if}}
-                </button>
-              </div>
+          <fieldset class="brp-wiz-choice-group">
+            <legend>{{g.label}} · {{#if @root.isTh}}เลือก{{else}}Choose{{/if}} {{g.count}} ({{g.selectedCount}}/{{g.count}})</legend>
+            <div class="brp-wiz-specialty-options">
+              {{#each g.candidates as |c|}}
+                <label class="brp-wiz-specialty-option">
+                  <input type="checkbox" data-occupation-choice-checkbox data-group-id="{{g.id}}" data-key="{{c.key}}" {{#if c.selected}}checked{{/if}} {{#if c.disabled}}disabled{{/if}}>
+                  <span>{{c.label}}</span>
+                </label>
+              {{else}}<p>{{#if @root.isTh}}ไม่มีตัวเลือก{{else}}No options available{{/if}}</p>{{/each}}
             </div>
-            {{#if g.selected.length}}
-              <div class="brp-wiz-choice-chips">
-                {{#each g.selected as |c|}}
-                  <span class="brp-wiz-choice-chip">{{c.label}}
-                    <button type="button" data-action="removeOccupationChoice" data-group-id="{{g.id}}" data-key="{{c.key}}" aria-label="{{#if @root.isTh}}นำทางเลือกออก{{else}}Remove choice{{/if}}">×</button>
-                  </span>
-                {{/each}}
-              </div>
-            {{/if}}
-            {{#unless g.candidates.length}}
-              <p class="brp-wiz-choice-warning">{{#if @root.isTh}}ไม่มีตัวเลือก{{else}}No options available{{/if}}</p>
-            {{/unless}}
-          </section>
+          </fieldset>
+        {{else}}
+          {{#unless occupationMetadataMissing}}<p>{{#if isTh}}ไม่มีทักษะเพิ่มเติมที่ต้องเลือก{{else}}No additional skills to choose{{/if}}</p>{{/unless}}
         {{/each}}
-        {{#unless occupationChoicesValid}}<p class="brp-wiz-choice-warning" role="status">{{#if isTh}}เลือกทักษะอาชีพให้ครบทุกกลุ่มก่อนจัดสรรแต้มอาชีพ{{else}}Complete every choice group before spending occupation points.{{/if}}</p>{{/unless}}
       </div>
       {{/if}}
-      <div class="panel-card wiz-section">
+      {{#if occupationStage3}}
+      <div class="panel-card wiz-section" data-wiz-drop-item="skill">
+        <h3>3. {{#if isTh}}จัดสรรแต้มทักษะ{{else}}Allocate skill points{{/if}}</h3>
         <div class="wiz-budget-bar">
           <span>{{#if isTh}}อาชีพ{{else}}Occupation{{/if}} <strong>{{selectedProfession.title}}</strong></span>
-          <span data-tooltip="{{#if isTh}}วิธีคำนวณที่ GM เลือกใน Game Settings{{else}}GM-selected budget method{{/if}}">{{occupationBudgetLabel}}</span>
+          
           <span class="wiz-budget-pill"><i class="fa-solid fa-briefcase"></i> {{#if isTh}}แต้มอาชีพคงเหลือ{{else}}Occupation remaining{{/if}}: <strong class="accent">{{occRemaining}} pt</strong> / {{occBudget}}</span>
           <span class="wiz-budget-pill"><i class="fa-solid fa-user"></i> {{#if isTh}}แต้มส่วนตัวคงเหลือ{{else}}Personal remaining{{/if}}: <strong class="accent">{{persRemaining}} pt</strong> / {{persBudget}}</span>
-          <span>{{#if isTh}}เพดานที่ GM ตั้ง{{else}}GM cap{{/if}}: <strong>{{rules.creationSkillCap}}%</strong></span>
+          <span>{{#if isTh}}ค่าสูงสุดต่อทักษะ{{else}}Skill cap{{/if}}: <strong>{{rules.creationSkillCap}}%</strong></span>
         </div>
 
-        {{#if selectedProfession.sourceUuid}}
-          <p class="wiz-linked-skills-note" role="status">
-            {{#if isTh}}ทักษะอาชีพ{{else}}Occupation skills{{/if}}: <strong>{{professionLinkedSkillCount}}</strong>
-            {{#if professionMissingSkillCount}}<strong class="wiz-link-warning">{{#if isTh}}ไม่พบ {{professionMissingSkillCount}} ทักษะ{{else}}Missing {{professionMissingSkillCount}} skills{{/if}}</strong>{{/if}}
-          </p>
-        {{/if}}
         {{#if personalFamilyOptions.length}}
-          <section class="brp-wiz-personal-specialty">
+          <details class="brp-wiz-personal-specialty">
+            <summary>{{#if isTh}}เพิ่มทักษะเฉพาะทาง (ไม่บังคับ){{else}}Add specialized skills (optional){{/if}}</summary>
             <div class="brp-wiz-specialty-status">
-              <strong>{{#if isTh}}เลือก Specialty เพิ่มสำหรับแต้มส่วนตัว{{else}}Add a Specialty for Personal Points{{/if}}</strong>
-              <small role="status">{{#if isTh}}ความเชี่ยวชาญ: {{availableSpecialtyCount}}{{else}}Specialties: {{availableSpecialtyCount}}{{/if}}</small>
               <button type="button" class="brp-btn" data-action="refreshWizardSpecialties" aria-label="{{#if isTh}}โหลดรายการ Specialty ใหม่{{else}}Refresh Specialty options{{/if}}">
                 <i class="fa-solid fa-rotate"></i> {{#if isTh}}โหลดใหม่{{else}}Refresh{{/if}}
               </button>
@@ -313,14 +284,14 @@
               {{/each}}
               <button type="button" class="brp-btn" data-action="addPersonalSpecialty"><i class="fa-solid fa-plus"></i> {{#if isTh}}เพิ่มทักษะ{{else}}Add Skill{{/if}}</button>
             </div>
-          </section>
+          </details>
         {{else}}
           <section class="brp-wiz-personal-specialty" role="status">
             <strong>{{#if isTh}}ไม่มีความเชี่ยวชาญ{{else}}No specialties available{{/if}}</strong>
             <button type="button" class="brp-btn" data-action="refreshWizardSpecialties"><i class="fa-solid fa-rotate"></i> {{#if isTh}}โหลดรายการ Specialty ใหม่{{else}}Reload Specialties{{/if}}</button>
           </section>
         {{/if}}
-        <div class="wiz-drop-hint" data-wiz-drop-item="skill">{{#if isTh}}ลาก Skill Item จากคลังมาวางเพื่อเพิ่มทักษะในรายการแบ่งแต้ม{{else}}Drop Skill Items to add custom skills to allocation{{/if}}</div>
+
         <div class="wiz-search-row">
           <input type="search" dir="auto" autocomplete="off" data-wiz-skill-search value="{{wizardData.skillFilter}}" placeholder="{{#if isTh}}ค้นหาทักษะ...{{else}}Filter skills...{{/if}}" />
         </div>
@@ -341,12 +312,14 @@
                 <small>({{s.base}}%{{#if s.bonusCategory}} · {{#if @root.isTh}}หมวด{{else}}Cat{{/if}} {{s.bonusCategory}}{{/if}}{{#if s.personalityPts}} · {{#if @root.isTh}}บุคลิก{{else}}Personality{{/if}} +{{s.personalityPts}}{{/if}})</small>
               </div>
               <div class="wiz-alloc-grp">
+                {{#if s.isOcc}}
                 <span class="sr-only">{{#if @root.isTh}}แต้มอาชีพ{{else}}Occupation{{/if}}</span>
                 <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="-5">-5</button>
                 <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="-1">−</button>
                 <span class="alloc-num">{{s.occPts}}</span>
                 <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="1">+</button>
                 <button type="button" class="step-btn" data-action="allocateSkill" data-index="{{s.index}}" data-pool="occ" data-delta="5">+5</button>
+                {{else}}<span aria-label="{{#if @root.isTh}}ใช้แต้มอาชีพไม่ได้{{else}}Not eligible for occupation points{{/if}}">—</span>{{/if}}
               </div>
               <div class="wiz-alloc-grp">
                 <span class="sr-only">{{#if @root.isTh}}แต้มส่วนตัว{{else}}Personal{{/if}}</span>
@@ -362,6 +335,7 @@
         </div>
 
       </div>
+      {{/if}}
     {{/if}}
     {{#if isStep5}}
       <div class="panel-card wiz-section">
