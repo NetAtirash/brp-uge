@@ -12,13 +12,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify compiled CSS with historical baseline and approved QA overlay
+        if: github.ref_name == 'testing'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/build-css.mjs --check
       - name: Check JavaScript module syntax
         shell: bash
         run: |
           set -euo pipefail
           while IFS= read -r -d '' file; do
             node --check "$file"
-          done < <(find . -type f -name '*.mjs' -print0)
+          done < <(git ls-files -z '*.mjs')
       - name: Run offline regression tests
         shell: bash
         run: |

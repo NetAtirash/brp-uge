@@ -198,7 +198,7 @@
             {{#if selectedProfession.sourceUuid}}
               <div class="wiz-occupation-preview-header"><i class="fa-solid fa-briefcase" aria-hidden="true"></i><h4>{{selectedProfession.title}}</h4></div>
               
-              <div class="wiz-occupation-preview-meta">{{#if isTh}}ทักษะอ้างอิง{{else}}Linked skill references{{/if}}: {{professionLinkedSkillCount}} {{#if professionMissingSkillCount}}· {{#if isTh}}ขาด{{else}}Missing{{/if}}: {{professionMissingSkillCount}}{{/if}}</div>
+              <div class="wiz-occupation-preview-meta">{{#if isTh}}ทักษะอาชีพ{{else}}Occupation skills{{/if}}: {{professionLinkedSkillCount}} {{#if professionMissingSkillCount}}· {{#if isTh}}ขาด{{else}}Missing{{/if}}: {{professionMissingSkillCount}}{{/if}}</div>
               {{#if professionFixedSkillNames.length}}
                 <div class="brp-wiz-fixed-skills"><strong>{{#if isTh}}ทักษะที่อาชีพกำหนด{{else}}Required occupational Skills{{/if}}</strong>
                   <div class="brp-wiz-choice-chips">{{#each professionFixedSkillNames as |name|}}<span class="brp-wiz-choice-chip">{{name}}</span>{{/each}}</div>
@@ -259,7 +259,7 @@
           <details class="brp-wiz-personal-specialty">
             <summary>{{#if isTh}}เพิ่มทักษะเฉพาะทาง (ไม่บังคับ){{else}}Add specialized skills (optional){{/if}}</summary>
             <div class="brp-wiz-specialty-status">
-              <button type="button" class="brp-btn" data-action="refreshWizardSpecialties" aria-label="{{#if isTh}}โหลดรายการ Specialty ใหม่{{else}}Refresh Specialty options{{/if}}">
+              <button type="button" class="brp-btn" data-action="refreshWizardSpecialties" aria-label="{{#if isTh}}โหลดรายการความเชี่ยวชาญใหม่{{else}}Refresh Specialty options{{/if}}">
                 <i class="fa-solid fa-rotate"></i> {{#if isTh}}โหลดใหม่{{else}}Refresh{{/if}}
               </button>
             </div>
@@ -271,7 +271,7 @@
                 </select></label>
               {{#each personalFamilyOptions as |f|}}
                 <fieldset class="brp-wiz-specialty-group" data-personal-family-specialties="{{f.key}}" hidden>
-                  <legend>{{#if @root.isTh}}เลือก Specialty ของ {{f.label}} ({{f.count}}){{else}}Choose {{f.label}} Specialty ({{f.count}}){{/if}}</legend>
+                  <legend>{{#if @root.isTh}}เลือกความเชี่ยวชาญของ {{f.label}} ({{f.count}}){{else}}Choose {{f.label}} Specialty ({{f.count}}){{/if}}</legend>
                   <div class="brp-wiz-specialty-options">
                     {{#each f.specialties as |specialty|}}
                       <label class="brp-wiz-specialty-option">
@@ -288,7 +288,7 @@
         {{else}}
           <section class="brp-wiz-personal-specialty" role="status">
             <strong>{{#if isTh}}ไม่มีความเชี่ยวชาญ{{else}}No specialties available{{/if}}</strong>
-            <button type="button" class="brp-btn" data-action="refreshWizardSpecialties"><i class="fa-solid fa-rotate"></i> {{#if isTh}}โหลดรายการ Specialty ใหม่{{else}}Reload Specialties{{/if}}</button>
+            <button type="button" class="brp-btn" data-action="refreshWizardSpecialties"><i class="fa-solid fa-rotate"></i> {{#if isTh}}โหลดรายการความเชี่ยวชาญใหม่{{else}}Reload Specialties{{/if}}</button>
           </section>
         {{/if}}
 
@@ -412,7 +412,7 @@
       ◀ {{#if isTh}}ย้อนกลับ{{else}}Back{{/if}}
     </button>
     {{#unless isStep6}}
-      <button type="button" class="brp-btn primary" data-action="nextStep">
+      <button type="button" class="brp-btn primary" data-action="nextStep" {{#if occupationNextDisabled}}disabled{{/if}}>
         {{#if isTh}}ขั้นตอนถัดไป{{else}}Next{{/if}} ▶
       </button>
     {{else}}

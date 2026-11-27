@@ -472,7 +472,11 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.personalityLabel=context.personalityChoices.find(p=>p.selected)?.label || "";
     context.personalityCount=personality.size;
     context.personalityEnabled=this.wizardData.personalityType!=='none';
-    context.personalityAvailable=this.skillCatalog.map((s,index)=>({s,index})).filter(({s})=>!isSkillFamilyTemplate(s)&&!specialtyNeedsReview(analyzeSkillFamily(s)?.enSpecialty||'') || !analyzeSkillFamily(s)?.supportsSpecialty).map(({s,index})=>{
+    context.personalityAvailable=this.skillCatalog.map((s,index)=>({s,index})).filter(({s})=>{
+      if(isSkillFamilyTemplate(s))return false;
+      const info=analyzeSkillFamily(s);
+      return !info?.supportsSpecialty||!specialtyNeedsReview(info.enSpecialty);
+    }).map(({s,index})=>{
       const selected=personality.has(s.system?.referenceKey||s.system?.nameEn||s.name);
       return {index,label:getDisplayItemName(s,uiLang),selected,disabled:!selected&&personality.size>=13};
     }).sort((a,b)=>a.label.localeCompare(b.label,uiLang));
@@ -656,6 +660,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.occupationStage2=this.occupationStage===2;
     context.occupationStage3=this.occupationStage===3;
     context.occupationStageReady=choiceStatus.valid&&!context.occupationMetadataMissing&&!context.professionMissingSkillCount;
+    context.occupationNextDisabled=this.step===4&&this.occupationStage===2&&!context.occupationStageReady;
     context.occupationStages=[{num:1,label:isTh?'เลือกอาชีพ':'Choose occupation'},{num:2,label:isTh?'เลือกทักษะอาชีพ':'Choose occupation skills'},{num:3,label:isTh?'จัดสรรแต้มทักษะ':'Allocate skill points'}].map(s=>({...s,active:s.num===this.occupationStage,complete:s.num<this.occupationStage,disabled:s.num===3&&!context.occupationStageReady}));
     // Do not flood creation with every Compendium Skill (Art (...),
     // Science (...), etc.). A Specialty is visible for point allocation only
@@ -990,6 +995,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(this.choiceBusy){target.checked=!target.checked;return;}
     const id=String(target.dataset.groupId||''),key=String(target.dataset.key||'');
     const prof=this.#getProfession();
+    this.#refreshSpecialtyRegistry();
     const group=resolveOccupationTemplateGroups(prof,this.librarySkillDocs).find(g=>g.id===id);
     if(!group)return;
     const previous=this.wizardData.choiceSelections[id]||[];
