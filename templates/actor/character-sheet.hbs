@@ -110,8 +110,8 @@
         </div>
         <progress class="brp-resource-meter" aria-label="PP" value="{{system.pp.value}}" max="{{system.pp.max}}"></progress>
         <div class="pool-recovery-row">
-          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="pp25" title="ฟื้นฟู PP 25%">+25%</button>
-          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull" title="ฟื้นฟู PP เต็ม">{{#if isTh}}เต็ม{{else}}Full{{/if}}</button>
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="pp25" title="{{#if isTh}}ฟื้นฟู PP 25%{{else}}Restore 25% PP{{/if}}">+25%</button>
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull" title="{{#if isTh}}ฟื้นฟู PP เต็ม{{else}}Restore full PP{{/if}}">{{#if isTh}}เต็ม{{else}}Full{{/if}}</button>
         </div>
       </div>
 
@@ -216,7 +216,7 @@
           <span>{{ui.resistTitle}}</span>
           {{#if targetActor}}
             <span class="resist-target-banner">
-              <i class="fa-solid fa-bullseye" aria-hidden="true"></i> เป้าหมาย: <strong>{{targetActor.name}}</strong> ({{targetActor.ap}} AP · HP {{targetActor.hp}}/{{targetActor.hpMax}})
+              <i class="fa-solid fa-bullseye" aria-hidden="true"></i> {{#if isTh}}เป้าหมาย:{{else}}Target:{{/if}} <strong>{{targetActor.name}}</strong> ({{targetActor.ap}} AP · HP {{targetActor.hp}}/{{targetActor.hpMax}})
             </span>
           {{/if}}
         </div>
@@ -248,11 +248,11 @@
             </div>
           </div>
           <div class="resist-chance-box">
-            <span>โอกาส</span>
+            <span>{{#if isTh}}โอกาส{{else}}Chance{{/if}}</span>
             <strong class="resist-chance-val">{{resistChance}}%</strong>
           </div>
           <div class="toolbar-btns">
-            <button type="button" class="brp-btn" data-action="pullTargetResistStat" title="ดึงค่าจากโทเคนที่ Target ไว้">ดึง Target</button>
+            <button type="button" class="brp-btn" data-action="pullTargetResistStat" title="ดึงค่าจากโทเคนที่ Target ไว้"{{#if isTh}}>ดึง Target{{else}}Use target{{/if}}</button>
             <button type="button" class="brp-btn primary" data-action="rollResistance">
               {{ui.resistRollBtn}}
             </button>
@@ -368,7 +368,7 @@
             <i class="fa-solid fa-bullseye" aria-hidden="true"></i> เป้าหมาย (Target): <strong>{{targetActor.name}}</strong> · เกราะ <strong>{{targetActor.ap}} AP</strong> · HP <strong>{{targetActor.hp}}/{{targetActor.hpMax}}</strong> (ระบบจะดึงค่าเป้าหมายลงในการ์ดโจมตีและทำดาเมจอัตโนมัติ)
           </div>
         {{else}}
-          <div class="toolbar-hint" style="margin-bottom:8px;"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> กด Target โทเคน (T) เพื่อคำนวณค่า AP และหลบหลีกอัตโนมัติ</div>
+          <div class="toolbar-hint" style="margin-bottom:8px;"><i class="fa-solid fa-crosshairs" aria-hidden="true"></i> {{#if isTh}}ไม่มีเป้าหมาย{{else}}No target{{/if}}</div>
         {{/if}}
         <div class="combat-split">
           <div class="panel-card">

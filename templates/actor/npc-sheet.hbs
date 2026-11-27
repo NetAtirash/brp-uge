@@ -104,7 +104,7 @@
         <progress class="brp-resource-meter" aria-label="PP" value="{{system.pp.value}}" max="{{system.pp.max}}"></progress>
         <div class="pool-recovery-row">
           <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="pp25">+25%</button>
-          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull">เต็ม</button>
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull">{{#if isTh}}เต็ม{{else}}Full{{/if}}</button>
         </div>
       </div>
 
@@ -177,7 +177,7 @@
           <span>{{ui.resistTitle}}</span>
           {{#if targetActor}}
             <span class="resist-target-banner">
-              <i class="fa-solid fa-bullseye" aria-hidden="true"></i> เป้าหมาย: <strong>{{targetActor.name}}</strong> ({{targetActor.ap}} AP · HP {{targetActor.hp}}/{{targetActor.hpMax}})
+              <i class="fa-solid fa-bullseye" aria-hidden="true"></i> {{#if isTh}}เป้าหมาย:{{else}}Target:{{/if}} <strong>{{targetActor.name}}</strong> ({{targetActor.ap}} AP · HP {{targetActor.hp}}/{{targetActor.hpMax}})
             </span>
           {{/if}}
         </div>
@@ -209,11 +209,11 @@
             </div>
           </div>
           <div class="resist-chance-box">
-            <span>โอกาส</span>
+            <span>{{#if isTh}}โอกาส{{else}}Chance{{/if}}</span>
             <strong class="resist-chance-val">{{resistChance}}%</strong>
           </div>
           <div class="toolbar-btns">
-            <button type="button" class="brp-btn" data-action="pullTargetResistStat">ดึง Target</button>
+            <button type="button" class="brp-btn" data-action="pullTargetResistStat"{{#if isTh}}>ดึง Target{{else}}Use target{{/if}}</button>
             <button type="button" class="brp-btn primary" data-action="rollResistance">
               {{ui.resistRollBtn}}
             </button>

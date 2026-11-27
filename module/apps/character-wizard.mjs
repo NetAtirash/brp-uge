@@ -97,6 +97,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     this.#syncStarterGear();
   }
 
+  get title() { return game.settings.get("brp-uge", "uiLanguage") === "en" ? "BRP UGE Character Creation Wizard" : "ตัวช่วยสร้างตัวละคร BRP UGE"; }
+
   static DEFAULT_OPTIONS = {
     id: "brp-character-wizard",
     classes: ["brp-uge", "brp-wizard-window"],
@@ -105,7 +107,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       height: 740
     },
     window: {
-      title: "ตัวช่วยสร้างตัวละคร BRP UGE (Character Creation Wizard)",
+      title: "BRP UGE",
       resizable: true
     },
     actions: {
@@ -325,9 +327,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       throw new Error('This Skill source is unavailable');
     }
     const candidate=findSpecialtyCandidate(this.specialtyRegistry,key);
-    if(!candidate)throw new Error('This Specialty is hidden or not approved by the GM');
+    if(!candidate)throw new Error(game.settings.get('brp-uge','uiLanguage')==='en'?'Specialty unavailable':'ไม่มีความเชี่ยวชาญนี้');
     const template=specialtyTemplateFor(candidate.family,candidate.option,this.librarySkillDocs);
-    if(!template)throw new Error('A matching source Skill template must be configured by the GM');
+    if(!template)throw new Error(game.settings.get('brp-uge','uiLanguage')==='en'?'Skill unavailable':'ไม่มีทักษะนี้');
     const sourceRef=candidate.option.sourceUuid||candidate.option.templateUuid;
     const sameSource=existing && (
       existing.flags?.core?.sourceId===sourceRef ||
@@ -464,6 +466,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.ageCharacteristicDeltas=Object.entries(effectiveCh).filter(([key,value])=>value!==ch[key])
       .map(([key,value])=>`${key.toUpperCase()} ${value>ch[key]?'+':''}${value-ch[key]}`).join(' · ');
     context.personalityChoices=Object.entries(PERSONALITY_TYPES).map(([key,value])=>({key,label:isTh?value.th:value.en,selected:this.wizardData.personalityType===key}));
+    context.personalityLabel=context.personalityChoices.find(p=>p.selected)?.label || "";
     context.personalityCount=personality.size;
     context.personalityAvailable=this.skillCatalog.map((s,index)=>({index,label:getDisplayItemName(s,uiLang),selected:personality.has(s.system?.referenceKey||s.system?.nameEn||s.name)}));
     context.personalitySelected=context.personalityAvailable.filter(s=>s.selected);
@@ -1077,7 +1080,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     }
     const info=analyzeSkillFamily(tpl);
     if(info?.supportsSpecialty && specialtyNeedsReview(info.enSpecialty) && delta>0)
-      return ui.notifications.warn('GM must curate a concrete Specialty before assigning points');
+      return ui.notifications.warn(game.settings.get('brp-uge','uiLanguage')==='en'?'Select a specialty':'เลือกความเชี่ยวชาญ');
     if(pool==='occ'&&!this.#isOccupationalSkill(tpl,this.#getProfession())) {
       return ui.notifications.warn('Occupation points must be spent on skills allowed by the selected occupation');
     }
