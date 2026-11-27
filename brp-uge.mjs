@@ -1,5 +1,5 @@
 import { BRP_CONFIG, getCampaignRules } from "./module/config.mjs";
-import { PAPER_THEMES, applyPaperTheme, currentPaperTheme } from "./module/paper-appearance.mjs";
+import { PAPER_THEMES, applyPaperTheme, currentPaperTheme, installTooltipThemeSync } from "./module/paper-appearance.mjs";
 import {
   CharacterDataModel,
   NPCDataModel,
@@ -565,11 +565,5 @@ Hooks.once('ready', () => BRPCombatPhases.refreshSceneHUD());
 // Establish the user's paper palette once on login; other modules can extend it.
 Hooks.once('ready', () => {
   applyPaperTheme();
-  const html = globalThis.document?.documentElement;
-  globalThis.document?.addEventListener?.('pointerover', (event) => {
-    if (html) html.dataset.brpTooltip = event.target?.closest?.('.brp-uge [data-tooltip]') ? 'true' : 'false';
-  }, true);
-  globalThis.document?.addEventListener?.('focusin', (event) => {
-    if (html) html.dataset.brpTooltip = event.target?.closest?.('.brp-uge [data-tooltip]') ? 'true' : 'false';
-  }, true);
+  installTooltipThemeSync();
 });

@@ -1,0 +1,20 @@
+/* Live QA: targeted accessibility and Wizard interaction corrections, not a visual redesign. */
+html[data-brp-theme="light"] .brp-uge .brp-sheet-combat-status{background:#e1eaf3!important;border-color:#55718a!important;color:#23394c!important}
+html[data-brp-theme="light"] .brp-uge .brp-sheet-combat-status :is(strong,span,i){color:#23394c!important}
+html[data-brp-theme="light"] .brp-uge .brp-sheet-combat-status .brp-sheet-combat-rank{background:#f4f8fc!important;border-color:#55718a!important}
+html[data-brp-theme="dark"] .brp-uge .brp-sheet-combat-status{background:#1d2d40!important;border-color:#7692ad!important;color:#e5f0fa!important}
+html[data-brp-theme="dark"] .brp-uge .brp-sheet-combat-status :is(strong,span,i){color:#e5f0fa!important}
+html[data-brp-theme="light"] .brp-uge .toolbar-hint{color:#49372f!important}
+html[data-brp-theme="light"] .application.brp-uge .window-header{background:#e9dfcf!important;color:#28201c!important}
+html[data-brp-theme="light"] .application.brp-uge .window-header :is(.window-title,button,a,i){color:#28201c!important}
+html[data-brp-theme] .brp-uge .brp-wiz-step4-progress{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}
+html[data-brp-theme] .brp-uge .brp-wiz-step4-progress button{white-space:normal;min-height:40px;line-height:1.4}
+html[data-brp-theme] .brp-uge .brp-wiz-step4-progress button[aria-current="step"]{border:2px solid var(--brp-accent)!important;font-weight:800;box-shadow:inset 0 -2px 0 var(--brp-accent)!important}
+html[data-brp-theme] .brp-uge .brp-wiz-step4-progress button:disabled{opacity:.65;cursor:not-allowed}
+html[data-brp-theme] .brp-uge .brp-wiz-choice-group legend{color:var(--brp-text)!important;font-weight:750;padding:0 5px}
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-option input[type="checkbox"]{width:18px!important;height:18px!important;flex:0 0 18px;margin:0;accent-color:var(--brp-accent)!important}
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-option:has(input:focus-visible){outline:2px solid var(--brp-focus)!important;outline-offset:2px}
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-option:has(input:checked){border-color:var(--brp-accent)!important;background:var(--brp-highlight)!important}
+html[data-brp-theme] .brp-uge .brp-wiz-specialty-option:has(input:disabled){cursor:not-allowed}
+html[data-brp-theme] .brp-uge .brp-wiz-personal-specialty summary{color:var(--brp-text)!important;font-weight:700;cursor:pointer}
+html[data-brp-theme] .brp-uge .wiz-alloc-grp>span[aria-label]{color:var(--brp-muted)!important}

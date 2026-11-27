@@ -33,11 +33,14 @@ assert.equal(data.productionStylesheetsBefore,19);
 assert.equal(data.productionStylesheetsAfter,1);
 assert.ok(data.savings.rawBytes>0);
 assert.ok(data.savings.gzipBytes>=0);
-assert.equal(data.optimized.bytes,read(runtime).length);
+const full=read(runtime);
+const baseline=full.subarray(0,data.optimized.bytes);
+const overlay=read(ownership.liveQaOverlay);
+assert.deepEqual(full.subarray(data.optimized.bytes),Buffer.concat([Buffer.from('\n'),overlay]),'exact Live QA overlay appended');
 assert.equal(data.sourceFiles,19);
 assert.ok(data.previous.forcedPriorityOccurrences>0,'legacy CSS content remains');
 assert.match(data.note,/No live Foundry/);
 assert.equal(data.cssSourceOrder.join('|'),ownership.baselineOriginalStyles.join('|'));
-assert.equal(data.optimized.sha256,createHash('sha256').update(read(runtime)).digest('hex'),
+assert.equal(data.optimized.sha256,createHash('sha256').update(baseline).digest('hex'),
   'Structural cleanup must preserve byte-identical compiled CSS');
 console.log('PASS CSS-only optimization: unchanged data/UI, 19-to-1 CSS delivery, audited reductions');

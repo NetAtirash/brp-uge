@@ -93,5 +93,6 @@
         "styles/brp-v12111-specialty-management.css"
       ]
     }
-  ]
+  ],
+  "liveQaOverlay": "styles/brp-live-qa-accessibility.css"
 }
