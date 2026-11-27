@@ -90,3 +90,22 @@ export function firstAidFormula(degree) {
 export function medicineFormula(degree) {
   return ({critical:"1d3+3", special:"2d3", success:"1d3"})[degree] || null;
 }
+
+/** Last attempt, not a claim that a wound has closed. Historical false positives
+ * (treated=true on failure) are resolved from the saved degree, without rewriting data. */
+export function careResultLabel(degree, th) {
+  return ({success: th ? "สำเร็จ" : "Success", special: th ? "สำเร็จพิเศษ" : "Special",
+    critical: th ? "สำเร็จวิกฤต" : "Critical", failure: th ? "ไม่สำเร็จ" : "Failure",
+    fail: th ? "ไม่สำเร็จ" : "Failure", fumble: th ? "ผิดพลาดร้ายแรง" : "Fumble"})[degree] || (th ? "ไม่ทราบผล" : "Unknown result");
+}
+export function careMethodLabel(method, th) {
+  return ({firstAid: th ? "ปฐมพยาบาล" : "First Aid", medicine: th ? "การแพทย์" : "Medicine",
+    psychotherapy: th ? "จิตบำบัด" : "Psychotherapy", natural: th ? "ฟื้นตามธรรมชาติ" : "Natural Recovery"})[method] || "";
+}
+export function careStatus(condition, th) {
+  if (!condition || condition.healed || condition.cured) return "";
+  if (!condition.treatmentResult && !condition.treatmentCount && !condition.firstAidAttempted && !condition.treated) return "";
+  const method = careMethodLabel(condition.treatmentMethod || (condition.firstAidAttempted ? "firstAid" : ""), th);
+  const result = careResultLabel(condition.treatmentResult, th);
+  return [method, result].filter(Boolean).join(" · ");
+}

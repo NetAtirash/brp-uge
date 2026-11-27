@@ -21,3 +21,31 @@ const therapy=await actor.applyCare({method:'psychotherapy',targetId:'s1',rollRe
 assert.equal(therapy.gained,1);assert.equal(actor.system.san.value,38);assert.equal(actor.system.insanities[0].cured,false);
 assert.equal(actor.system.insanities[0].treated,true);
 console.log('PASS: first aid 1/wound, partial HP without auto-clearing wound, therapy partial SAN without auto-curing');
+
+const {careStatus}=await import('../module/character-tools.mjs');
+for(const degree of ['failure','fail','fumble']){
+  actor.system.hp.value=7;
+  actor.system.wounds=[{id:'bad',title:'Cut',hpLost:3,recoveryHp:0,firstAidAttempted:false,healed:false}];
+  const result=await actor.applyCare({method:'firstAid',targetId:'bad',rollResult:{degree,isSuccess:false}});
+  const w=actor.system.wounds[0];
+  assert.equal(result.gained,0);assert.equal(w.recoveryHp,0);
+  assert.equal(actor.system.hp.value,degree==='fumble'?6:7);
+  assert.equal(w.treated,false);assert.equal(w.healed,false);
+  assert.equal(w.firstAidAttempted,true);assert.equal(w.treatmentCount,1);
+  assert.equal(w.treatmentResult,degree);
+  assert.match(careStatus({...w,treated:true},false),/Failure|Fumble/);
+  assert.match(careStatus({...w,treated:true},true),/ไม่สำเร็จ|ผิดพลาด/);
+  await assert.rejects(()=>actor.applyCare({method:'firstAid',targetId:'bad',rollResult:{degree:'success'}}));
+}
+actor.system.hp.value=10;
+actor.system.wounds=[{id:'full',hpLost:3,recoveryHp:0,firstAidAttempted:false,healed:false}];
+const zero=await actor.applyCare({method:'firstAid',targetId:'full',rollResult:{degree:'success',isSuccess:true}});
+assert.equal(zero.gained,0);assert.equal(actor.system.wounds[0].healed,false);
+assert.equal(careStatus(actor.system.wounds[0],false),'First Aid · Success');
+assert.equal(careStatus({...actor.system.wounds[0],healed:true},false),'');
+actor.system.insanities=[{id:'bad-mental',recoverySan:0,cured:false}];
+await actor.applyCare({method:'psychotherapy',targetId:'bad-mental',rollResult:{degree:'failure',isSuccess:false}});
+assert.equal(actor.system.insanities[0].treated,false);
+assert.equal(actor.system.insanities[0].cured,false);
+assert.equal(careStatus(actor.system.insanities[0],false),'Psychotherapy · Failure');
+console.log('PASS: failed care, fumble, legacy false-positive display, zero-gain success and closure are distinct');

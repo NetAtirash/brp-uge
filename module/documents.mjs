@@ -2,7 +2,7 @@ import {findActorSkill} from "./reference-utils.mjs";
 import { BRP_CONFIG, getCampaignRules } from "./config.mjs";
 import { compareBRPTurns, brpActionRank } from "./combat/combat-flow-utils.mjs";
 import { majorWoundPatch } from "./rules/major-wounds.mjs";
-import { sumAdvancement, escapeForChat, recoveredPoints, firstAidFormula, medicineFormula, getSkillNameMatches, getLocalizedName, getNameLanguage } from "./character-tools.mjs";
+import { sumAdvancement, escapeForChat, recoveredPoints, firstAidFormula, medicineFormula, careMethodLabel, careResultLabel, getSkillNameMatches, getLocalizedName, getNameLanguage } from "./character-tools.mjs";
 import { statusSkillAdjustment } from "./status-effects.mjs";
 
 export class BRPActor extends Actor {
@@ -90,15 +90,15 @@ export class BRPActor extends Actor {
     return netDamage;
   }
 
-  async addWound({ title, severity = "minor", hpLost = 1, location = "ลำตัว", notes = "", deductHp = true }) {
+  async addWound({ title, severity = "minor", hpLost = 1, location = "", notes = "", deductHp = true }) {
     const loss = Math.max(0, Number(hpLost || 0));
     const current = foundry.utils.deepClone(this.system.wounds ?? []);
     current.unshift({
       id: foundry.utils.randomID(),
-      title: String(title || "บาดแผล"),
+      title: String(title || (getNameLanguage() === "en" ? "Wound" : "บาดแผล")),
       severity,
       hpLost: loss,
-      location: String(location || "ทั่วไป"),
+      location: String(location || (getNameLanguage() === "en" ? "General" : "ทั่วไป")),
       notes: String(notes || ""),
       healed: false,
       createdAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -115,7 +115,7 @@ export class BRPActor extends Actor {
     if (deductHp && loss > 0) {
       await ChatMessage.implementation.create({
         speaker: ChatMessage.getSpeaker({ actor: this }),
-        content: `<div class="brp-chat-card is-fail"><div class="card-header"><strong>${escapeForChat(this.name)}</strong> บันทึกบาดแผล: <strong>${escapeForChat(String(title || "บาดแผล"))}</strong></div><div class="card-actor">ลด HP อัตโนมัติ <strong>−${loss}</strong> · เหลือ <strong>${nextHp}/${this.system.hp?.max ?? 10}</strong></div></div>`
+        content: `<div class="brp-chat-card is-fail"><div class="card-header"><strong>${escapeForChat(this.name)}</strong> บันทึกบาดแผล: <strong>${escapeForChat(String(title || (getNameLanguage() === "en" ? "Wound" : "บาดแผล")))}</strong></div><div class="card-actor">ลด HP อัตโนมัติ <strong>−${loss}</strong> · เหลือ <strong>${nextHp}/${this.system.hp?.max ?? 10}</strong></div></div>`
       });
     }
     return res;
@@ -163,7 +163,7 @@ export class BRPActor extends Actor {
     const current = foundry.utils.deepClone(this.system.insanities ?? []);
     current.unshift({
       id: foundry.utils.randomID(),
-      title: String(title || "อาการเสียสติ / หวาดกลัว"),
+      title: String(title || (getNameLanguage() === "en" ? "Mental condition" : "อาการทางจิต")),
       kind,
       sanLost: loss,
       duration: String(duration || ""),
@@ -217,18 +217,19 @@ export class BRPActor extends Actor {
     if (method !== "psychotherapy" && !wound && method !== "natural") throw new Error("กรุณาเลือกบาดแผลก่อนรักษา");
     if (method === "psychotherapy" && !mental) throw new Error("กรุณาเลือกอาการทางจิตก่อนบำบัด");
     if (method === "firstAid" && wound.firstAidAttempted) throw new Error("First Aid สามารถพยายามได้เพียงครั้งเดียวต่อบาดแผล");
-    const degree = rollResult?.degree ?? "success";
+    const degree = rollResult?.degree ?? (method === "natural" ? "success" : "failure");
+    const successful = ["success", "special", "critical"].includes(degree);
+    const th = getNameLanguage() !== "en";
     const patch = {};
-    // A treatment attempt is recorded even if the skill fails. Treating a wound
-    // is not the same as resolving it; the player/GM explicitly closes it later.
+    // Keep attempt history separate from a successful treatment and closure.
     if (wound && (method === "firstAid" || method === "medicine")) {
-      wound.treated = true;
+      wound.treated = successful;
       wound.treatmentMethod = method;
       wound.treatmentResult = degree;
       wound.treatmentCount = Number(wound.treatmentCount ?? 0) + 1;
     }
     if (mental && method === "psychotherapy") {
-      mental.treated = true;
+      mental.treated = successful;
       mental.treatmentMethod = method;
       mental.treatmentResult = degree;
       mental.treatmentCount = Number(mental.treatmentCount ?? 0) + 1;
@@ -245,7 +246,7 @@ export class BRPActor extends Actor {
     } else if (method === "medicine") {
       if (choice === "accelerate" && rollResult?.isSuccess) {
         await this.setFlag("brp-uge", "medicineFastHealing", true);
-        outcome = "Medicine: ฟื้นตามธรรมชาติ 2D3 HP/สัปดาห์ จนกว่าจะสิ้นสุดการดูแล (GM พิจารณา)";
+        outcome = th ? "เร่งการฟื้นฟู 2D3 HP/สัปดาห์" : "Accelerated recovery: 2D3 HP/week";
       } else formula = medicineFormula(degree);
     } else if (method === "natural") {
       formula = this.getFlag("brp-uge", "medicineFastHealing") ? "2d3" : "1d3";
@@ -271,7 +272,7 @@ export class BRPActor extends Actor {
     // A successful healing roll never automatically removes the diagnosed condition.
     await ChatMessage.implementation.create({
       speaker: ChatMessage.getSpeaker({ actor: healer ?? this }),
-      content: `<div class="brp-chat-card"><strong>${escapeForChat(healer?.name ?? this.name)}</strong> → ${escapeForChat(this.name)} · ${escapeForChat(method)}: ${escapeForChat(outcome || degree)}. ${escapeForChat(wound?.title ?? mental?.title ?? "")} (สถานะยังคงอยู่จนกว่า GM/ผู้เล่นจะปิดเอง)</div>`,
+      content: `<div class="brp-chat-card"><strong>${escapeForChat(healer?.name ?? this.name)}</strong> → ${escapeForChat(this.name)} · ${escapeForChat(careMethodLabel(method, th))}: ${escapeForChat(careResultLabel(degree, th))}${outcome ? ` · ${escapeForChat(outcome)}` : ""}. ${escapeForChat(wound?.title ?? mental?.title ?? "")}</div>`,
       ...(rollResult?.messageMode === "gm" ? {whisper: game.users.filter(u=>u.isGM).map(u=>u.id)} :
          rollResult?.messageMode === "blind" ? {whisper: game.users.filter(u=>u.isGM).map(u=>u.id), blind: true} :
          rollResult?.messageMode === "self" ? {whisper: [game.user.id]} : {})

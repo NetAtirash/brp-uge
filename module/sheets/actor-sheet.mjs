@@ -7,7 +7,7 @@ import { BRPRolls } from "../rolls/brp-rolls.mjs";
 import { getLibraryDocuments, documentToEmbeddedItem } from "../library-provider.mjs";
 import { getBRPIcon, getThemedBRPIcon } from "../library-taxonomy.mjs";
 import { statusSkillAdjustment, characteristicAdjustments, agePenalties, agePenaltyBreakdown } from "../status-effects.mjs";
-import { escapeForChat, getItemTooltip, getTooltipLanguage, getLocalizedName, getDisplayItemName, getNameLanguage, getSkillNameMatches, powerMode, powerChance } from "../character-tools.mjs";
+import { escapeForChat, getItemTooltip, getTooltipLanguage, getLocalizedName, getDisplayItemName, getNameLanguage, getSkillNameMatches, powerMode, powerChance, careStatus, careMethodLabel } from "../character-tools.mjs";
 import { creationBudgets } from "../rules/character-creation.mjs";
 import { BRPSkillPointsEditor } from "../apps/skill-points-editor.mjs";
 import { shouldShowCategoryColumn } from "../skill-points-utils.mjs";
@@ -288,12 +288,14 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     };
     context.woundsList = (sys?.wounds ?? []).map((w) => ({
       ...w,
+      careStatus: careStatus(w, isTh),
       recoveryRemaining: Math.max(0, Number(w.hpLost ?? 0) - Number(w.recoveryHp ?? 0)),
       severityLabel: severityLabels[w.severity] ?? w.severity,
       majorLossSummary: Object.entries(w.majorLosses ?? {}).filter(([,v])=>Number(v)>0).map(([k,v])=>`${k.toUpperCase()} −${v}`).join(" · ")
     }));
     context.insanitiesList = (sys?.insanities ?? []).map((c) => ({
       ...c,
+      careStatus: careStatus(c, isTh),
       kindLabel: kindLabels[c.kind] ?? c.kind
     }));
     context.activeWoundsCount = context.woundsList.filter((w) => !w.healed).length;
@@ -630,29 +632,30 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async #onAddWound(event) {
     event.preventDefault();
+    const th = getNameLanguage() !== "en";
     const { DialogV2 } = foundry.applications.api;
     await DialogV2.wait({
-      window: { title: `บันทึกบาดแผลใหม่ — ${this.document.name}` },
+      window: { title: `${th ? "บันทึกบาดแผลใหม่" : "New wound"} — ${this.document.name}` },
       content: `
         <form class="brp-macro-form">
-          <div class="form-group"><label>อาการบาดเจ็บ</label><input type="text" name="title" list="brp-wound-presets" value="" placeholder="เลือกหรือพิมพ์ใหม่" /><datalist id="brp-wound-presets">${game.settings.get("brp-uge", "woundSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
+          <div class="form-group"><label>${th ? "อาการบาดเจ็บ" : "Injury"}</label><input type="text" name="title" list="brp-wound-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-wound-presets">${game.settings.get("brp-uge", "woundSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
           <div class="form-group">
-            <label>ความรุนแรง</label>
+            <label>${th ? "ความรุนแรง" : "Severity"}</label>
             <select name="severity">
-              <option value="minor">บาดแผลทั่วไป (Minor)</option>
-              <option value="major">บาดแผลฉกรรจ์ (Major Wound)</option>
-              <option value="bleeding">เลือดไหลต่อเนื่อง (Bleeding)</option>
+              <option value="minor">${th ? "บาดแผลทั่วไป" : "Minor"}</option>
+              <option value="major">${th ? "บาดแผลฉกรรจ์" : "Major wound"}</option>
+              <option value="bleeding">${th ? "เลือดไหลต่อเนื่อง" : "Bleeding"}</option>
             </select>
           </div>
-          <div class="form-group"><label>HP ที่เสีย (ระบบจะหักจาก HP อัตโนมัติ)</label><input type="number" name="hpLost" value="3" min="0" /></div>
-          <div class="form-group"><label>ตำแหน่งร่างกาย</label><input type="text" name="location" list="brp-body-presets" value="" placeholder="เลือกหรือพิมพ์ใหม่" /><datalist id="brp-body-presets">${game.settings.get("brp-uge", "bodySuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
-          <div class="form-group"><label>หมายเหตุ</label><input type="text" name="notes" value="" /></div>
+          <div class="form-group"><label>${th ? "HP ที่เสีย" : "HP lost"}</label><input type="number" name="hpLost" value="3" min="0" /></div>
+          <div class="form-group"><label>${th ? "ตำแหน่งร่างกาย" : "Body location"}</label><input type="text" name="location" list="brp-body-presets" value="" placeholder="เลือกหรือพิมพ์ใหม่" /><datalist id="brp-body-presets">${game.settings.get("brp-uge", "bodySuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
+          <div class="form-group"><label>${th ? "หมายเหตุ" : "Notes"}</label><input type="text" name="notes" value="" /></div>
         </form>
       `,
       buttons: [
         {
           action: "save",
-          label: "บันทึกบาดแผล",
+          label: th ? "บันทึกบาดแผล" : "Save wound",
           default: true,
           callback: async (_ev, button) => {
             const f = button.form;
@@ -683,26 +686,21 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     const healerChoices = healers.map(a => `<option value="${esc(a.id)}" ${a.id===actor.id ? "selected" : ""}>${esc(a.name)}</option>`).join("");
     const noConditions = !conditions.length;
     if (method !== "natural" && noConditions) return ui.notifications.warn(th ? "ไม่มีอาการที่ยังค้างอยู่" : "No unresolved conditions");
-    const details = method === "firstAid"
-      ? "First Aid: 1 ครั้ง/บาดแผล · Success 1D3 · Special 2D3 · Critical 3+1D3 · Fumble −1 HP"
-      : method === "medicine" ? "Medicine: ทดสอบทักษะ; Success ฟื้น 1D3 HP หรือเร่งฟื้นตามธรรมชาติเป็น 2D3/สัปดาห์"
-      : method === "psychotherapy" ? "Psychotherapy: 4–5 ชม./เดือน/อาการ · Success ฟื้น 1D3−1 SAN (ต้องรักษาต่อเนื่อง)"
-      : "Natural Recovery: ฟื้น 1D3 HP ต่อสัปดาห์ตามสภาพแวดล้อม; GM เป็นผู้กำหนดช่วงเวลา";
+    const details = careMethodLabel(method, th);
     const form = await foundry.applications.api.DialogV2.input({
       window: { title: `${th ? "การรักษาและฟื้นฟู" : "Treatment & Recovery"} — ${actor.name}` },
       modal: true, rejectClose: false,
       content: `<div class="brp-macro-form brp-care-dialog">
-        <p>${esc(details)}</p>
         ${conditions.length ? `<label>${th ? "อาการ / บาดแผล" : "Condition"}</label><select name="targetId">${options}</select>` : '<input type="hidden" name="targetId" value="" />'}
-        ${method !== "natural" ? `<label>${th ? "ผู้รักษา (ทอยทักษะของบุคคลนี้)" : "Healer (roll their skill)"}</label><select name="healerId">${healerChoices}</select>` : ""}
-        ${method === "medicine" ? `<label>${th ? "ผลที่ต้องการ" : "Treatment goal"}</label><select name="choice"><option value="heal">รักษา HP</option><option value="accelerate">เร่งการฟื้นตามธรรมชาติ (2D3/สัปดาห์)</option><option value="endAccelerate">ยุติการดูแลเร่งฟื้น (ไม่ต้องทอย)</option></select>` : ""}
-        ${method === "natural" ? `<label>${th ? "การแสดงผลการฟื้นฟู" : "Recovery visibility"}</label><select name="messageMode"><option value="public">สาธารณะ</option><option value="gm">เฉพาะ GM</option><option value="blind">ลับถึง GM</option><option value="self">เฉพาะตนเอง</option></select>` : ""}
+        ${method !== "natural" ? `<label>${th ? "ผู้รักษา" : "Healer"}</label><select name="healerId">${healerChoices}</select>` : ""}
+        ${method === "medicine" ? `<label>${th ? "ผลที่ต้องการ" : "Treatment goal"}</label><select name="choice"><option value="heal">${th ? "รักษา HP" : "Restore HP"}</option><option value="accelerate">${th ? "เร่งการฟื้นตามธรรมชาติ (2D3/สัปดาห์)" : "Accelerated recovery (2D3/week)"}</option><option value="endAccelerate">${th ? "ยุติการดูแลเร่งฟื้น (ไม่ต้องทอย)" : "End accelerated recovery"}</option></select>` : ""}
+        ${method === "natural" ? `<label>${th ? "การแสดงผลการฟื้นฟู" : "Recovery visibility"}</label><select name="messageMode"><option value="public">${th ? "สาธารณะ" : "Public"}</option><option value="gm">${th ? "เฉพาะ GM" : "GM only"}</option><option value="blind">${th ? "ลับถึง GM" : "Blind GM"}</option><option value="self">${th ? "เฉพาะตนเอง" : "Self only"}</option></select>` : ""}
       </div>`, ok: {label: th ? "ดำเนินการ" : "Continue"}
     });
     if (!form) return;
     const targetId = String(form.targetId ?? "");
     const selectedWound = (actor.system.wounds ?? []).find(w => w.id === targetId);
-    if (method === "firstAid" && selectedWound?.firstAidAttempted) return ui.notifications.warn("บาดแผลนี้ผ่าน First Aid ไปแล้ว");
+    if (method === "firstAid" && selectedWound?.firstAidAttempted) return ui.notifications.warn(th ? "บาดแผลนี้เคยปฐมพยาบาลแล้ว" : "First Aid already attempted for this wound");
     const healer = method !== "natural" ? (game.actors.get(String(form.healerId)) ?? actor) : null;
     const matchNames = {
       firstAid: ["First Aid","ปฐมพยาบาล"], medicine: ["Medicine","แพทยศาสตร์","การแพทย์"],
@@ -717,7 +715,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       const skill = healer.items.find(s => s.type === "skill" && matchNames[method].some(k => getSkillNameMatches(s,k) || String(s.system.description??"").includes(k)));
       const baseTarget = skill ? Number(skill.system.total ?? skill.system.base ?? 0) : ({firstAid:30,medicine:5,psychotherapy:1})[method];
       result = await BRPRolls.rollSkill({ actor: healer, skillId: skill?.id,
-        title: `${esc(getDisplayItemName(skill, getNameLanguage()) || method)} → ${esc(actor.name)}`,
+        title: `${esc(getDisplayItemName(skill, getNameLanguage()) || careMethodLabel(method, th))} → ${esc(actor.name)}`,
         subtitle: details, baseTarget });
       if (!result) return;
     }
@@ -744,29 +742,30 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static async #onAddInsanity(event) {
     event.preventDefault();
+    const th = getNameLanguage() !== "en";
     const { DialogV2 } = foundry.applications.api;
     await DialogV2.wait({
-      window: { title: `บันทึกอาการทางจิต / เสียสติ — ${this.document.name}` },
+      window: { title: `${th ? "บันทึกอาการทางจิต / เสียสติ" : "New mental condition"} — ${this.document.name}` },
       content: `
         <form class="brp-macro-form">
-          <div class="form-group"><label>ชื่ออาการ / โรคกลัว</label><input type="text" name="title" list="brp-mental-presets" value="" placeholder="เลือกหรือพิมพ์ใหม่" /><datalist id="brp-mental-presets">${game.settings.get("brp-uge", "mentalSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
+          <div class="form-group"><label>${th ? "ชื่ออาการ / โรคกลัว" : "Condition / phobia"}</label><input type="text" name="title" list="brp-mental-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-mental-presets">${game.settings.get("brp-uge", "mentalSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
           <div class="form-group">
-            <label>ประเภท</label>
+            <label>${th ? "ประเภท" : "Type"}</label>
             <select name="kind">
-              <option value="temporary">เสียสติชั่วคราว (Temporary)</option>
-              <option value="indefinite">เสียสติระยะยาว (Indefinite)</option>
-              <option value="phobia">โรคกลัว / ย้ำคิด (Phobia / Mania)</option>
+              <option value="temporary">${th ? "เสียสติชั่วคราว" : "Temporary"}</option>
+              <option value="indefinite">${th ? "เสียสติระยะยาว" : "Indefinite"}</option>
+              <option value="phobia">${th ? "โรคกลัว / ย้ำคิด" : "Phobia / mania"}</option>
             </select>
           </div>
-          <div class="form-group"><label>SAN ที่เสีย (ระบบจะหักจาก SAN อัตโนมัติ)</label><input type="number" name="sanLost" value="5" min="0" /></div>
-          <div class="form-group"><label>ระยะเวลา</label><input type="text" name="duration" value="1D10 ชั่วโมง" /></div>
-          <div class="form-group"><label>หมายเหตุ</label><input type="text" name="notes" value="" /></div>
+          <div class="form-group"><label>${th ? "SAN ที่เสีย" : "SAN lost"}</label><input type="number" name="sanLost" value="5" min="0" /></div>
+          <div class="form-group"><label>${th ? "ระยะเวลา" : "Duration"}</label><input type="text" name="duration" value="${th ? "1D10 ชั่วโมง" : "1D10 hours"}" /></div>
+          <div class="form-group"><label>${th ? "หมายเหตุ" : "Notes"}</label><input type="text" name="notes" value="" /></div>
         </form>
       `,
       buttons: [
         {
           action: "save",
-          label: "บันทึกอาการ",
+          label: th ? "บันทึกอาการ" : "Save condition",
           default: true,
           callback: async (_ev, button) => {
             const f = button.form;

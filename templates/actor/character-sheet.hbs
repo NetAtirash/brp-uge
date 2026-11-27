@@ -111,7 +111,7 @@
         <progress class="brp-resource-meter" aria-label="PP" value="{{system.pp.value}}" max="{{system.pp.max}}"></progress>
         <div class="pool-recovery-row">
           <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="pp25" title="ฟื้นฟู PP 25%">+25%</button>
-          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull" title="ฟื้นฟู PP เต็ม">เต็ม</button>
+          <button type="button" class="mini-rec-btn" data-action="recoverPool" data-recover="ppFull" title="ฟื้นฟู PP เต็ม">{{#if isTh}}เต็ม{{else}}Full{{/if}}</button>
         </div>
       </div>
 
@@ -528,13 +528,13 @@
           <div class="panel-card recovery-toolbar">
             <div class="panel-header brp-care-header">
               <h3><i class="fa-solid fa-kit-medical"></i> {{#if isTh}}การรักษาและฟื้นฟู{{else}}Treatment &amp; Recovery{{/if}}</h3>
-              <span class="meta-text">{{#if isTh}}เลือกวิธีรักษาและบาดแผลก่อนทอยทักษะ{{else}}Choose a method and condition before a skill roll{{/if}}</span>
+              
             </div>
             <div class="brp-care-methods">
-              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="firstAid"><i class="fa-solid fa-kit-medical"></i> First Aid</button>
-              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="medicine"><i class="fa-solid fa-user-doctor"></i> Medicine</button>
-              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="natural"><i class="fa-solid fa-leaf"></i> Natural Recovery</button>
-              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="psychotherapy"><i class="fa-solid fa-brain"></i> Psychotherapy</button>
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="firstAid"><i class="fa-solid fa-kit-medical"></i> {{#if isTh}}ปฐมพยาบาล{{else}}First Aid{{/if}}</button>
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="medicine"><i class="fa-solid fa-user-doctor"></i> {{#if isTh}}การแพทย์{{else}}Medicine{{/if}}</button>
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="natural"><i class="fa-solid fa-leaf"></i> {{#if isTh}}ฟื้นตามธรรมชาติ{{else}}Natural Recovery{{/if}}</button>
+              <button type="button" class="brp-btn brp-care-method" data-action="treatCondition" data-method="psychotherapy"><i class="fa-solid fa-brain"></i> {{#if isTh}}จิตบำบัด{{else}}Psychotherapy{{/if}}</button>
             </div>
             <details class="brp-recovery-quick-tools">
               <summary><i class="fa-solid fa-screwdriver-wrench"></i> {{#if isTh}}ตัวเลือกปรับค่าพลังชีวิตและทรัพยากร{{else}}Additional resource adjustments{{/if}}</summary>
@@ -546,7 +546,7 @@
                 <button type="button" class="brp-btn" data-action="recoverPool" data-recover="san1">+1 SAN</button>
                 <button type="button" class="brp-btn" data-action="recoverPool" data-recover="san1d6">+1D6 SAN</button>
                 <button type="button" class="brp-btn" data-action="recoverPool" data-recover="longRest">{{#if isTh}}พักผ่อนเต็มที่{{else}}Long rest{{/if}}</button>
-                <button type="button" class="brp-btn" data-action="rollMajorWound">Major Wound (1D100)</button>
+                <button type="button" class="brp-btn" data-action="rollMajorWound">{{#if isTh}}บาดแผลฉกรรจ์{{else}}Major Wound{{/if}} (1D100)</button>
               </div>
             </details>
           </div>
@@ -554,8 +554,8 @@
           <div class="combat-split">
             <div class="panel-card">
               <div class="panel-header">
-                <h3><i class="fa-solid fa-kit-medical" aria-hidden="true"></i> บันทึกบาดแผล (Wounds · {{activeWoundsCount}})</h3>
-                <button type="button" class="brp-btn primary" data-action="addWound">+ บันทึกบาดแผล</button>
+                <h3><i class="fa-solid fa-kit-medical" aria-hidden="true"></i> {{#if isTh}}บาดแผล{{else}}Wounds{{/if}} · {{activeWoundsCount}}</h3>
+                <button type="button" class="brp-btn primary" data-action="addWound">+ {{#if isTh}}บันทึกบาดแผล{{else}}Add wound{{/if}}</button>
               </div>
               <ul class="item-list">
                 {{#each woundsList as |w|}}
@@ -564,8 +564,8 @@
                       <div class="wound-title-row">
                         <strong>{{w.title}}</strong>
                         <span class="wound-badge {{w.severity}}">{{w.severityLabel}}</span>
-                        {{#if w.treated}}<span class="brp-treated-badge" title="{{w.treatmentMethod}} · {{w.treatmentResult}} · {{w.treatmentCount}} attempts">{{#if @root.isTh}}รักษาแล้ว · รอปิดแผล{{else}}Treated · Awaiting closure{{/if}}</span>{{/if}}
-                        <span class="meta-text">-{{w.hpLost}} HP · {{w.location}} · {{#if @root.isTh}}ฟื้นแล้ว{{else}}Recovered{{/if}} +{{w.recoveryHp}} HP · {{#if w.firstAidAttempted}}First Aid ✓{{else}}First Aid —{{/if}}</span>
+                        {{#if w.careStatus}}<span class="meta-text">{{w.careStatus}}</span>{{/if}}
+                        <span class="meta-text">-{{w.hpLost}} HP · {{w.location}} · {{#if @root.isTh}}ฟื้นแล้ว{{else}}Recovered{{/if}} +{{w.recoveryHp}} HP · {{#if @root.isTh}}ปฐมพยาบาล{{else}}First Aid{{/if}}: {{#if w.firstAidAttempted}}{{#if @root.isTh}}ใช้สิทธิ์แล้ว{{else}}Attempted{{/if}}{{else}}—{{/if}}</span>
                       </div>
                       {{#if w.notes}}<div class="meta-text">{{w.notes}}{{#if w.createdAt}} · {{w.createdAt}}{{/if}}</div>{{/if}}
                       {{#if w.majorDetermined}}<div class="brp-major-detail"><strong>Major Wound 1D100: {{w.majorRoll}}</strong> · {{#if @root.isTh}}{{w.majorEffectTh}}{{else}}{{w.majorEffectEn}}{{/if}} · {{#if w.majorLuckPassed}}Luck ✓ {{#if @root.isTh}}ไม่เสียค่าสถานะถาวร{{else}}No permanent stat loss{{/if}}{{else}}{{#if w.majorApplied}}{{#if @root.isTh}}ลดค่าสถานะแล้ว{{else}}Stat loss applied{{/if}}: {{w.majorLossSummary}}{{else}}{{#if @root.isTh}}GM เลือกค่าสถานะที่เสีย{{else}}GM to assign losses{{/if}}{{/if}}{{/if}}</div>{{/if}}
@@ -575,19 +575,19 @@
                       <button type="button" class="brp-btn {{#if w.healed}}is-active{{/if}}" data-action="toggleHealWound" data-wound-id="{{w.id}}">
                         {{#if w.healed}}{{#if @root.isTh}}ปิดบาดแผลแล้ว ✓{{else}}Resolved ✓{{/if}}{{else}}{{#if @root.isTh}}ทำเครื่องหมายหาย{{else}}Mark healed{{/if}}{{/if}}
                       </button>
-                      <button type="button" class="icon-btn danger" data-action="deleteWound" data-wound-id="{{w.id}}" title="ลบบันทึก">✕</button>
+                      <button type="button" class="icon-btn danger" data-action="deleteWound" data-wound-id="{{w.id}}" title="{{#if @root.isTh}}ลบบันทึก{{else}}Delete record{{/if}}">✕</button>
                     </div>
                   </li>
                 {{else}}
-                  <li class="toolbar-hint">ยังไม่มีบันทึกบาดแผล</li>
+                  <li class="toolbar-hint">{{#if isTh}}ไม่มีบาดแผล{{else}}No wounds{{/if}}</li>
                 {{/each}}
               </ul>
             </div>
 
             <div class="panel-card">
               <div class="panel-header">
-                <h3><i class="fa-solid fa-brain" aria-hidden="true"></i> อาการทางจิต / สติสัมปชัญญะ (Sanity · {{activeInsanitiesCount}})</h3>
-                <button type="button" class="brp-btn primary" data-action="addInsanity">+ บันทึกอาการเสียสติ</button>
+                <h3><i class="fa-solid fa-brain" aria-hidden="true"></i> {{#if isTh}}อาการทางจิต{{else}}Mental conditions{{/if}} · {{activeInsanitiesCount}}</h3>
+                <button type="button" class="brp-btn primary" data-action="addInsanity">+ {{#if isTh}}บันทึกอาการ{{else}}Add condition{{/if}}</button>
               </div>
               <ul class="item-list">
                 {{#each insanitiesList as |c|}}
@@ -596,7 +596,7 @@
                       <div class="wound-title-row">
                         <strong>{{c.title}}</strong>
                         <span class="wound-badge {{c.kind}}">{{c.kindLabel}}</span>
-                        {{#if c.treated}}<span class="brp-treated-badge">{{#if @root.isTh}}บำบัดแล้ว · รอปิดอาการ{{else}}Treated · Awaiting closure{{/if}}</span>{{/if}}
+                        {{#if c.careStatus}}<span class="meta-text">{{c.careStatus}}</span>{{/if}}
                         <span class="meta-text">-{{c.sanLost}} SAN · {{c.duration}} · {{#if @root.isTh}}ฟื้นแล้ว{{else}}Recovered{{/if}} +{{c.recoverySan}} SAN</span>
                       </div>
                       {{#if c.notes}}<div class="meta-text">{{c.notes}}{{#if c.createdAt}} · {{c.createdAt}}{{/if}}</div>{{/if}}
@@ -605,11 +605,11 @@
                       <button type="button" class="brp-btn {{#if c.cured}}is-active{{/if}}" data-action="toggleCureInsanity" data-cond-id="{{c.id}}">
                         {{#if c.cured}}{{#if @root.isTh}}ปิดอาการแล้ว ✓{{else}}Resolved ✓{{/if}}{{else}}{{#if @root.isTh}}ทำเครื่องหมายหาย{{else}}Mark resolved{{/if}}{{/if}}
                       </button>
-                      <button type="button" class="icon-btn danger" data-action="deleteInsanity" data-cond-id="{{c.id}}" title="ลบบันทึก">✕</button>
+                      <button type="button" class="icon-btn danger" data-action="deleteInsanity" data-cond-id="{{c.id}}" title="{{#if @root.isTh}}ลบบันทึก{{else}}Delete record{{/if}}">✕</button>
                     </div>
                   </li>
                 {{else}}
-                  <li class="toolbar-hint">ยังไม่มีอาการเสียสติหรือโรคกลัว</li>
+                  <li class="toolbar-hint">{{#if isTh}}ไม่มีอาการทางจิต{{else}}No mental conditions{{/if}}</li>
                 {{/each}}
               </ul>
             </div>
