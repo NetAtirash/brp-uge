@@ -12,12 +12,13 @@ export function normalizeOccupationChoiceGroups(value) {
     count:Number.isSafeInteger(Number(g?.count))?Math.max(1,Number(g.count)):1,
     distinct:g?.distinct!==false,
     options:(Array.isArray(g?.options)?g.options:[]).map(opt=>({
-      kind:opt?.kind==='specialty'?'specialty':opt?.kind==='family'?'family':'skill',
+      kind:opt?.kind==='semantic-specialty'?'semantic-specialty':opt?.kind==='specialty'?'specialty':opt?.kind==='family'?'family':'skill',
+      semantic:opt?.semantic,
       familyKey:specialtyFamilyKey(opt?.familyKey),
       specialtyKey:specialtyFamilyKey(opt?.specialtyKey),
       ref:str(opt?.ref)
     })).filter(opt=>opt.kind==='family'?!!opt.familyKey:
-       opt.kind==='specialty'?!!opt.familyKey&&!!opt.specialtyKey:!!opt.ref)
+       opt.kind==='specialty'?!!opt.familyKey&&!!opt.specialtyKey:opt.kind==='semantic-specialty'?!!opt.familyKey:!!opt.ref)
   })).filter(g=>g.options.length>0);
 }
 /**
@@ -52,6 +53,7 @@ export function resolveOccupationTemplateGroups(occupation={},librarySkills=[]) 
 export function occupationGroupAllowsSkill(group,skill) {
   if(skill?.type!=='skill')return false;
   return (group.options||[]).some(option=>{
+    if(option.kind==='semantic-specialty')return false; // Requires the current registry; use occupationPlan, not legacy validation.
     if(option.kind==='skill')return linkedOccupationSkill(skill,option.ref);
     const info=analyzeSkillFamily(skill);
     if(!info?.supportsSpecialty||!info.enSpecialty ||

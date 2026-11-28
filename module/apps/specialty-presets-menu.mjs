@@ -1,3 +1,4 @@
+import {readSemanticMetadata,SEMANTIC_TYPES,SEMANTIC_CONTEXTS} from '../semantic-specialty.mjs';
 /**
  * Source-aware GM Specialty Manager for Foundry v14.
  * Source Skill Items remain immutable. Every row (including composite source
@@ -60,6 +61,15 @@ export class SpecialtyPresetsMenu extends App {
         esc(this.#isTh()?(t.system?.nameTh||t.system?.nameEn||t.name):(t.system?.nameEn||t.name))+' · '+esc(t.system?.baseFormula||String(t.system?.base??0)+'%')+
         '</option>').join('');
   }
+  #semanticFields(entry){
+    const meta=readSemanticMetadata(entry.semantic);
+    const labels={group:this.#tr('กลุ่มสังคม / วัฒนธรรม','Group'),region:this.#tr('ภูมิภาค','Region'),religion:this.#tr('ศาสนา','Religion'),'programming-language':this.#tr('ภาษาคอมพิวเตอร์','Programming language'),'local-area':this.#tr('พื้นที่ท้องถิ่น','Local area'),range:this.#tr('พื้นที่เลี้ยงสัตว์','Range')};
+    return '<details class="brp-manager-note" '+(meta?'open':'')+'><summary>'+this.#tr('ประเภทและบริบทแคมเปญ (ถ้าจำเป็น)','Campaign classification (optional)')+'</summary>'+
+      '<label>'+this.#tr('ประเภท','Type')+'<select data-semantic-type><option value="">'+this.#tr('ไม่ระบุ','Unclassified')+'</option>'+
+      SEMANTIC_TYPES.map(t=>'<option value="'+t+'" '+(meta?.type===t?'selected':'')+'>'+esc(labels[t])+'</option>').join('')+'</select></label>'+
+      '<label>'+this.#tr('รหัสบริบทจริง (เช่น city-a)','Concrete concept key (e.g. city-a)')+'<input data-semantic-concept value="'+esc(meta?.conceptKey||'')+'" maxlength="100"></label>'+
+      SEMANTIC_CONTEXTS.map(c=>'<label><input type="checkbox" data-semantic-context="'+c+'" '+(meta?.contexts.includes(c)?'checked':'')+'> '+esc(labels[c])+'</label>').join('')+'</details>';
+  }
   #row(group,entry,newRow=false){
     const source=Boolean(entry.sourceUuid);
     const book=entry.source==='book';
@@ -99,6 +109,7 @@ export class SpecialtyPresetsMenu extends App {
         '<input data-base-formula type="text" value="'+esc(entry.baseFormula||'')+'" maxlength="100"></label>'+
         '</div>':'')+
       '</div>'+
+      this.#semanticFields(entry)+
       (entry.review?'<small class="brp-manager-note">'+statusText+'</small>':'')+
       (book?'<small class="brp-manager-note">'+this.#tr('ค่ากฎตั้งต้น: ','Book rule base: ')+
        esc(entry.baseFormula||String(entry.base??group.canonicalTemplate?.system?.base??0)+'%')+'</small>':'')+
@@ -172,11 +183,14 @@ export class SpecialtyPresetsMenu extends App {
       const uuid=node.dataset.sourceUuid;
       const bookKey=node.dataset.bookKey;
       const k=specialtyFamilyKey(en);
+      const type=node.querySelector('[data-semantic-type]')?.value||'';
+      const semantic=type?readSemanticMetadata({type,conceptKey:safe(node.querySelector('[data-semantic-concept]')?.value),contexts:[...node.querySelectorAll('[data-semantic-context]:checked')].map(el=>el.dataset.semanticContext)}):null;
+      if(type&&!semantic)throw new Error(this.#tr('กำหนดรหัสบริบทจริงเป็นอักษรอังกฤษตัวเล็ก/ตัวเลข และเลือกบริบทเฉพาะประเภทภูมิภาค: ','Set a concrete lowercase concept key and use region contexts only: ')+en);
       // Untouched published rows may contain a disabled descriptive heading.
       // Do not validate them as newly authored/selectable specialties.
       const existing=bookKey?group.options.find(o=>o.source==='book'&&o.bookKey===bookKey):null;
-      if(existing&&en===existing.en&&th===existing.th&&state===specialtyEditorState(existing)){
-        if((cfg.hidden||[]).includes(k)&&state==='hidden')bookOverrides[bookKey]={en,th,state};
+      if(existing&&en===existing.en&&th===existing.th&&state===specialtyEditorState(existing)&&JSON.stringify(semantic)===JSON.stringify(readSemanticMetadata(existing.semantic))){
+        if((cfg.hidden||[]).includes(k)&&state==='hidden')bookOverrides[bookKey]={en,th,state,semantic};
         else if(cfg.bookOverrides?.[bookKey])bookOverrides[bookKey]=cfg.bookOverrides[bookKey];
         if(state==='enabled'){
           if(seen.has(k))throw new Error(this.#tr('ความเชี่ยวชาญเปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
@@ -195,13 +209,13 @@ export class SpecialtyPresetsMenu extends App {
         
         const seed=group.canonicalTemplate?.system?.specialtyDefaults?.find(o=>specialtyFamilyKey(o.key||o.en)===bookKey);
         const initial=seed?.enabled===false?'hidden':'enabled';
-        if(en!==originalEn||th!==originalTh||state!==initial)
-          bookOverrides[bookKey]={en,th,state};
+        if(en!==originalEn||th!==originalTh||state!==initial||semantic)
+          bookOverrides[bookKey]={en,th,state,semantic};
       }else if(uuid){
         const originalEn=node.dataset.originalEn,originalTh=node.dataset.originalTh;
         const initial='review';
-        if(en!==originalEn||th!==originalTh||state!==initial)
-          sourceOverrides[uuid]={en,th,state};
+        if(en!==originalEn||th!==originalTh||state!==initial||semantic)
+          sourceOverrides[uuid]={en,th,state,semantic};
         else delete sourceOverrides[uuid];
       }else{
         const templateUuid=node.querySelector('[data-template]')?.value||'';
@@ -212,7 +226,7 @@ export class SpecialtyPresetsMenu extends App {
         if(base!==null&&(!Number.isSafeInteger(base)||base<0))
           throw new Error(this.#tr('ค่าฐานต้องเป็นจำนวนเต็มไม่ติดลบ','Base chance must be a nonnegative integer'));
         const baseFormula=safe(node.querySelector('[data-base-formula]')?.value);
-        additions.push({key:k,en,th,templateUuid,state,base,baseFormula});
+        additions.push({key:k,en,th,templateUuid,state,base,baseFormula,semantic});
       }
     }
     cfg.additions=additions;

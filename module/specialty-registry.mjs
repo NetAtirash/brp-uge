@@ -1,3 +1,4 @@
+import {readSemanticMetadata} from './semantic-specialty.mjs';
 /**
  * Effective registry for ONE template Skill Item per specialty-capable family.
  *
@@ -35,7 +36,7 @@ const readEntry=(raw={})=>{
   const base=value===null||value===undefined||value===''?null:Number(value);
   return {key,en,th:str(raw?.th),templateUuid:str(raw?.templateUuid),
     base:Number.isSafeInteger(base)&&base>=0?base:null,
-    baseFormula:str(raw?.baseFormula),
+    baseFormula:str(raw?.baseFormula),semantic:readSemanticMetadata(raw?.semantic),
     state:states.has(raw?.state)?raw.state:'enabled'};
 };
 const readOverrides=raw=>{
@@ -43,7 +44,7 @@ const readOverrides=raw=>{
   if(!raw||typeof raw!=='object'||Array.isArray(raw))return out;
   for(const [k,v] of Object.entries(raw)){
     if(!v||typeof v!=='object')continue;
-    out[k]={en:str(v.en),th:str(v.th),
+    out[k]={en:str(v.en),th:str(v.th),semantic:readSemanticMetadata(v.semantic),
       state:states.has(v.state)?v.state:'enabled'};
   }
   return out;
@@ -100,7 +101,7 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
         const en=change.en||seed.en;
         const th=change.th||seed.th;
         const state=change.state||seed.state||'enabled';
-        const resultOption=option({...seed,en,th,state},'book',{
+        const resultOption=option({...seed,en,th,state,semantic:readSemanticMetadata(change.semantic)},'book',{
           bookKey:seed.key,originalEn:seed.en,originalTh:seed.th,
           templateUuid:canonical.uuid,sourceUuid:canonical.uuid,
           ruleNote:seed.ruleNote||'',base:seed.base,baseFormula:seed.baseFormula
@@ -121,7 +122,7 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
         const change=meta.sourceOverrides?.[doc.uuid];
         const originalEn=info?.enSpecialty||'',en=change?.en||originalEn;
         const state=change?.state||'review';
-        const parsed=option({en,th:change?.th||info?.thSpecialty||'',state},'legacy-source',{
+        const parsed=option({en,th:change?.th||info?.thSpecialty||'',state,semantic:readSemanticMetadata(change?.semantic)},'legacy-source',{
           sourceUuid:doc.uuid,templateUuid:doc.uuid,
           originalEn,originalTh:info?.thSpecialty||'',sourceAmbiguous:true
         });

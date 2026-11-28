@@ -1,3 +1,4 @@
+import {validSemanticRequirement,semanticMatches,semanticInstruction,readSemanticMetadata} from './semantic-specialty.mjs';
 /** External creation content. No book-specific template records in this engine. */
 import {canonicalSkillKey} from './skill-foundation.mjs';
 import {categoryLabel} from './reference-utils.mjs';
@@ -35,8 +36,9 @@ function validateGroups(groups){
   for(const g of groups){
     requireValue(idOk(g?.id)&&positive(g.count)&&g.count<=100&&Array.isArray(g.options)&&g.options.length,'Invalid choice group: '+g?.id);
     for(const o of g.options){
-      requireValue(o&&['skill','family','specialty'].includes(o.kind),'Unsupported choice option');
+      requireValue(o&&['skill','family','specialty','semantic-specialty'].includes(o.kind),'Unsupported choice option');
       requireValue(o.kind==='skill'?(refOk(o.ref)||keyOk(o.canonicalSkillKey)):!!text(o.familyKey)&&(o.kind!=='specialty'||!!text(o.specialtyKey)),'Invalid choice option in '+g.id);
+      if(o.kind==='semantic-specialty')requireValue(validSemanticRequirement(o.semantic,specialtyFamilyKey(o.familyKey)),'Invalid semantic option in '+g.id);
     }
     if(g.semanticGuards!==undefined)validateGuard(g.semanticGuards);
   }
@@ -49,9 +51,10 @@ function validatePersonality(t,custom=false){
   requireValue(t.requiredTotalSkills===13&&Array.isArray(t.fixedSkills),'Invalid Personality skill total');
   validateGroups(t.choiceGroups);
   for(const s of t.fixedSkills){
-    requireValue(['exact-skill','family-specialty','exact-specialty'].includes(s?.requirement),'Unsupported fixed skill requirement');
+    requireValue(['exact-skill','family-specialty','exact-specialty','semantic-specialty'].includes(s?.requirement),'Unsupported fixed skill requirement');
     requireValue(s.requirement==='exact-skill'?(refOk(s.sourceUuid)||keyOk(s.canonicalSkillKey))&&(!s.canonicalSkillKey||keyOk(s.canonicalSkillKey)):
       !!text(s.familyKey)&&(s.requirement!=='exact-specialty'||!!text(s.specialtyKey)),'Invalid fixed skill requirement');
+    if(s.requirement==='semantic-specialty')requireValue(validSemanticRequirement(s.semantic,specialtyFamilyKey(s.familyKey)),'Invalid fixed semantic requirement');
     if(s.constraint!==undefined)validateGuard(s.constraint);
   }
   requireValue(t.fixedSkills.length+t.choiceGroups.reduce((n,g)=>n+g.count,0)===t.requiredTotalSkills,'Personality slot count mismatch');
@@ -188,11 +191,12 @@ function optionCandidates(option,catalog,registry,library,lang,guard={}){
   if(!family||family.fingerprintConflict)return [];
   return list(family.options).filter(o=>{
     if(o.hidden||specialtyNeedsReview(o.en)||!specialtyTemplateFor(family,o,library))return false;
+    if(option.kind==='semantic-specialty'&&!semanticMatches(option.semantic,family.key,o))return false;
     if(option.kind==='specialty'&&o.key!==specialtyFamilyKey(option.specialtyKey)&&o.bookKey!==specialtyFamilyKey(option.specialtyKey))return false;
-    if((guard.nonNative||guard.mustBeNonNative)&&(family.key!=='language'||o.key==='own'||o.bookKey==='own'))return false;
+    if((guard.nonNative||guard.mustBeNonNative)&&(family.key!=='language'||o.key==='own'||o.bookKey==='own'||readSemanticMetadata(o.semantic)?.type==='programming-language'))return false;
     if(guard.notBookDefault&&(o.bookKey===guard.notBookDefault||o.key===guard.notBookDefault))return false;
     const identityKeys=[family.key+'|'+o.key,...(o.bookKey?[family.key+'|'+o.bookKey]:[])];
-    if(guard.languageRole==='programming_language'&&!list(guard.allowedCanonicalKeys).some(k=>identityKeys.includes(k)))return false;
+    if(guard.languageRole==='programming_language'&&(family.key!=='language'||o.key==='own'||o.bookKey==='own'||(!Array.isArray(guard.allowedCanonicalKeys)&&readSemanticMetadata(o.semantic)?.type!=='programming-language')))return false;
     if(Array.isArray(guard.allowedCanonicalKeys)&&!guard.allowedCanonicalKeys.some(k=>identityKeys.includes(k)))return false;
     return true;
   }).map(o=>({key:family.key+'|'+o.key,label:(lang==='th'?family.thFamily:family.enFamily)+' ('+(lang==='th'?(o.th||o.en):o.en)+')'}));
@@ -236,8 +240,8 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
   const fixedChoices=new Map(),errors=[],rawGroups=[...groups];
   for(const [i,r] of fixed.entries()){
     const option=r.requirement==='exact-skill'?{kind:'skill',ref:r.sourceUuid,canonicalSkillKey:r.canonicalSkillKey}:
-      {kind:r.requirement==='exact-specialty'?'specialty':'family',familyKey:r.familyKey,specialtyKey:r.specialtyKey};
-    if(r.requirement==='family-specialty'){
+      {kind:r.requirement==='exact-specialty'?'specialty':r.requirement==='semantic-specialty'?'semantic-specialty':'family',familyKey:r.familyKey,specialtyKey:r.specialtyKey,semantic:r.semantic};
+    if(r.requirement==='family-specialty'||r.requirement==='semantic-specialty'){
       rawGroups.push({id:'fixed-family-'+i,labelEn:r.familyKey,labelTh:registry.find(f=>f.key===r.familyKey)?.thFamily||'',count:1,options:[option],semanticGuards:r.constraint||{},fixedRequirement:true});
       continue;
     }
@@ -250,22 +254,25 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
   const planned=rawGroups.map((g,index)=>{
     const label=creationGroupLabel(g,index,registry,library,lang);
     const review=reviews.find(r=>r.groupId===g.id);
-    const guards={...(review?.semanticGuards||{}),...(g.semanticGuards||{})};
-    try{validateGuard(guards);}catch(e){errors.push(g.id+': '+e.message);}
+    const guardList=[review?.semanticGuards||{},g.semanticGuards||{}];
+    const guards={...guardList[0],...guardList[1]};
+    let validGuards=true;
+    try{guardList.forEach(validateGuard);}catch(e){validGuards=false;errors.push(g.id+': '+e.message);}
     if(review?.unresolvedTokens?.length)errors.push(label+(lang==='th'?' — ยังไม่พบข้อมูลอ้างอิง: ':' — unresolved source: ')+review.unresolvedTokens.map(t=>t.token).join(', '));
-    if(guards.languageRole==='programming_language'&&!guards.allowedCanonicalKeys?.length)errors.push(label+(lang==='th'?' — ยังไม่ได้กำหนดภาษาคอมพิวเตอร์ที่อนุมัติ':' — GM-approved programming language keys required'));
+
     const candidates=new Map(),unavailableExactOptions=[];
     for(const o of list(g.options)){
-      const available=optionCandidates(o,catalog,registry,library,lang,guards);
-      if(o.kind==='specialty'&&!available.length){
+      const available=validGuards?optionCandidates(o,catalog,registry,library,lang,guardList[0]).filter(c=>optionCandidates(o,catalog,registry,library,lang,guardList[1]).some(x=>x.key===c.key)):[];
+      if(['specialty','semantic-specialty'].includes(o.kind)&&!available.length){
         const family=registry.find(f=>f.key===specialtyFamilyKey(o.familyKey));
         const familyLabel=(lang==='th'?family?.thFamily:family?.enFamily)||o.familyKey;
-        unavailableExactOptions.push({familyKey:o.familyKey,specialtyKey:o.specialtyKey,label:familyLabel+' ('+o.specialtyKey+')'});
+        unavailableExactOptions.push({familyKey:o.familyKey,specialtyKey:o.specialtyKey,semantic:o.semantic,label:o.kind==='semantic-specialty'?semanticInstruction(o.semantic,familyLabel,lang):familyLabel+' ('+o.specialtyKey+')'});
       }
       for(const c of available)if(!fixedChoices.has(c.key))candidates.set(c.key,c);
     }
+    if(candidates.size<g.count&&guards.languageRole==='programming_language')errors.push(label+' — '+semanticInstruction({type:'programming-language'},lang==='th'?'ภาษา':'Language',lang));
     if(candidates.size<g.count)errors.push(lang==='th'?label+' — มีตัวเลือกที่ใช้ได้ '+candidates.size+'/'+g.count:label+' — insufficient eligible skills ('+candidates.size+'/'+g.count+')');
-    return {...g,label,unavailableExactOptions,shortageDetails:choiceShortageDetails(g,candidates.size,registry,lang),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
+    return {...g,label,unavailableExactOptions,shortageDetails:[choiceShortageDetails(g,candidates.size,registry,lang),...(candidates.size<g.count?unavailableExactOptions.filter(o=>o.semantic).map(o=>o.label):[])].filter(Boolean).join(' · '),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
   });
   if(!unique(planned.map(g=>g.id)))errors.push(lang==='th'?'รหัสกลุ่มตัวเลือกซ้ำ':'Duplicate choice group IDs');
   const plan={fixed:[...fixedChoices.values()],groups:planned,errors,lang};
