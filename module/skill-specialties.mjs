@@ -3,7 +3,7 @@
  */
 import { normalizedText } from './reference-utils.mjs';
 import { documentToEmbeddedItem } from './library-provider.mjs';
-import { isSkillFamilyTemplate, verifiedTemplateDefaults, skillTemplateName } from './skill-family-templates.mjs';
+import { isSkillFamilyTemplate, verifiedTemplateDefaults, skillTemplateName, resolveFamilyTemplates } from './skill-family-templates.mjs';
 
 const endSpecialty=/^(.+?)\s*\(([^()]*)\)\s*$/u;
 const text=value=>String(value??'').trim();
@@ -56,9 +56,11 @@ export function availableSpecialtyFamilies(documents) {
   for(const family of grouped.values()){
     const templates=family.templates.filter(isSkillFamilyTemplate);
     family.legacyExamples=family.templates.filter(item=>!isSkillFamilyTemplate(item));
-    family.canonicalTemplate=templates.length===1?templates[0]:null;
+    const resolution=resolveFamilyTemplates(templates);
+    family.canonicalTemplate=resolution.canonical;
+    family.sourceResolution=resolution;
     family.requiresContentMigration=templates.length===0&&family.legacyExamples.length>0;
-    family.ambiguousTemplate=templates.length>1;
+    family.ambiguousTemplate=resolution.conflict;
     family.templateUuid=family.canonicalTemplate?.uuid||'';
     family.bookDefaults=family.canonicalTemplate?verifiedTemplateDefaults(family.canonicalTemplate):[];
   }

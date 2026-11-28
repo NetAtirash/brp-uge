@@ -8,7 +8,7 @@
  * are NOT automatically offered as book defaults to new characters.
  */
 import {analyzeSkillFamily,availableSpecialtyFamilies,readSpecialtyPresets,specialtyFamilyKey} from './skill-specialties.mjs';
-import {isSkillFamilyTemplate,verifiedTemplateDefaults} from './skill-family-templates.mjs';
+import {isSkillFamilyTemplate,verifiedTemplateDefaults,inspectTemplateDefaults} from './skill-family-templates.mjs';
 
 const str=v=>String(v??'').trim(),keyOf=v=>specialtyFamilyKey(str(v));
 export const specialtyNeedsReview=value=>!str(value)||/[/／]|(?:^|\W)(?:various|any|multiple|other)(?:\W|$)/iu.test(str(value));
@@ -147,12 +147,14 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
       if((meta.hidden||[]).includes(opt.key))opt.hidden=true;
     }
     const usable=options.filter(o=>!o.hidden);
+    const inspected=inspectTemplateDefaults(canonical);
+    const diagnostics={rawCount:inspected.rawCount,acceptedCount:inspected.options.length,rejected:inspected.rejected,ignoredCopies:family.sourceResolution?.copies||[],sourceUuids:family.sourceResolution?.sourceUuids||[],status:family.ambiguousTemplate?'conflicting-templates':!canonical?'missing-template':inspected.missing?'missing-default-field':!inspected.rawCount?'empty-defaults':inspected.rejected.length?'rejected-defaults':'loaded'};
     result.push({...family,templates:canonical?[canonical]:examples,
       sourceCount:canonical?1:0,legacySourceCount:examples.length,
       options,activeCount:usable.length,ambiguous,
       missingSource:!canonical,requiresContentMigration:!canonical,
       fingerprintConflict:family.ambiguousTemplate,
-      bookDefaultCount:options.filter(o=>o.source==='book').length});
+      diagnostics,bookDefaultCount:options.filter(o=>o.source==='book').length});
   }
   const known=new Set(result.map(g=>g.key));
   for(const key of Object.keys(cfg.families)){

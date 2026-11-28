@@ -177,14 +177,14 @@ function optionCandidates(option,catalog,registry,library,lang,guard={}){
     if(info?.supportsSpecialty){
       const family=registry.find(f=>f.key===info.key);
       const approved=family?.options?.find(o=>!o.hidden&&o.key===specialtyFamilyKey(info.enSpecialty));
-      if(!approved||!specialtyTemplateFor(family,approved,library))return [];
+      if(!approved||family.fingerprintConflict||!specialtyTemplateFor(family,approved,library))return [];
     }
     if(guard.nonNative||guard.mustBeNonNative||guard.notBookDefault)return [];
     if((guard.languageRole||Array.isArray(guard.allowedCanonicalKeys))&&!list(guard.allowedCanonicalKeys).includes(key))return [];
     return [{key,label:label(s)}];
   }
   const family=registry.find(f=>f.key===specialtyFamilyKey(option.familyKey));
-  if(!family)return [];
+  if(!family||family.fingerprintConflict)return [];
   return list(family.options).filter(o=>{
     if(o.hidden||specialtyNeedsReview(o.en)||!specialtyTemplateFor(family,o,library))return false;
     if(option.kind==='specialty'&&o.key!==specialtyFamilyKey(option.specialtyKey)&&o.bookKey!==specialtyFamilyKey(option.specialtyKey))return false;

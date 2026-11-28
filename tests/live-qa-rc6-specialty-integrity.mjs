@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {inspectTemplateDefaults,resolveFamilyTemplates} from '../module/skill-family-templates.mjs';
+import {buildSpecialtyRegistry} from '../module/specialty-registry.mjs';
+const source={uuid:'Compendium.example.skills.Item.aaaaaaaaaaaaaaaa',type:'skill',name:'Example (...)',system:{nameEn:'Example (...)',specialtyFamily:'Example',isSpecialtyTemplate:true,specialtyDefaults:[{key:'one',en:'One',th:'หนึ่ง'},{key:'one',en:'Duplicate'},{key:'bad',en:'A / B'}]}};
+const copy={...source,uuid:'Item.bbbbbbbbbbbbbbbb',flags:{core:{sourceId:source.uuid}},system:{...source.system,specialtyDefaults:[]}};
+assert.equal(resolveFamilyTemplates([copy,source]).canonical,source);
+assert.equal(resolveFamilyTemplates([copy,source]).copies.length,1);
+const unrelated={...copy,flags:{}};
+assert.equal(resolveFamilyTemplates([source,unrelated]).conflict,true);
+const registry=buildSpecialtyRegistry([copy,source]);
+assert.equal(registry[0].bookDefaultCount,1);
+assert.equal(registry[0].activeCount,1);
+assert.equal(registry[0].diagnostics.status,'rejected-defaults');
+assert.deepEqual(inspectTemplateDefaults(source).rejected.map(r=>r.reason),['duplicate-key','invalid-name']);
+assert.equal(buildSpecialtyRegistry([{...source,system:{...source.system,specialtyDefaults:[]}}])[0].diagnostics.status,'empty-defaults');
+assert.equal(buildSpecialtyRegistry([source,unrelated])[0].diagnostics.status,'conflicting-templates');
+assert.equal(copy.system.specialtyDefaults.length,0);
+console.log('PASS: source provenance, canonical conflicts, rejected defaults diagnostics and source immutability');

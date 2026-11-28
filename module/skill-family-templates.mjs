@@ -31,12 +31,12 @@ export function skillTemplateName(item,lang='en') {
   return raw.replace(/\s*\([^()]*\)\s*$/u,'').trim();
 }
 
-export function verifiedTemplateDefaults(item){
-  if(!isSkillFamilyTemplate(item))return [];
+export function inspectTemplateDefaults(item){
+  if(!isSkillFamilyTemplate(item))return {options:[],rejected:[],rawCount:0,missing:true};
   const system=item.system??{};
   const raw=Array.isArray(system.specialtyDefaults)?system.specialtyDefaults:[];
-  const seen=new Set();
-  return raw.map(entry=>{
+  const seen=new Set(),rejected=[];
+  const options=raw.map(entry=>{
     const en=str(entry?.en||entry?.nameEn),th=str(entry?.th||entry?.nameTh);
     const key=skillFamilyId(entry?.key||en);
     const b=entry?.base;
@@ -45,19 +45,29 @@ export function verifiedTemplateDefaults(item){
       baseFormula:str(entry?.baseFormula),ruleNote:str(entry?.ruleNote),
       state:entry?.enabled===false?'hidden':'enabled'};
   }).filter(opt=>{
-    if(!opt.key||!opt.en||/[()<>\r\n]|[/／]/u.test(opt.en)||seen.has(opt.key))return false;
+    const reason=!opt.key||!opt.en?'missing-key-or-name':/[()<>\r\n]|[/／]/u.test(opt.en)?'invalid-name':seen.has(opt.key)?'duplicate-key':null;
+    if(reason){rejected.push({key:opt.key,en:opt.en,reason});return false;}
     seen.add(opt.key);return true;
   });
+  return {options,rejected,rawCount:raw.length,missing:!Array.isArray(system.specialtyDefaults)};
 }
+export function verifiedTemplateDefaults(item){return inspectTemplateDefaults(item).options;}
 
-export function selectFamilyTemplate(documents=[]){
+export function resolveFamilyTemplates(documents=[]){
   const explicit=(documents||[]).filter(isSkillFamilyTemplate);
-  if(!explicit.length)return null;
-  // A single canonical source per Family is mandatory. Multiple canonical
-  // templates are a publisher error, not a reason to guess a base chance.
-  if(explicit.length!==1)return null;
-  return explicit[0];
+  const unique=[...new Map(explicit.map(d=>[d.uuid,d])).values()];
+  const sources=unique.filter(d=>String(d.uuid).startsWith('Compendium.'));
+  const copies=[];
+  const independent=unique.filter(d=>{
+    if(String(d.uuid).startsWith('Compendium.'))return true;
+    const refs=[d.flags?.core?.sourceId,d.flags?.['brp-uge']?.originalSourceUuid,d.flags?.['brp-uge']?.sourceUuid];
+    const source=sources.find(s=>refs.includes(s.uuid));
+    if(!source)return true;
+    copies.push({uuid:d.uuid,sourceUuid:source.uuid});return false;
+  });
+  return {canonical:independent.length===1?independent[0]:null,conflict:independent.length>1,copies,sourceUuids:independent.map(d=>d.uuid)};
 }
+export function selectFamilyTemplate(documents=[]){return resolveFamilyTemplates(documents).canonical;}
 
 export function skillFamilyTemplateCoverage(documents=[]){
   const result=new Map();
@@ -73,8 +83,8 @@ export function skillFamilyTemplateCoverage(documents=[]){
     result.set(family,group);
   }
   return [...result.values()].map(g=>({
-    ...g,canonical:g.templates.length===1?g.templates[0]:null,
-    ambiguousTemplate:g.templates.length>1,
-    requiresContentMigration:g.templates.length!==1&&g.legacyExamples.length>0
+    ...g,canonical:selectFamilyTemplate(g.templates),
+    ambiguousTemplate:resolveFamilyTemplates(g.templates).conflict,
+    requiresContentMigration:!selectFamilyTemplate(g.templates)&&g.legacyExamples.length>0
   }));
 }

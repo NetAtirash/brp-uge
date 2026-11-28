@@ -97,6 +97,17 @@ export class SpecialtyPresetsMenu extends App {
       (source?'<small class="brp-manager-uuid">'+esc(entry.sourceUuid)+'</small>':'')+
       '</article>';
   }
+  #sourceDiagnostics(group){
+    const d=group.diagnostics;if(!d)return '';
+    const labels={
+      'conflicting-templates':this.#tr('พบแม่แบบต้นทางหลายรายการ','Conflicting canonical templates'),
+      'missing-template':this.#tr('ไม่พบแม่แบบต้นทาง','Missing canonical template'),
+      'missing-default-field':this.#tr('ไม่พบฟิลด์ข้อมูลตั้งต้น','Missing defaults field'),
+      'empty-defaults':this.#tr('ไม่มีตัวเลือกตั้งต้นจากคลังข้อมูล','No default choices supplied by content'),
+      'rejected-defaults':this.#tr('ตัวเลือกตั้งต้นบางรายการไม่ผ่านการตรวจสอบ','Some source defaults rejected')};
+    if(d.status==='loaded'&&!d.ignoredCopies.length)return '';
+    return '<details class="brp-manager-note" '+(d.status!=='loaded'?'open':'')+'><summary>'+esc(labels[d.status]||this.#tr('แหล่งข้อมูล','Source information'))+'</summary><p>'+esc(this.#tr('ข้อมูลตั้งต้นที่อ่านได้','Accepted source defaults'))+': '+d.acceptedCount+'/'+d.rawCount+'</p>'+d.sourceUuids.map(u=>'<p>'+esc(u)+'</p>').join('')+d.rejected.map(r=>'<p>'+esc(r.en||r.key)+': '+esc(({"missing-key-or-name":this.#tr('ไม่มีชื่อหรือรหัส','Missing name or key'),"invalid-name":this.#tr('ชื่อไม่ถูกต้อง','Invalid name'),"duplicate-key":this.#tr('รหัสซ้ำ','Duplicate key')})[r.reason]||r.reason)+'</p>').join('')+(d.ignoredCopies.length?'<p>'+esc(this.#tr('ไม่นับสำเนา World ที่มีต้นทางเดียวกัน','Ignored World copies with matching source'))+': '+d.ignoredCopies.length+'</p>':'')+'</details>';
+  }
   async _renderHTML(){
     await this.#load();this.#refresh();
     const group=this.#registry.find(f=>f.key===this.#family);
@@ -123,6 +134,7 @@ export class SpecialtyPresetsMenu extends App {
           (group.fingerprintConflict?'<p class="brp-manager-note">'+this.#tr(
             'แหล่งข้อมูล Family นี้มีสูตรหรือค่าเริ่มต้นต่างกัน กรุณาเลือกแม่แบบกฎให้ตรงกับ Specialty',
             'This family has differing base chances or formulas. Choose an appropriate template.')+'</p>':'')+
+          this.#sourceDiagnostics(group)+
           '<div data-specialty-rows>'+group.options.map(e=>this.#row(group,e)).join('')+'</div>'+
           '<button type="button" data-add-specialty '+(group.canonicalTemplate?'':'disabled')+'>'+
             this.#tr('+ เพิ่ม Specialty ภายใต้ทักษะนี้','+ Add Specialty to this Skill')+'</button>'+
