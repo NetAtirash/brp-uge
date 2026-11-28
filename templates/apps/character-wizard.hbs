@@ -153,16 +153,30 @@
         </div>
         <h3>{{#if isTh}}บุคลิก{{else}}Personality{{/if}}</h3>
         <div class="wiz-personality-config"><label>{{#if isTh}}รูปแบบบุคลิก{{else}}Personality package{{/if}}</label>
-          <select data-wiz-personality>{{#each personalityChoices as |p|}}<option value="{{p.key}}" {{#if p.selected}}selected{{/if}}>{{p.label}}</option>{{/each}}</select>
-          {{#if personalityEnabled}}
-          <fieldset class="brp-wiz-choice-group">
-            <legend>{{#if isTh}}เลือกทักษะบุคลิก 13 ทักษะ (+20%){{else}}Choose 13 personality skills (+20%){{/if}} · {{personalityCount}}/13</legend>
-            <div class="brp-wiz-specialty-options">
-              {{#each personalityAvailable as |o|}}
-              <label class="brp-wiz-specialty-option"><input type="checkbox" data-personality-skill-checkbox data-index="{{o.index}}" {{#if o.selected}}checked{{/if}} {{#if o.disabled}}disabled{{/if}}> <span>{{o.label}}</span></label>
+          <select data-wiz-personality {{#if personalityLocked}}disabled{{/if}}>{{#each personalityChoices as |p|}}<option value="{{p.key}}" {{#if p.selected}}selected{{/if}}>{{p.label}}</option>{{/each}}</select>
+          {{#if personalityLocked}}
+            <p>{{#if isTh}}คงข้อมูลบุคลิกเดิมของตัวละคร{{else}}Existing personality preserved{{/if}}</p>
+          {{else}}
+            {{#if personalitySourceMissing}}<p role="status">{{#if isTh}}ยังไม่มีข้อมูลเทมเพลตบุคลิกที่นำเข้า{{else}}No imported Personality templates{{/if}}</p>{{/if}}
+            {{#if personalityEnabled}}
+              <strong>{{#if isTh}}ทักษะบุคลิก (+20){{else}}Personality skills (+20){{/if}} · {{personalityCount}}/13</strong>
+              {{#if personalityFixed.length}}
+                <div class="brp-wiz-fixed-skills"><strong>{{#if isTh}}ทักษะที่ได้รับ{{else}}Granted skills{{/if}}</strong>
+                  <div class="brp-wiz-choice-chips">{{#each personalityFixed as |c|}}<span class="brp-wiz-choice-chip">{{c.label}}</span>{{/each}}</div>
+                </div>
+              {{/if}}
+              {{#each personalityIssues as |issue|}}<p role="alert">{{issue}}</p>{{/each}}
+              {{#each personalityGroups as |g|}}
+                <fieldset class="brp-wiz-choice-group">
+                  <legend>{{g.label}} · {{#if @root.isTh}}เลือก{{else}}Choose{{/if}} {{g.count}} ({{g.selectedCount}}/{{g.count}})</legend>
+                  <div class="brp-wiz-specialty-options">
+                    {{#each g.candidates as |c|}}
+                      <label class="brp-wiz-specialty-option"><input type="checkbox" data-personality-skill-checkbox data-group-id="{{g.id}}" data-key="{{c.key}}" {{#if c.selected}}checked{{/if}} {{#if c.disabled}}disabled{{/if}}> <span>{{c.label}}</span></label>
+                    {{else}}<p>{{#if @root.isTh}}ไม่มีตัวเลือก{{else}}No options available{{/if}}</p>{{/each}}
+                  </div>
+                </fieldset>
               {{/each}}
-            </div>
-          </fieldset>
+            {{/if}}
           {{/if}}
         </div>
       </div>
@@ -226,6 +240,7 @@
             {{#if isGM}}<button type="button" class="brp-btn" data-action="openOccupationChoiceSetup">{{#if isTh}}กำหนดตัวเลือกทักษะ{{else}}Configure skill choices{{/if}}</button>{{else}}<span>{{#if isTh}}เลือกอาชีพอื่น{{else}}Choose another occupation{{/if}}</span>{{/if}}
           </div>
         {{/if}}
+        {{#each occupationIntegrationIssues as |issue|}}<p role="alert">{{issue}}</p>{{/each}}
         {{#if professionMissingSkillCount}}<p role="alert">{{#if isTh}}ทักษะที่ไม่พร้อม{{else}}Unavailable skills{{/if}}: {{professionMissingSkillCount}}</p>{{/if}}
         {{#each professionChoiceGroups as |g|}}
           <fieldset class="brp-wiz-choice-group">

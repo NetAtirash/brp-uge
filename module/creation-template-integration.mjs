@@ -128,7 +128,10 @@ function optionCandidates(option,catalog,registry,library,lang,guard={}){
   if(option.kind==='skill'){
     const s=exactSkill(catalog,option.ref,option.canonicalSkillKey);
     if(!s)return [];
-    return [{key:canonicalSkillKey(s),label:label(s)}];
+    const key=canonicalSkillKey(s);
+    if(guard.nonNative||guard.mustBeNonNative||guard.notBookDefault)return [];
+    if((guard.languageRole||Array.isArray(guard.allowedCanonicalKeys))&&!list(guard.allowedCanonicalKeys).includes(key))return [];
+    return [{key,label:label(s)}];
   }
   const family=registry.find(f=>f.key===specialtyFamilyKey(option.familyKey));
   if(!family)return [];
