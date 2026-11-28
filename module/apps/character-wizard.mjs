@@ -260,6 +260,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         description:item.system.descriptionEn||'',descriptionTh:item.system.descriptionTh||'',
         skillRefs:[...(item.system.skillRefs??[])],
         skillChoiceGroups:normalizeOccupationChoiceGroups(item.system.skillChoiceGroups),
+        externalReview:item.flags?.['brp-uge']?.creationExternalReview,
         starterWeaponRefs:[...(item.system.starterWeaponRefs??[])],
         starterArmorRefs:[...(item.system.starterArmorRefs??[])]
       },externalOccupationPatch(item,this.#templateData())));
@@ -308,7 +309,11 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       .replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/\n[ \t]*\n[ \t]*\n/g,'\n\n').trim();
   }
 
-  #templateData(){return readCreationTemplateData(game.settings.get('brp-uge','creationTemplateData'));}
+  #templateData(){
+    const raw=game.settings.get('brp-uge','creationTemplateData');
+    if(raw!==this.templateDataSnapshot){this.templateDataSnapshot=raw;this.templateDataCache=readCreationTemplateData(raw);}
+    return this.templateDataCache||{};
+  }
   #personalityLocked(){return Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));}
   #personalityTemplate(){return creationPersonalityTemplates(this.#templateData()).find(t=>t.typeKey===this.wizardData.personalityType);}
   #personalityPlan(lang='en'){return personalityPlan(this.#personalityTemplate(),this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);}
@@ -334,10 +339,9 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   #occupationPlan(prof=this.#getProfession(),lang='en'){
     return occupationPlan(prof,this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);
   }
-  #isOccupationalSkill(skillEntry,prof) {
+  #isOccupationalSkill(skillEntry,prof,plan=this.#occupationPlan(prof)) {
     if(!skillEntry||isSkillFamilyTemplate(skillEntry))return false;
     const key=canonicalSkillKey(skillEntry);
-    const plan=this.#occupationPlan(prof);
     return plan.fixed.some(c=>c.key===key)||plan.groups.some(g=>
       (this.wizardData.choiceSelections[g.id]||[]).includes(key)&&g.candidates.some(c=>c.key===key));
   }
@@ -440,11 +444,12 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const occUsed = [...Object.values(this.wizardData.occRanks), ...Object.values(this.wizardData.occPowerRanks)].reduce((s,v)=>s+Number(v||0),0);
     const persUsed = [...Object.values(this.wizardData.persRanks), ...Object.values(this.wizardData.persPowerRanks)].reduce((s,v)=>s+Number(v||0),0);
 
+    const occPlan=this.#occupationPlan(prof,uiLang);
     const q = this.wizardData.skillFilter.trim().toLowerCase();
     const personality=new Set(this.wizardData.personalitySkillKeys??[]);
     const skillRows = this.skillCatalog
       .map((s, idx) => {
-        const isOcc = this.#isOccupationalSkill(s, prof);
+        const isOcc = this.#isOccupationalSkill(s, prof, occPlan);
         const base = this.#computeDynamicBase(s);
         const occPts = Number(this.wizardData.occRanks[idx] ?? 0);
         const persPts = Number(this.wizardData.persRanks[idx] ?? 0);
@@ -613,7 +618,6 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     }).filter(Boolean);
     const professionSkillCoverage=occupationSkillCoverage(this.skillCatalog,prof?.skillRefs??[]);
     // Resolve optional or required choice clauses before profession allocations.
-    const occPlan=this.#occupationPlan(prof,uiLang);
     const choiceGroups=occPlan.groups;
     context.professionChoiceGroups=choiceGroupView(occPlan,this.wizardData.choiceSelections);
     context.occupationIntegrationIssues=occPlan.errors;
@@ -647,7 +651,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.occupationStage2=this.occupationStage===2;
     context.occupationStage3=this.occupationStage===3;
     context.occupationStageReady=choiceStatus.valid&&!context.occupationMetadataMissing&&!context.professionMissingSkillCount;
-    context.occupationNextDisabled=this.step===4&&this.occupationStage===2&&!context.occupationStageReady;
+    context.occupationNextDisabled=(this.step===4&&this.occupationStage===2&&!context.occupationStageReady)||
+      (this.step===3&&context.personalityEnabled&&!context.personalityLocked&&!context.personalityValid);
     context.occupationStages=[{num:1,label:isTh?'เลือกอาชีพ':'Choose occupation'},{num:2,label:isTh?'เลือกทักษะอาชีพ':'Choose occupation skills'},{num:3,label:isTh?'จัดสรรแต้มทักษะ':'Allocate skill points'}].map(s=>({...s,active:s.num===this.occupationStage,complete:s.num<this.occupationStage,disabled:s.num===3&&!context.occupationStageReady}));
     // Do not flood creation with every Compendium Skill (Art (...),
     // Science (...), etc.). A Specialty is visible for point allocation only
@@ -1350,9 +1355,21 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         occupationData.flags??={};
         occupationData.flags['brp-uge']={...(occupationData.flags['brp-uge']??{}),wizardId:prof.id};
         const oldJob=actorDoc.items.find(i=>i.type==='occupation');
-        if(oldJob)await oldJob.update({name:occupationData.name,img:occupationData.img,
-          system:occupationData.system,'flags.brp-uge.wizardId':prof.id});
-        else await actorDoc.createEmbeddedDocuments('Item',[occupationData]);
+        // Snapshot validated external requirements only when explicitly creating/changing the occupation.
+        // Never patch an existing Actor occupation just because an external manifest was imported.
+        if(prof.externalReview){
+          occupationData.system.skillRefs=[...prof.skillRefs];
+          occupationData.system.skillChoiceGroups=structuredClone(prof.skillChoiceGroups);
+          occupationData.flags['brp-uge'].creationExternalReview=structuredClone(prof.externalReview);
+        }
+        if(!oldJob)await actorDoc.createEmbeddedDocuments('Item',[occupationData]);
+        else if(this.wizardData.professionChanged&&oldJob.uuid!==prof.sourceUuid){
+          const original=oldJob.system;
+          for(const key of Object.keys(original))if(/^flavor/i.test(key))occupationData.system[key]=original[key];
+          await oldJob.update({name:occupationData.name,img:occupationData.img,
+            system:occupationData.system,'flags.brp-uge.wizardId':prof.id,
+            'flags.brp-uge.creationExternalReview':occupationData.flags['brp-uge'].creationExternalReview??null});
+        }
       }
 
       // The initial character sheet must contain ALL available baseline skills,

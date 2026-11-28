@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {validatePersonalityManifest,validateOccupationOverlay,readCreationTemplateData,creationPersonalityTemplates,importCreationTemplates,externalOccupationPatch,occupationWithExternalPatch,personalityPlan,occupationPlan,choiceGroupView,validateChoicePlan} from '../module/creation-template-integration.mjs';
+import {validatePersonalityManifest,validateOccupationOverlay,readCreationTemplateData,creationPersonalityTemplates,importCreationTemplates,externalOccupationPatch,occupationWithExternalPatch,personalityPlan,occupationPlan,choiceGroupView,validateChoicePlan,choicePlanCapacity} from '../module/creation-template-integration.mjs';
 const make=(name,id)=>({type:'skill',name,uuid:'Item.'+id,system:{nameEn:name,referenceKey:name}});
 const fixed=Array.from({length:12},(_,i)=>make('Test '+i,String(i).padStart(16,'0')));
 const extra=make('Test Extra','eeeeeeeeeeeeeeee');
@@ -35,3 +35,23 @@ const result=await importCreationTemplates({personality:manifest,occupations:ove
 assert.equal(result.personalities,1);assert.equal(result.reviewIssues,1);assert.equal(writes.length,1);
 assert.equal(creationPersonalityTemplates(readCreationTemplateData(writes[0][2]))[0].typeKey,'synthetic');
 console.log('PASS: external template contract, GM-only import, fixed grants, counted unique groups, unresolved review blocker');
+
+const impossible={fixed:[],groups:[{count:2,candidates:[{key:'a'},{key:'b'}]},{count:1,candidates:[{key:'a'},{key:'b'}]}]};
+assert.deepEqual(choicePlanCapacity(impossible),{possible:false,matched:2,required:3});
+assert.deepEqual(choicePlanCapacity({fixed:[],groups:[{count:1,candidates:[{key:'a'},{key:'b'}]},{count:1,candidates:[{key:'a'}]}]}),{possible:true,matched:2,required:2});
+const langSource={type:'skill',uuid:'Item.ffffffffffffffff',name:'Language (...)',system:{nameEn:'Language (...)',specialtyFamily:'Language',isSpecialtyTemplate:true}};
+const langRegistry=[{key:'language',enFamily:'Language',thFamily:'ภาษา',canonicalTemplate:langSource,options:[
+ {key:'native',en:'Native',th:'ภาษาแม่',bookKey:'own',state:'enabled'},
+ {key:'foreign',en:'Foreign',th:'ภาษาต่างประเทศ',state:'enabled'},
+ {key:'hidden',en:'Hidden',state:'hidden',hidden:true}]}];
+const languageGroup={id:'lang',count:1,options:[{kind:'family',familyKey:'language'}]};
+const prof={skillRefs:[],skillChoiceGroups:[languageGroup],externalReview:{requirements:[{groupId:'lang',unresolvedTokens:[],semanticGuards:{nonNative:true}}]}};
+const lp=occupationPlan(prof,[],langRegistry,[langSource]);
+assert.deepEqual(lp.groups[0].candidates.map(c=>c.key),['language|foreign']);
+const role={...prof,externalReview:{requirements:[{groupId:'lang',unresolvedTokens:[],semanticGuards:{languageRole:'programming_language'}}]}};
+assert.equal(occupationPlan(role,[],langRegistry,[langSource]).groups[0].candidates.length,0);
+role.externalReview.requirements[0].semanticGuards.allowedCanonicalKeys=['language|foreign'];
+assert.equal(occupationPlan(role,[],langRegistry,[langSource]).groups[0].candidates.length,1);
+const nativeTemplate={...template,fixedSkills:[...template.fixedSkills.slice(0,11),{requirement:'exact-specialty',familyKey:'language',specialtyKey:'own'}]};
+assert.ok(personalityPlan(nativeTemplate,catalog,langRegistry,[langSource]).fixed.some(c=>c.key==='language|native'));
+console.log('PASS: unique-slot feasibility, native default alias, hidden Specialty and explicit language role approval');

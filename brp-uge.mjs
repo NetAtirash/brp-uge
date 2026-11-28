@@ -28,7 +28,7 @@ import { configureStartingSkills } from "./module/skill-selection.mjs";
 import { StartingSkillsMenu } from "./module/apps/starting-skills-menu.mjs";
 import { SpecialtyPresetsMenu } from "./module/apps/specialty-presets-menu.mjs";
 import { installBRPSettingsUI } from "./module/apps/settings-organization.mjs";
-import { importCreationTemplates } from "./module/creation-template-integration.mjs";
+import { importCreationTemplates, auditCreationTemplates } from "./module/creation-template-integration.mjs";
 
 function refreshBRPWorldUI() {
   try {
@@ -62,6 +62,7 @@ Hooks.once("init", async () => {
     getCampaignRules,
     configureStartingSkills,
     importCreationTemplates,
+    auditCreationTemplates,
     openWizard: (actor) => {
       try {
         const target = actor ?? canvas.tokens?.controlled?.[0]?.actor ?? game.user?.character;

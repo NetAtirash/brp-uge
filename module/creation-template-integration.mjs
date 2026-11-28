@@ -5,6 +5,8 @@ import {analyzeSkillFamily,specialtyFamilyKey} from './skill-specialties.mjs';
 import {isSkillFamilyTemplate} from './skill-family-templates.mjs';
 import {specialtyNeedsReview,specialtyTemplateFor} from './specialty-registry.mjs';
 import {resolveOccupationTemplateGroups} from './occupation-choice-rules.mjs';
+import {getLibraryDocuments} from './library-provider.mjs';
+import {buildSpecialtyRegistry} from './specialty-registry.mjs';
 
 const text=v=>typeof v==='string'?v.trim():'';
 const list=v=>Array.isArray(v)?v:[];
@@ -129,6 +131,12 @@ function optionCandidates(option,catalog,registry,library,lang,guard={}){
     const s=exactSkill(catalog,option.ref,option.canonicalSkillKey);
     if(!s)return [];
     const key=canonicalSkillKey(s);
+    const info=analyzeSkillFamily(s);
+    if(info?.supportsSpecialty){
+      const family=registry.find(f=>f.key===info.key);
+      const approved=family?.options?.find(o=>!o.hidden&&o.key===specialtyFamilyKey(info.enSpecialty));
+      if(!approved||!specialtyTemplateFor(family,approved,library))return [];
+    }
     if(guard.nonNative||guard.mustBeNonNative||guard.notBookDefault)return [];
     if((guard.languageRole||Array.isArray(guard.allowedCanonicalKeys))&&!list(guard.allowedCanonicalKeys).includes(key))return [];
     return [{key,label:label(s)}];
@@ -174,7 +182,10 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
     return {...g,label:lang==='th'?(g.labelTh||g.labelEn||g.id):(g.labelEn||g.labelTh||g.id),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
   });
   if(!unique(planned.map(g=>g.id)))errors.push('Duplicate choice group IDs');
-  return {fixed:[...fixedChoices.values()],groups:planned,errors};
+  const plan={fixed:[...fixedChoices.values()],groups:planned,errors};
+  const capacity=choicePlanCapacity(plan);
+  if(!capacity.possible)errors.push('Choice groups cannot be satisfied without duplicate skills ('+capacity.matched+'/'+capacity.required+')');
+  return plan;
 }
 export function personalityPlan(template,catalog,registry,library,lang='en'){
   if(!template)return {fixed:[],groups:[],errors:['External Personality template unavailable']};
@@ -215,4 +226,46 @@ export function validateChoicePlan(plan,selections,catalog){
   }
   if(plan.requiredTotal!==undefined&&keys.size!==plan.requiredTotal)errors.push('Personality skill total: '+keys.size+'/'+plan.requiredTotal);
   return {valid:errors.length===0,errors,keys:[...keys].filter(k=>known.has(k))};
+}
+
+/** Bipartite matching of slots to unique concrete keys: detect groups which
+ * individually have enough options but cannot all be satisfied together. */
+export function choicePlanCapacity(plan){
+  const fixed=new Set(plan.fixed.map(c=>c.key)),slots=[];
+  for(const g of plan.groups){
+    const candidates=g.candidates.map(c=>c.key).filter(k=>!fixed.has(k));
+    for(let i=0;i<g.count;i++)slots.push(candidates);
+  }
+  const owners=new Map();
+  function assign(slot,seen){
+    for(const key of slots[slot]){
+      if(seen.has(key))continue;
+      seen.add(key);
+      if(!owners.has(key)||assign(owners.get(key),seen)){
+        owners.set(key,slot);return true;
+      }
+    }
+    return false;
+  }
+  let matched=0;
+  for(let i=0;i<slots.length;i++)if(assign(i,new Set()))matched++;
+  return {possible:matched===slots.length,matched,required:slots.length};
+}
+export async function auditCreationTemplates(gameApi=globalThis.game){
+  const data=readCreationTemplateData(gameApi.settings.get('brp-uge','creationTemplateData'));
+  if(data.error)throw new Error(data.error);
+  const library=await getLibraryDocuments({types:['skill','occupation']});
+  const catalog=library.filter(i=>i.type==='skill');
+  const registry=buildSpecialtyRegistry(catalog,gameApi.settings.get('brp-uge','specialtyRegistry'),gameApi.settings.get('brp-uge','specialtyPresets'));
+  const lang=gameApi.settings.get('brp-uge','uiLanguage')||'en';
+  const inspect=(id,plan)=>{const capacity=choicePlanCapacity(plan);return {id,ready:plan.errors.length===0&&capacity.possible,errors:plan.errors,
+    fixed:plan.fixed.length,groups:plan.groups.length,matched:capacity.matched,required:capacity.required};};
+  const personalities=creationPersonalityTemplates(data).map(t=>inspect(t.typeKey,personalityPlan(t,catalog,registry,catalog,lang)));
+  const occupations=list(data.occupations?.items).map(p=>{
+    const source=library.find(i=>i.type==='occupation'&&externalOccupationPatch(i,data)?._id===p._id);
+    const plan=occupationPlan(occupationWithExternalPatch({},p),catalog,registry,catalog,lang);
+    if(!source)plan.errors.push('Occupation source unavailable: '+p._id);
+    return inspect(p.stableKey||p._id,plan);
+  });
+  return {personalityCount:personalities.length,occupationCount:occupations.length,personalities,occupations};
 }
