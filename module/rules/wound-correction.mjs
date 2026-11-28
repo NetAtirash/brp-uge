@@ -8,9 +8,16 @@ export function correctedWoundRecovery(wounds,id,values,isGM){
   return wounds.map(w=>{
     if(w.id!==id)return w;
     const next={...w,firstAidAttempted:values.firstAidAttempted,treated:values.treated,recoveryHp:Number(n)};
-    if(!next.treated||(!next.firstAidAttempted&&next.treatmentMethod==='firstAid')){
+    if(next.treated!==Boolean(w.treated)||!next.treated||(!next.firstAidAttempted&&next.treatmentMethod==='firstAid')){
       next.treatmentMethod='';next.treatmentResult='';
     }
     return next;
   });
+}
+
+/** Explicit current state, independent of historical roll result and HP gain. */
+export function woundTreatmentState(w,th=false){
+  if(w?.healed)return {key:'resolved',label:th?'ปิดบาดแผลแล้ว':'Resolved'};
+  if(w?.treated)return {key:'treated',label:th?'รักษาสำเร็จ · รอปิดแผล':'Treated · awaiting closure'};
+  return {key:'untreated',label:th?'ยังไม่รักษาสำเร็จ':'Not successfully treated'};
 }

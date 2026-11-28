@@ -13,6 +13,19 @@ import {getLibraryDocuments} from './library-provider.mjs';
 
 const str=v=>String(v??'').trim(),keyOf=v=>specialtyFamilyKey(str(v));
 export const specialtyNeedsReview=value=>!str(value)||/[/／]|(?:^|\W)(?:various|any|multiple|other)(?:\W|$)/iu.test(str(value));
+/** Validation of concrete bilingual labels; Thai slash aliases are allowed. */
+export function specialtyLabelIssue(en,th=''){
+  if(!str(en)||/[()<>\r\n]/u.test(str(en)))return 'english';
+  if(/[()<>\r\n]/u.test(str(th)))return 'thai';
+  if(specialtyNeedsReview(en))return 'composite';
+  return null;
+}
+export function specialtyEditorState(entry){
+  return entry?.review||entry?.state==='review'?'review':entry?.hidden||entry?.state==='hidden'?'hidden':'enabled';
+}
+export function specialtyDraftState(rendered,selected,changed){
+  return changed&&['enabled','hidden','review'].includes(selected)?selected:rendered;
+}
 const entryId=(family,name)=>keyOf(family)+'|'+keyOf(name);
 const states=new Set(['enabled','hidden','review']);
 
@@ -94,7 +107,7 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
         });
         // Invalid composites never become selectable even if a pack marks
         // them enabled; GM may rename an option into a concrete specialty.
-        if(specialtyNeedsReview(resultOption.en)){
+        if(resultOption.state==='enabled'&&specialtyLabelIssue(resultOption.en,resultOption.th)){
           resultOption.state='review';resultOption.hidden=true;resultOption.review=true;
         }
         options.push(resultOption); claimed.add(resultOption.key);
@@ -112,7 +125,7 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
           sourceUuid:doc.uuid,templateUuid:doc.uuid,
           originalEn,originalTh:info?.thSpecialty||'',sourceAmbiguous:true
         });
-        if(specialtyNeedsReview(en))parsed.state='review';
+        if(parsed.state==='enabled'&&specialtyLabelIssue(en,parsed.th))parsed.state='review';
         parsed.hidden=parsed.state!=='enabled';parsed.review=parsed.state==='review';
         options.push(parsed); claimed.add(parsed.key);
         ambiguous.push({name:doc.system?.nameEn||doc.name,sourceUuid:doc.uuid,
@@ -137,7 +150,7 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
       const worldOption=option(entry,'world',{
         templateUuid:entry.templateUuid||canonical?.uuid||''
       });
-      if(specialtyNeedsReview(worldOption.en)){
+      if(worldOption.state==='enabled'&&specialtyLabelIssue(worldOption.en,worldOption.th)){
         worldOption.state='review';worldOption.review=true;worldOption.hidden=true;
       }
       const old=options.findIndex(o=>o.source==='legacy-preset'&&o.key===key);

@@ -1,3 +1,4 @@
+import {woundTreatmentState} from '../rules/wound-correction.mjs';
 import {canGainExperience,canRecordAdvancement} from '../rules/skill-mechanics.mjs';
 import { applyBRPControlLanguage } from "../ui-controls.mjs";
 import { buildShareEntryCard } from "../chat/share-entry.mjs";
@@ -291,7 +292,8 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     };
     context.woundsList = (sys?.wounds ?? []).map((w) => ({
       ...w,
-      careStatus: careStatus(w, isTh),
+      careStatus: w.treatmentResult ? careStatus(w, isTh) : '',
+      treatmentState: woundTreatmentState(w,isTh),
       recoveryRemaining: Math.max(0, Number(w.hpLost ?? 0) - Number(w.recoveryHp ?? 0)),
       severityLabel: severityLabels[w.severity] ?? w.severity,
       majorLossSummary: Object.entries(w.majorLosses ?? {}).filter(([,v])=>Number(v)>0).map(([k,v])=>`${k.toUpperCase()} −${v}`).join(" · ")
@@ -640,18 +642,18 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     await DialogV2.wait({
       window: { title: `${th ? "บันทึกบาดแผลใหม่" : "New wound"} — ${this.document.name}` },
       content: `
-        <form class="brp-macro-form">
-          <div class="form-group"><label>${th ? "อาการบาดเจ็บ" : "Injury"}</label><input type="text" name="title" list="brp-wound-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-wound-presets">${game.settings.get("brp-uge", "woundSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
+        <form class="brp-macro-form brp-wound-entry">
+          <div class="form-group"><label>${th ? "อาการบาดเจ็บ" : "Injury"}</label><span class="brp-wound-picker"><input type="text" name="title" list="brp-wound-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-wound-presets">${game.settings.get("brp-uge", "woundSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></div>
           <div class="form-group">
             <label>${th ? "ความรุนแรง" : "Severity"}</label>
-            <select name="severity">
+            <span class="brp-wound-picker"><select name="severity">
               <option value="minor">${th ? "บาดแผลทั่วไป" : "Minor"}</option>
               <option value="major">${th ? "บาดแผลฉกรรจ์" : "Major wound"}</option>
               <option value="bleeding">${th ? "เลือดไหลต่อเนื่อง" : "Bleeding"}</option>
-            </select>
+            </select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
           </div>
           <div class="form-group"><label>${th ? "HP ที่เสีย" : "HP lost"}</label><input type="number" name="hpLost" value="3" min="0" /></div>
-          <div class="form-group"><label>${th ? "ตำแหน่งร่างกาย" : "Body location"}</label><input type="text" name="location" list="brp-body-presets" value="" placeholder="เลือกหรือพิมพ์ใหม่" /><datalist id="brp-body-presets">${game.settings.get("brp-uge", "bodySuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
+          <div class="form-group"><label>${th ? "ตำแหน่งร่างกาย" : "Body location"}</label><span class="brp-wound-picker"><input type="text" name="location" list="brp-body-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-body-presets">${game.settings.get("brp-uge", "bodySuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></div>
           <div class="form-group"><label>${th ? "หมายเหตุ" : "Notes"}</label><input type="text" name="notes" value="" /></div>
         </form>
       `,

@@ -153,7 +153,11 @@
         </div>
         <h3>{{#if isTh}}บุคลิก{{else}}Personality{{/if}}</h3>
         <div class="wiz-personality-config"><label>{{#if isTh}}รูปแบบบุคลิก{{else}}Personality package{{/if}}</label>
-          <select data-wiz-personality {{#if personalityLocked}}disabled{{/if}}>{{#each personalityChoices as |p|}}<option value="{{p.key}}" {{#if p.selected}}selected{{/if}}>{{p.label}}</option>{{/each}}</select>
+          {{#if personalityLocked}}
+            <div class="brp-personality-readout" role="status">{{personalityLabel}}</div>
+          {{else}}
+            <select data-wiz-personality>{{#each personalityChoices as |p|}}<option value="{{p.key}}" {{#if p.selected}}selected{{/if}}>{{p.label}}</option>{{/each}}</select>
+          {{/if}}
           {{#if personalityLocked}}
             <p>{{#if isTh}}คงข้อมูลบุคลิกเดิมของตัวละคร{{else}}Existing personality preserved{{/if}}</p>
           {{else}}
@@ -202,7 +206,6 @@
                 <button type="button" class="wiz-occupation-row {{#if p.selected}}selected{{/if}}" data-action="selectProfession" data-prof-id="{{p.id}}" data-search="{{p.searchText}}" title="{{p.titleEn}}" aria-pressed="{{#if p.selected}}true{{else}}false{{/if}}">
                   <i class="fa-solid fa-briefcase" aria-hidden="true"></i>
                   <span class="wiz-occupation-label">{{p.title}}</span>
-                  {{#if p.wealthLabel}}<small class="wiz-occupation-wealth">{{p.wealthLabel}}</small>{{/if}}
                   <span class="wiz-occupation-action">{{#if p.selected}}<i class="fa-solid fa-check" aria-hidden="true"></i>{{else}}<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>{{/if}}</span>
                 </button>
               {{/each}}

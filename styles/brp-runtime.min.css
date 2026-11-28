@@ -23,3 +23,23 @@ html[data-brp-theme] .brp-uge .wiz-alloc-grp>span[aria-label]{color:var(--brp-mu
 html[data-brp-theme="light"] .brp-uge .brp-compendium :is(.comp-folder-tag,.comp-era-tag,.comp-ref-tag){background:#e6d8c2!important;color:#342820!important;border:1px solid #a38b6c!important}
 html[data-brp-theme="light"] .brp-uge .brp-compendium :is(.comp-sub,.comp-filter-field>span,.comp-result-summary){color:#514437!important}
 html[data-brp-theme="dark"] .brp-uge .brp-compendium :is(.comp-folder-tag,.comp-era-tag,.comp-ref-tag){background:#303a46!important;color:#f1f3f5!important;border:1px solid #76828e!important}
+/* RC8: scoped QA contrast, wound state and compact controls. */
+html[data-brp-theme] .brp-uge .brp-age-current strong{color:var(--brp-text)!important}
+html[data-brp-theme] .brp-uge .brp-personality-readout{background:var(--brp-surface)!important;color:var(--brp-text)!important;border:1px solid var(--brp-border)!important;border-radius:4px;padding:7px 9px;min-height:32px;display:flex;align-items:center}
+html[data-brp-theme="light"] .application.brp-uge.brp-wizard-window .wiz-skill-row .occ-tag{color:#fff!important;background:#902127!important}
+html[data-brp-theme="dark"] .application.brp-uge.brp-wizard-window .wiz-skill-row .occ-tag{color:#191214!important;background:#ef8982!important}
+html[data-brp-theme] .brp-uge button.wiz-occupation-row{grid-template-columns:20px minmax(0,1fr) 18px!important}
+html[data-brp-theme] .brp-uge .brp-wound-record .brp-wound-header{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap}
+html[data-brp-theme] .brp-uge .brp-wound-record .brp-wound-heading{display:flex;align-items:center;gap:5px;flex:1 1 auto;min-width:0;flex-wrap:wrap}
+html[data-brp-theme] .brp-uge .sheet-body .brp-wound-record .brp-wound-actions{display:flex;flex:0 0 auto;flex-wrap:nowrap;align-items:center;gap:4px;margin:0}
+html[data-brp-theme] .brp-uge .brp-wound-actions button{white-space:nowrap;padding:3px 6px!important;min-height:25px!important;font-size:11px!important}
+html[data-brp-theme] .brp-uge .brp-wound-details{display:flex;flex-wrap:wrap;gap:3px 8px;margin-top:4px}
+html[data-brp-theme] .brp-uge .brp-wound-state{font-size:10px;font-weight:700;border:1px solid var(--brp-border-strong);background:var(--brp-surface);color:var(--brp-text)!important;border-radius:3px;padding:1px 5px}
+html[data-brp-theme="light"] .brp-uge .brp-wound-state.treated{background:#e0ebd9;color:#284b2c!important;border-color:#587953}
+html[data-brp-theme="dark"] .brp-uge .brp-wound-state.treated{background:#20372a;color:#cbe9ce!important;border-color:#799e81}
+html[data-brp-theme] .brp-uge .brp-wound-state.resolved{background:var(--brp-highlight);color:var(--brp-muted)!important}
+.brp-wound-entry .brp-wound-picker{position:relative;display:block;min-width:0;width:100%}
+.brp-wound-entry .brp-wound-picker :is(input,select){width:100%;padding-inline-end:25px!important}
+.brp-macro-form.brp-wound-entry .brp-wound-picker select{appearance:none!important;-webkit-appearance:none!important;background-image:none!important}
+.brp-wound-entry .brp-wound-picker input::-webkit-calendar-picker-indicator{opacity:0}
+.brp-wound-entry .brp-wound-picker>i{position:absolute;inset-inline-end:9px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:11px;color:inherit}

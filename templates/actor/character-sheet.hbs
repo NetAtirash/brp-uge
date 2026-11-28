@@ -559,24 +559,29 @@
               </div>
               <ul class="item-list">
                 {{#each woundsList as |w|}}
-                  <li class="wound-row {{#if w.healed}}is-resolved{{/if}}">
+                  <li class="wound-row brp-wound-record {{#if w.healed}}is-resolved{{/if}}">
                     <div class="wound-main">
-                      <div class="wound-title-row">
-                        <strong>{{w.title}}</strong>
-                        <span class="wound-badge {{w.severity}}">{{w.severityLabel}}</span>
-                        {{#if w.careStatus}}<span class="meta-text">{{w.careStatus}}</span>{{/if}}
-                        <span class="meta-text">-{{w.hpLost}} HP · {{w.location}} · {{#if @root.isTh}}ฟื้นแล้ว{{else}}Recovered{{/if}} +{{w.recoveryHp}} HP · {{#if @root.isTh}}ปฐมพยาบาล{{else}}First Aid{{/if}}: {{#if w.firstAidAttempted}}{{#if @root.isTh}}ใช้สิทธิ์แล้ว{{else}}Attempted{{/if}}{{else}}—{{/if}}</span>
-                      </div>
-                      {{#if w.notes}}<div class="meta-text">{{w.notes}}{{#if w.createdAt}} · {{w.createdAt}}{{/if}}</div>{{/if}}
-                      {{#if w.majorDetermined}}<div class="brp-major-detail"><strong>Major Wound 1D100: {{w.majorRoll}}</strong> · {{#if @root.isTh}}{{w.majorEffectTh}}{{else}}{{w.majorEffectEn}}{{/if}} · {{#if w.majorLuckPassed}}Luck ✓ {{#if @root.isTh}}ไม่เสียค่าสถานะถาวร{{else}}No permanent stat loss{{/if}}{{else}}{{#if w.majorApplied}}{{#if @root.isTh}}ลดค่าสถานะแล้ว{{else}}Stat loss applied{{/if}}: {{w.majorLossSummary}}{{else}}{{#if @root.isTh}}GM เลือกค่าสถานะที่เสีย{{else}}GM to assign losses{{/if}}{{/if}}{{/if}}</div>{{/if}}
-                    </div>
-                    <div class="comp-actions">
+                      <div class="wound-title-row brp-wound-header">
+                        <div class="brp-wound-heading">
+                          <strong>{{w.title}}</strong>
+                          <span class="wound-badge {{w.severity}}">{{w.severityLabel}}</span>
+                          <span class="brp-wound-state {{w.treatmentState.key}}">{{w.treatmentState.label}}</span>
+                        </div>
+                    <div class="comp-actions brp-wound-actions">
                       {{#if (eq w.severity "major")}}{{#unless w.majorDetermined}}<button type="button" class="brp-btn" data-action="rollMajorWound" data-wound-id="{{w.id}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i> Major Wound</button>{{/unless}}{{/if}}
                       {{#if @root.isGM}}<button type="button" class="brp-btn" data-action="editWoundRecovery" data-wound-id="{{w.id}}"><i class="fa-solid fa-pen" aria-hidden="true"></i> {{#if @root.isTh}}แก้การรักษา{{else}}Edit recovery{{/if}}</button>{{/if}}
                       <button type="button" class="brp-btn {{#if w.healed}}is-active{{/if}}" data-action="toggleHealWound" data-wound-id="{{w.id}}">
                         {{#if w.healed}}{{#if @root.isTh}}ปิดบาดแผลแล้ว ✓{{else}}Resolved ✓{{/if}}{{else}}{{#if @root.isTh}}ทำเครื่องหมายหาย{{else}}Mark healed{{/if}}{{/if}}
                       </button>
                       <button type="button" class="icon-btn danger" data-action="deleteWound" data-wound-id="{{w.id}}" title="{{#if @root.isTh}}ลบบันทึก{{else}}Delete record{{/if}}">✕</button>
+                    </div>
+                      </div>
+                      <div class="brp-wound-details">
+                      <span class="meta-text">-{{w.hpLost}} HP · {{w.location}} · {{#if @root.isTh}}ฟื้นแล้ว{{else}}Recovered{{/if}} +{{w.recoveryHp}} HP · {{#if @root.isTh}}ปฐมพยาบาล{{else}}First Aid{{/if}}: {{#if w.firstAidAttempted}}{{#if @root.isTh}}ใช้สิทธิ์แล้ว{{else}}Attempted{{/if}}{{else}}—{{/if}}</span>
+                        {{#if w.careStatus}}<span class="meta-text">{{w.careStatus}}</span>{{/if}}
+                      </div>
+                      {{#if w.notes}}<div class="meta-text">{{w.notes}}{{#if w.createdAt}} · {{w.createdAt}}{{/if}}</div>{{/if}}
+                      {{#if w.majorDetermined}}<div class="brp-major-detail"><strong>Major Wound 1D100: {{w.majorRoll}}</strong> · {{#if @root.isTh}}{{w.majorEffectTh}}{{else}}{{w.majorEffectEn}}{{/if}} · {{#if w.majorLuckPassed}}Luck ✓ {{#if @root.isTh}}ไม่เสียค่าสถานะถาวร{{else}}No permanent stat loss{{/if}}{{else}}{{#if w.majorApplied}}{{#if @root.isTh}}ลดค่าสถานะแล้ว{{else}}Stat loss applied{{/if}}: {{w.majorLossSummary}}{{else}}{{#if @root.isTh}}GM เลือกค่าสถานะที่เสีย{{else}}GM to assign losses{{/if}}{{/if}}{{/if}}</div>{{/if}}
                     </div>
                   </li>
                 {{else}}

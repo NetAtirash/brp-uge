@@ -5,7 +5,7 @@
  * hidden from players until the GM curates a concrete Specialty.
  */
 import {getLibraryDocuments} from '../library-provider.mjs';
-import {buildSpecialtyRegistry,readSpecialtyRegistry,specialtyNeedsReview} from '../specialty-registry.mjs';
+import {buildSpecialtyRegistry,readSpecialtyRegistry,specialtyLabelIssue,specialtyEditorState,specialtyDraftState} from '../specialty-registry.mjs';
 import {specialtyFamilyKey} from '../skill-specialties.mjs';
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -63,7 +63,7 @@ export class SpecialtyPresetsMenu extends App {
   #row(group,entry,newRow=false){
     const source=Boolean(entry.sourceUuid);
     const book=entry.source==='book';
-    const state=entry.state==='review'?'review':entry.hidden?'hidden':entry.state||'enabled';
+    const state=specialtyEditorState(entry);
     const origin=book?this.#tr('ความเชี่ยวชาญตั้งต้นจากหนังสือ','Verified book default'):
       entry.source==='legacy-source'?this.#tr('รายการคลังข้อมูลเดิม — รอย้ายเป็นแม่แบบ','Legacy source (migration needed)'):
       entry.source==='legacy-preset'?this.#tr('ตัวเลือกเดิมรอ GM อนุมัติ','Legacy preset pending review'):
@@ -83,7 +83,7 @@ export class SpecialtyPresetsMenu extends App {
       '<label>'+this.#tr('ความเชี่ยวชาญ (อังกฤษ)','Specialty (English)')+'<input type="text" data-en value="'+esc(entry.en||'')+'" maxlength="100" autocomplete="off"></label>'+
       '<label>'+this.#tr('ความเชี่ยวชาญ (ไทย)','Specialty (Thai)')+'<input type="text" data-th value="'+esc(entry.th||'')+'" maxlength="100" autocomplete="off"></label>'+
       '<label>'+this.#tr('สถานะ','Status')+
-        '<select data-state>'+
+        '<select data-state data-rendered-state="'+esc(state)+'">'+
           '<option value="enabled" '+(state==='enabled'?'selected':'')+'>'+this.#tr('ใช้งาน / ให้ผู้เล่นเลือก','Enabled / selectable')+'</option>'+
           '<option value="hidden" '+(state==='hidden'?'selected':'')+'>'+this.#tr('ซ่อนจากตัวเลือกผู้เล่น','Hidden from players')+'</option>'+
           '<option value="review" '+(state==='review'?'selected':'')+'>'+this.#tr('รอ GM ตรวจสอบ','Needs GM review')+'</option>'+
@@ -167,14 +167,15 @@ export class SpecialtyPresetsMenu extends App {
     for(const node of this.element.querySelectorAll('[data-row]')){
       const en=safe(node.querySelector('[data-en]')?.value);
       const th=safe(node.querySelector('[data-th]')?.value);
-      const state=node.querySelector('[data-state]')?.value||'enabled';
+      const control=node.querySelector('[data-state]');
+      const state=specialtyDraftState(control?.dataset.renderedState||'review',control?.value,control?.dataset.changed==='true');
       const uuid=node.dataset.sourceUuid;
       const bookKey=node.dataset.bookKey;
       const k=specialtyFamilyKey(en);
       // Untouched published rows may contain a disabled descriptive heading.
       // Do not validate them as newly authored/selectable specialties.
       const existing=bookKey?group.options.find(o=>o.source==='book'&&o.bookKey===bookKey):null;
-      if(existing&&en===existing.en&&th===existing.th&&state===(existing.review?'review':existing.hidden?'hidden':existing.state)){
+      if(existing&&en===existing.en&&th===existing.th&&state===specialtyEditorState(existing)){
         if((cfg.hidden||[]).includes(k)&&state==='hidden')bookOverrides[bookKey]={en,th,state};
         else if(cfg.bookOverrides?.[bookKey])bookOverrides[bookKey]=cfg.bookOverrides[bookKey];
         if(state==='enabled'){
@@ -183,10 +184,9 @@ export class SpecialtyPresetsMenu extends App {
         }
         continue;
       }
-      if(!en||!k||(state==='enabled'&&(/[()<>\r\n]/u.test(en)||/[()<>\r\n]/u.test(th))))
-        throw new Error(this.#tr('กรอกชื่อความเชี่ยวชาญภาษาอังกฤษที่ถูกต้อง','A valid English Specialty name is required')+': '+en);
-      if(state==='enabled'&&specialtyNeedsReview(en))
-        throw new Error(this.#tr('ระบุชื่อความเชี่ยวชาญเดี่ยวก่อนเปิดให้เลือก: ','Resolve composite Specialty before enabling: ')+en);
+      if(!en||!k)throw new Error(this.#tr('กรอกชื่อความเชี่ยวชาญภาษาอังกฤษ','Enter an English specialty name'));
+      const issue=state==='enabled'?specialtyLabelIssue(en,th):null;
+      if(issue)throw new Error(this.#labelError(issue,en,th));
       if(state==='enabled'&&seen.has(k))
         throw new Error(this.#tr('ความเชี่ยวชาญเปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
       if(state==='enabled')seen.add(k);
@@ -221,9 +221,15 @@ export class SpecialtyPresetsMenu extends App {
     cfg.hidden=[];
     cfg.legacyMigrated=true;
   }
+  #labelError(issue,en,th){
+    return issue==='thai'?this.#tr('ระบุชื่อความเชี่ยวชาญภาษาไทยแบบเฉพาะเจาะจงก่อนเปิดใช้','Enter a concrete Thai specialty name before enabling')+': '+th:
+      issue==='composite'?this.#tr('ระบุชื่อความเชี่ยวชาญเดี่ยวก่อนเปิดให้เลือก','Resolve composite specialty before enabling')+': '+en:
+      this.#tr('กรอกชื่อความเชี่ยวชาญภาษาอังกฤษที่ถูกต้อง','A valid English specialty name is required')+': '+en;
+  }
   _onRender(context,options){
     super._onRender(context,options);
     const root=this.element;
+    for(const el of root.querySelectorAll('[data-state]'))el.value=el.dataset.renderedState;
     const filter=root.querySelector('[data-family-search]');
     const applyFilter=()=>{
       const q=this.#query.trim().toLocaleLowerCase();
@@ -244,6 +250,7 @@ export class SpecialtyPresetsMenu extends App {
       holder.innerHTML=this.#row(group,{en:'',th:'',state:'review',source:'world',
         templateUuid:group.canonicalTemplate.uuid,sourceUuid:''},true);
       root.querySelector('[data-specialty-rows]').append(holder.firstElementChild);
+      const state=holder.firstElementChild?.querySelector('[data-state]');if(state)state.value=state.dataset.renderedState;
       holder.firstElementChild?.querySelector('[data-en]')?.focus();
     });
     root.querySelector('[data-specialty-rows]')?.addEventListener('click',async e=>{
@@ -253,7 +260,7 @@ export class SpecialtyPresetsMenu extends App {
       const archive=e.target.closest('[data-archive]');
       if(archive){
         const row=archive.closest('[data-row]');
-        row.querySelector('[data-state]').value='hidden';
+        const state=row.querySelector('[data-state]');state.value='hidden';state.dataset.changed='true';
         return;
       }
       const open=e.target.closest('[data-open-source]');
@@ -262,12 +269,20 @@ export class SpecialtyPresetsMenu extends App {
         if(item?.sheet)item.sheet.render({force:true});
       }
     });
-    // A source example like "Drawing / Painting" moves to enabled only after
-    // it becomes a single specialty. GM retains explicit control of status.
+    // Changing a name never auto-enables a pending/disabled source heading.
     root.querySelector('[data-specialty-rows]')?.addEventListener('change',e=>{
-      if(e.target.matches('[data-en]')){
-        const row=e.target.closest('[data-row]'),state=row?.querySelector('[data-state]');
-        if(state?.value==='review'&&!specialtyNeedsReview(e.target.value))state.value='enabled';
+      const row=e.target.closest('[data-row]'),state=row?.querySelector('[data-state]');
+      if(!state)return;
+      const en=safe(row.querySelector('[data-en]')?.value),th=safe(row.querySelector('[data-th]')?.value);
+      const issue=specialtyLabelIssue(en,th);
+      if(e.target===state){
+        state.dataset.changed='true';
+        if(state.value==='enabled'&&issue){
+          state.value='review';
+          ui.notifications.warn(this.#labelError(issue,en,th));
+        }
+      }else if(e.target.matches('[data-en],[data-th]')&&state.value==='enabled'&&issue){
+        state.value='review';state.dataset.changed='true';
       }
     });
     root.querySelector('[data-cancel]')?.addEventListener('click',()=>this.close());

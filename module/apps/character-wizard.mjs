@@ -9,7 +9,6 @@ import { generationFormula, creationBudgets, POINT_BUY_BUDGET, pointBuySpent,
   PERSONALITY_TYPES, categoryBonusPreview, CREATION_SKILL_CAP,
   youthCharacteristicLoss, eduAgeBonus, validateCreation, rolledRedistribution } from "../rules/character-creation.mjs";
 import { BRPRolls } from "../rolls/brp-rolls.mjs";
-import { resolveWealthItem, wealthDisplayFromItem } from "../wealth-utils.mjs";
 import { agePenalties } from "../status-effects.mjs";
 import { uniqueSkills, sameSkill, planMissingBaseSkills } from "../skill-foundation.mjs";
 import { configuredStartingSkills } from "../skill-selection.mjs";
@@ -552,16 +551,15 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     };
     // Occupations use the same compact catalog/list vocabulary as Skills,
     // Powers and Inventory. Long rules are previewed ONLY for the chosen item.
-    context.professions = (await Promise.all(this.#getAvailableProfessions().map(async (p) => ({
+    context.professions = this.#getAvailableProfessions().map(p => ({
       ...p,
       title: isTh ? p.nameTh : p.name,
       titleEn:p.name,
       plainDescription:this.#plainRuleText(isTh ? p.descriptionTh || p.description : p.description || p.descriptionTh),
-      wealthLabel: p.wealthEnabled ? wealthDisplayFromItem(await resolveWealthItem(p.wealthRef),isTh?'th':'en') : '',
       selected: p.id === this.wizardData.professionId,
       searchText: `${p.nameTh} ${p.name}`.toLocaleLowerCase(),
       linkedCount:(p.skillRefs??[]).length
-    })))).sort((a,b)=>a.title.localeCompare(b.title,isTh?'th':'en'));
+    })).sort((a,b)=>a.title.localeCompare(b.title,isTh?'th':'en'));
     context.professionFilter=this.wizardData.professionFilter;
     context.selectedProfession = {
       ...prof,
