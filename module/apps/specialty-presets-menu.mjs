@@ -26,6 +26,7 @@ export class SpecialtyPresetsMenu extends App {
   #query='';
   #saving=false;
 
+  get title(){return game.settings.get('brp-uge','uiLanguage')==='en'?'BRP UGE · Specialty Management':'BRP UGE · จัดการความเชี่ยวชาญ';}
   #isTh(){return game.settings.get('brp-uge','uiLanguage')!=='en';}
   #tr(th,en){return this.#isTh()?th:en;}
   async #load(){
@@ -46,20 +47,20 @@ export class SpecialtyPresetsMenu extends App {
     return this.#overlay.families[this.#family];
   }
   #templateOptions(group,selected){
-    return '<option value="">'+this.#tr('เลือกแม่แบบจาก Compendium','Choose a source template')+'</option>'+
+    return '<option value="">'+this.#tr('เลือกแม่แบบจากคลังข้อมูล','Choose a source template')+'</option>'+
       group.templates.map(t=>
         '<option value="'+esc(t.uuid)+'" '+(t.uuid===selected?'selected':'')+'>'+
-        esc(t.system?.nameEn||t.name)+' · '+esc(t.system?.baseFormula||String(t.system?.base??0)+'%')+
+        esc(this.#isTh()?(t.system?.nameTh||t.system?.nameEn||t.name):(t.system?.nameEn||t.name))+' · '+esc(t.system?.baseFormula||String(t.system?.base??0)+'%')+
         '</option>').join('');
   }
   #row(group,entry,newRow=false){
     const source=Boolean(entry.sourceUuid);
     const book=entry.source==='book';
     const state=entry.state==='review'?'review':entry.hidden?'hidden':entry.state||'enabled';
-    const origin=book?this.#tr('Specialty ตั้งต้นจากหนังสือ','Verified book default'):
-      entry.source==='legacy-source'?this.#tr('รายการ Compendium เดิม — รอย้ายเป็น Template','Legacy source (migration needed)'):
-      entry.source==='legacy-preset'?this.#tr('Preset เดิมรอ GM อนุมัติ','Legacy preset pending review'):
-      this.#tr('Specialty ที่ GM เพิ่ม','GM-added Specialty');
+    const origin=book?this.#tr('ความเชี่ยวชาญตั้งต้นจากหนังสือ','Verified book default'):
+      entry.source==='legacy-source'?this.#tr('รายการคลังข้อมูลเดิม — รอย้ายเป็นแม่แบบ','Legacy source (migration needed)'):
+      entry.source==='legacy-preset'?this.#tr('ตัวเลือกเดิมรอ GM อนุมัติ','Legacy preset pending review'):
+      this.#tr('ความเชี่ยวชาญที่ GM เพิ่ม','GM-added Specialty');
     const statusText=this.#tr('ยังไม่ให้ผู้เล่นเลือกจนกว่าจะจัดการชื่อและยืนยัน','Review this source heading before enabling it');
     return '<article class="brp-specialty-row" data-row data-source="'+esc(entry.source||'world')+
       '" data-source-uuid="'+esc(entry.sourceUuid||'')+'" data-book-key="'+esc(entry.bookKey||'')+
@@ -72,8 +73,8 @@ export class SpecialtyPresetsMenu extends App {
       (!source?'<button type="button" data-archive>'+this.#tr('ซ่อน','Archive')+'</button>':'')+
       (newRow?'<button type="button" data-remove-draft>'+this.#tr('ยกเลิกรายการใหม่','Remove draft')+'</button>':'')+'</div>'+
       '<div class="brp-specialty-row-fields">'+
-      '<label>Specialty (English)<input type="text" data-en value="'+esc(entry.en||'')+'" maxlength="100" autocomplete="off"></label>'+
-      '<label>Specialty (ไทย)<input type="text" data-th value="'+esc(entry.th||'')+'" maxlength="100" autocomplete="off"></label>'+
+      '<label>'+this.#tr('ความเชี่ยวชาญ (อังกฤษ)','Specialty (English)')+'<input type="text" data-en value="'+esc(entry.en||'')+'" maxlength="100" autocomplete="off"></label>'+
+      '<label>'+this.#tr('ความเชี่ยวชาญ (ไทย)','Specialty (Thai)')+'<input type="text" data-th value="'+esc(entry.th||'')+'" maxlength="100" autocomplete="off"></label>'+
       '<label>'+this.#tr('สถานะ','Status')+
         '<select data-state>'+
           '<option value="enabled" '+(state==='enabled'?'selected':'')+'>'+this.#tr('ใช้งาน / ให้ผู้เล่นเลือก','Enabled / selectable')+'</option>'+
@@ -85,7 +86,7 @@ export class SpecialtyPresetsMenu extends App {
           this.#templateOptions(group,entry.templateUuid||'')+
         '</select></label>'+
       (!source?'<div class="brp-specialty-rule-overrides">'+
-        '<label>'+this.#tr('ฐาน % (เว้นว่างเพื่อใช้ค่า Template)','Base % (blank = template)')+
+        '<label>'+this.#tr('ฐาน % (เว้นว่างเพื่อใช้ค่าแม่แบบ)','Base % (blank = template)')+
         '<input data-base type="number" min="0" step="1" value="'+esc(entry.base??'')+'"></label>'+
         '<label>'+this.#tr('สูตรฐาน (ถ้ามี)','Base formula (optional)')+
         '<input data-base-formula type="text" value="'+esc(entry.baseFormula||'')+'" maxlength="100"></label>'+
@@ -118,30 +119,30 @@ export class SpecialtyPresetsMenu extends App {
     ).join('');
     const current=group?(this.#isTh()?group.thFamily:group.enFamily):'';
     return '<main class="brp-specialty-manager-v3">'+
-      '<header class="brp-manager-heading"><h2>'+this.#tr('จัดการทักษะและ Specialty','Manage Skill Specialties')+'</h2>'+
-        '<p>'+this.#tr('เลือก Skill Family ทางซ้าย แล้วจัดการชื่อ Specialty ของแต่ละรายการได้ รวมถึงรายการต้นฉบับจาก Compendium โดยไม่แก้ข้อมูลกฎหลัก',
+      '<header class="brp-manager-heading"><h2>'+this.#tr('จัดการทักษะและความเชี่ยวชาญ','Manage Skill Specialties')+'</h2>'+
+        '<p>'+this.#tr('เลือกกลุ่มทักษะทางซ้ายเพื่อจัดการความเชี่ยวชาญ โดยไม่แก้ข้อมูลต้นฉบับ',
           'Select a family, then curate all Specialty names, including source items. Compendium rules are not modified.')+'</p></header>'+
       '<div class="brp-specialty-columns">'+
-        '<aside class="brp-specialty-sidebar"><label class="brp-search-label">'+this.#tr('ค้นหา Skill Family','Search Skill Families')+
+        '<aside class="brp-specialty-sidebar"><label class="brp-search-label">'+this.#tr('ค้นหากลุ่มทักษะ','Search Skill Families')+
         '<input type="search" data-family-search value="'+esc(this.#query)+'" placeholder="'+this.#tr('ค้นหาทักษะ…','Search…')+'"></label>'+
         '<nav class="brp-specialty-family-list">'+sidebar+'</nav></aside>'+
         '<section class="brp-specialty-detail">'+
         (group?'<div class="brp-family-detail-heading"><h3>'+esc(current)+'</h3>'+
           '<span>'+group.activeCount+' '+this.#tr('ตัวเลือกที่เปิดให้ผู้เล่น','available choices')+'</span></div>'+
           (group.requiresContentMigration?'<p class="brp-manager-note brp-manager-warning">'+this.#tr(
-            'ยังใช้ Compendium แบบทักษะย่อยหลาย Item กรุณาย้ายข้อมูลให้เหลือ Skill Template หนึ่งรายการต่อ Family ก่อนใช้ตัวเลือกตั้งต้น',
+            'คลังข้อมูลยังใช้ไอเทมแยกตามความเชี่ยวชาญ ต้องมีแม่แบบหนึ่งรายการต่อกลุ่มทักษะ',
             'Legacy Compendium stores several subtype Items. Migrate to one Skill Family Template to supply verified defaults.')+'</p>':'')+
           (group.fingerprintConflict?'<p class="brp-manager-note">'+this.#tr(
-            'แหล่งข้อมูล Family นี้มีสูตรหรือค่าเริ่มต้นต่างกัน กรุณาเลือกแม่แบบกฎให้ตรงกับ Specialty',
+            'พบแม่แบบต้นทางหลายรายการ ไม่สามารถเลือกแม่แบบที่ถูกต้องโดยอัตโนมัติ',
             'This family has differing base chances or formulas. Choose an appropriate template.')+'</p>':'')+
           this.#sourceDiagnostics(group)+
           '<div data-specialty-rows>'+group.options.map(e=>this.#row(group,e)).join('')+'</div>'+
           '<button type="button" data-add-specialty '+(group.canonicalTemplate?'':'disabled')+'>'+
-            this.#tr('+ เพิ่ม Specialty ภายใต้ทักษะนี้','+ Add Specialty to this Skill')+'</button>'+
+            this.#tr('+ เพิ่มความเชี่ยวชาญ','+ Add Specialty to this Skill')+'</button>'+
           '<p class="brp-manager-note">'+this.#tr(
-            'รายการที่ซ่อนหรือรอตรวจสอบจะไม่ปรากฏในตัวเลือกผู้เล่น การแก้ไข World ไม่เปลี่ยนทักษะที่ตัวละครมีอยู่แล้ว',
+            'รายการที่ซ่อนหรือรอตรวจสอบจะไม่แสดงแก่ผู้เล่น ทักษะของตัวละครเดิมจะไม่เปลี่ยนแปลง',
             'Hidden or unreviewed entries are excluded from player choices. Existing Actor skills stay unchanged.')+'</p>'
-          :'<p>'+this.#tr('ไม่พบ Skill Family ที่ใช้งานได้','No Skill Families found')+'</p>')+
+          :'<p>'+this.#tr('ไม่พบกลุ่มทักษะที่ใช้งานได้','No Skill Families found')+'</p>')+
         '</section></div>'+
       '<footer class="brp-manager-actions"><button type="button" data-cancel>'+this.#tr('ยกเลิก','Cancel')+'</button>'+
         '<button type="button" data-save '+(this.#saving?'disabled':'')+'>'+this.#tr('บันทึกการเปลี่ยนแปลง','Save changes')+'</button></footer>'+
@@ -163,11 +164,11 @@ export class SpecialtyPresetsMenu extends App {
       const bookKey=node.dataset.bookKey;
       const k=specialtyFamilyKey(en);
       if(!en||!k||/[()<>\r\n]/u.test(en)||/[()<>\r\n]/u.test(th))
-        throw new Error(this.#tr('กรอกชื่อ Specialty ภาษาอังกฤษที่ถูกต้อง','A valid English Specialty name is required')+': '+en);
+        throw new Error(this.#tr('กรอกชื่อความเชี่ยวชาญภาษาอังกฤษที่ถูกต้อง','A valid English Specialty name is required')+': '+en);
       if(state==='enabled'&&specialtyNeedsReview(en))
-        throw new Error(this.#tr('ต้องระบุชื่อ Specialty เดี่ยวก่อนเปิดให้ผู้เล่นเลือก: ','Resolve composite Specialty before enabling: ')+en);
+        throw new Error(this.#tr('ระบุชื่อความเชี่ยวชาญเดี่ยวก่อนเปิดให้เลือก: ','Resolve composite Specialty before enabling: ')+en);
       if(state==='enabled'&&seen.has(k))
-        throw new Error(this.#tr('Specialty เปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
+        throw new Error(this.#tr('ความเชี่ยวชาญเปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
       if(state==='enabled')seen.add(k);
       if(bookKey){
         const originalEn=node.dataset.originalEn,originalTh=node.dataset.originalTh;

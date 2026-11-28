@@ -14,6 +14,7 @@ export class StartingSkillsMenu extends APP {
     classes:['brp-uge','brp-starting-skills-app']
   };
 
+  get title(){return game.settings.get('brp-uge','uiLanguage')==='en'?'BRP UGE · Starting Skills':'BRP UGE · จัดการทักษะตั้งต้น';}
   async _renderHTML() {
     const isTh=game.settings.get('brp-uge','uiLanguage')!=='en';
     const source=game.settings.get('brp-uge','startingSkillsSource');
@@ -26,16 +27,16 @@ export class StartingSkillsMenu extends APP {
       const th=item.system?.nameTh||en;
       const label=isTh?th:en;
       const alt=isTh?en:th;
-      return `<label class="brp-starting-skill brp-manager-skill"><input name="startingSkill" type="checkbox" value="${esc(key)}" ${mode==='selected'?(saved.has(key)?'checked':''):'checked'}><span><strong>${esc(label)}</strong>${alt!==label?` <small>${esc(alt)}</small>`:''}</span></label>`;
+      return `<label class="brp-starting-skill brp-manager-skill"><input name="startingSkill" type="checkbox" value="${esc(key)}" ${mode==='selected'?(saved.has(key)?'checked':''):'checked'}><span><strong>${esc(label)}</strong>${alt!==label?` <small title="${esc(alt)}"></small>`:''}</span></label>`;
     }).join('');
     const lang=(th,en)=>isTh?th:en;
     return `<div class="brp-manager-content">
       <p>${lang('กำหนดทักษะตั้งต้นสำหรับตัวละครใหม่ (ไม่แก้ไขทักษะของตัวละครเดิม)','Configure starting skills for new actors (existing actors are unchanged).')}</p>
-      <p class="brp-manager-note">${lang('รายการมาจาก World หรือ Compendium ที่ติดตั้งเท่านั้น','Skills come only from installed World or Compendium items.')}</p>
+      <p class="brp-manager-note">${lang('รายการมาจากโลกเกมหรือคลังข้อมูลที่ติดตั้งเท่านั้น','Skills come only from installed World or Compendium items.')}</p>
       <div class="brp-manager-controls"><label>${lang('ค้นหาทักษะ','Search skills')} <input type="search" data-filter placeholder="${lang('ชื่อไทยหรืออังกฤษ','Thai or English name')}"></label>
         <button type="button" data-choose="all">${lang('เลือกทั้งหมด','Select all')}</button>
         <button type="button" data-choose="none">${lang('ยกเลิกทั้งหมด','Clear all')}</button></div>
-      <div class="brp-starting-skill-list" role="group" aria-label="${lang('รายการทักษะ','Available skills')}">${items||`<p>${lang('ยังไม่มี Skill Items ที่เปิดใช้งาน','No accessible Skill Items found')}</p>`}</div>
+      <div class="brp-starting-skill-list" role="group" aria-label="${lang('รายการทักษะ','Available skills')}">${items||`<p>${lang('ยังไม่มีไอเทมทักษะที่เปิดใช้งาน','No accessible Skill Items found')}</p>`}</div>
       <p class="brp-manager-count" aria-live="polite"></p>
       <footer class="brp-manager-actions"><button type="button" data-save ${skills.length?'':'disabled'}>${lang('บันทึกสำหรับโหมด GM เลือกเอง','Save GM selection')}</button>
       <button type="button" data-cancel>${lang('ยกเลิก','Cancel')}</button></footer>

@@ -27,11 +27,13 @@ import { ensureActorFoundationSkills } from "./module/skill-foundation.mjs";
 import { configureStartingSkills } from "./module/skill-selection.mjs";
 import { StartingSkillsMenu } from "./module/apps/starting-skills-menu.mjs";
 import { SpecialtyPresetsMenu } from "./module/apps/specialty-presets-menu.mjs";
-import { installBRPSettingsUI } from "./module/apps/settings-organization.mjs";
+import { installBRPSettingsUI, applySettingsTranslations } from "./module/apps/settings-organization.mjs";
+import { auditSpecialtySources } from "./module/specialty-registry.mjs";
 import { importCreationTemplates, auditCreationTemplates } from "./module/creation-template-integration.mjs";
 
 function refreshBRPWorldUI() {
   try {
+    applySettingsTranslations(game.settings,game.settings.get("brp-uge","uiLanguage"));
     for (const actor of game.actors?.values?.() ?? []) {
       actor.prepareData();
     }
@@ -63,6 +65,7 @@ Hooks.once("init", async () => {
     configureStartingSkills,
     importCreationTemplates,
     auditCreationTemplates,
+    auditSpecialtySources,
     openWizard: (actor) => {
       try {
         const target = actor ?? canvas.tokens?.controlled?.[0]?.actor ?? game.user?.character;
@@ -434,6 +437,7 @@ Hooks.once("init", async () => {
     scope:"world", config:true, restricted:true, type:String,
     default:"", onChange:refreshBRPWorldUI
   });
+  applySettingsTranslations(game.settings,game.settings.get("brp-uge","uiLanguage"));
   const ActorsCollection = foundry.documents?.collections?.Actors ?? globalThis.Actors;
   const ItemsCollection = foundry.documents?.collections?.Items ?? globalThis.Items;
   const DocumentSheetConfigCls = foundry.applications?.apps?.DocumentSheetConfig ?? globalThis.DocumentSheetConfig;

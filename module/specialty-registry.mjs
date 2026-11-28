@@ -9,6 +9,7 @@
  */
 import {analyzeSkillFamily,availableSpecialtyFamilies,readSpecialtyPresets,specialtyFamilyKey} from './skill-specialties.mjs';
 import {isSkillFamilyTemplate,verifiedTemplateDefaults,inspectTemplateDefaults} from './skill-family-templates.mjs';
+import {getLibraryDocuments} from './library-provider.mjs';
 
 const str=v=>String(v??'').trim(),keyOf=v=>specialtyFamilyKey(str(v));
 export const specialtyNeedsReview=value=>!str(value)||/[/／]|(?:^|\W)(?:various|any|multiple|other)(?:\W|$)/iu.test(str(value));
@@ -191,4 +192,13 @@ export function specialtyIdentity(item) {
   const info=analyzeSkillFamily(item);
   return info?.supportsSpecialty&&!info.isTemplate&&info.enSpecialty
     ?entryId(info.enFamily,info.enSpecialty):'';
+}
+
+/** Read-only diagnostics; not a setup or import step. */
+export async function auditSpecialtySources(){
+  const docs=await getLibraryDocuments({types:['skill']});
+  const registry=buildSpecialtyRegistry(docs,game.settings.get('brp-uge','specialtyRegistry'),game.settings.get('brp-uge','specialtyPresets'));
+  return {moduleVersion:game.modules?.get('brp-uge-compendium')?.version??null,
+    families:registry.map(g=>({family:g.key,source:g.canonicalTemplate?.uuid??null,defaults:g.bookDefaultCount,active:g.activeCount,diagnostics:g.diagnostics??null})),
+    standalone:docs.filter(d=>!analyzeSkillFamily(d)?.supportsSpecialty).map(d=>({uuid:d.uuid,name:d.system?.nameEn||d.name}))};
 }

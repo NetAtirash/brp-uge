@@ -1,6 +1,7 @@
 /** Organize Foundry v14's native SettingsConfig without replacing its form. */
 const CATEGORY = {
   uiLanguage:'appearance',paperTheme:'appearance',itemTooltipLanguage:'appearance',
+  specialtyCustomPolicy:'creation',manageStartingSkills:'creation',manageSpecialties:'creation',
   woundSuggestions:'reference',bodySuggestions:'reference',mentalSuggestions:'reference',currencyUnits:'reference',
   campaignPowerLevel:'creation',occupationBudgetMethod:'creation',startingSkillsSource:'creation',startingSkillsMode:'creation',
   characteristicMethod:'creation',increasedPersonalSkillPoints:'creation',useEdu:'creation',creationSkillCap:'creation',
@@ -19,6 +20,9 @@ const GROUPS = {
   reference:['ข้อมูลอ้างอิงที่ GM กำหนด','GM Reference Lists']
 };
 const TEXT = {
+  specialtyCustomPolicy:['นโยบายการเพิ่มความเชี่ยวชาญ','New specialty policy','เลือกว่าจะใช้เฉพาะรายการที่ GM จัดการ หรืออนุญาตให้ขอเพิ่มรายการ','Use GM-managed choices only or allow requests for new specialties'],
+  manageStartingSkills:['จัดการทักษะตั้งต้น','Manage starting skills','กำหนดทักษะสำหรับตัวละครใหม่','Configure skills for new characters'],
+  manageSpecialties:['จัดการความเชี่ยวชาญ','Manage specialties','กำหนดตัวเลือกความเชี่ยวชาญสำหรับผู้เล่น','Configure specialty choices for players'],
   uiLanguage:['ภาษาของหน้าจอ','Interface language','ภาษาที่ใช้ในชีทและหน้าต่างของระบบ','Language used in system sheets and dialogs'],
   paperTheme:['ธีมสมุดบันทึก','Notebook appearance','เลือกโหมดสว่างหรือมืดสำหรับผู้ใช้คนนี้','Choose Light or Dark for this user'],
   itemTooltipLanguage:['ภาษาคำอธิบายไอเทม','Item tooltip language','ภาษาเริ่มต้นสำหรับคำอธิบายเมื่อชี้ไอเทม','Default language for item hover descriptions'],
@@ -51,6 +55,40 @@ for(const [key,th,en] of [['powerEnableMagic','เวทมนตร์','Magic'
   TEXT[key]=[`อนุญาต${th}`,`Allow ${en}`,`ให้ใช้${th}ในแคมเปญนี้`,`Allow ${en} in this campaign`];
 }
 
+const CHOICES={
+  uiLanguage:{th:['ภาษาไทย','Thai'],en:['ภาษาอังกฤษ','English']},
+  itemTooltipLanguage:{th:['ภาษาไทย','Thai'],en:['ภาษาอังกฤษ','English']},
+  paperTheme:{light:['โหมดสว่าง','Light'],dark:['โหมดมืด','Dark']},
+  campaignPowerLevel:{normal:['ปกติ — 250 / จัดสรรคุณลักษณะ 24','Normal — 250 / Point-buy 24'],heroic:['วีรบุรุษ — 325 / จัดสรรคุณลักษณะ 36','Heroic — 325 / Point-buy 36'],epic:['มหากาพย์ — 400 / จัดสรรคุณลักษณะ 48','Epic — 400 / Point-buy 48'],superhuman:['เหนือมนุษย์ — 500 / จัดสรรคุณลักษณะ 60','Superhuman — 500 / Point-buy 60']},
+  occupationBudgetMethod:{fixed:['แต้มคงที่ตามระดับแคมเปญ','Fixed power-level budget'],edu:['ค่าการศึกษา EDU × ตัวคูณ','EDU × level multiplier']},
+  startingSkillsSource:{all:['ไอเทมในโลกเกมและคลังข้อมูล','World Items + Compendiums'],world:['เฉพาะไอเทมในโลกเกม','World Items only']},
+  startingSkillsMode:{all:['ทักษะทั้งหมดที่ติดตั้ง','All installed skills'],baseline:['เฉพาะทักษะพื้นฐานทั่วไป','Generic baseline skills'],book:['เฉพาะทักษะจากหนังสือกฎ','Rulebook-sourced skills'],selected:['GM เลือกเอง','GM-selected skills']},
+  specialtyCustomPolicy:{restricted:['เฉพาะความเชี่ยวชาญที่ GM กำหนด','GM-managed choices only'],approval:['อนุญาตให้ขอเพิ่มเพื่อให้ GM พิจารณา','Allow requests for GM review']},
+  characteristicMethod:{rolled:['ทอยมาตรฐาน (3D6 / 2D6+6)','Standard roll (3D6 / 2D6+6)'],heroic_roll:['คุณลักษณะสูง (2D6+6 ทุกค่า)','Higher characteristics (2D6+6 all)'],point_buy:['จัดสรรแต้มเอง','Point-buy']},
+  categoryBonusMode:{standard:['มาตรฐาน (หลัก / รอง)','Standard (primary / secondary)'],simple:['แบบย่อ (ค่าหลัก ÷ 2)','Simplified (primary ÷ 2)'],none:['ไม่ใช้โบนัส (0%)','No bonus (0%)']},
+  combatStatementOrder:{highFirst:['มาตรฐาน: DEX สูง → ต่ำ','Standard: highest to lowest DEX'],reverse:['กฎเสริม: DEX ต่ำ → สูง','Optional: lowest to highest DEX']},
+  combatPowerTiming:{separate:['มาตรฐาน: เฟสพลังแยก','Standard: separate power phase'],action:['กฎเสริม: ใช้พลังในเฟสการกระทำ','Optional: powers in action phase']}
+};
+const MENU_LABELS={manageStartingSkills:['เปิดตัวเลือกทักษะ','Choose skills'],manageSpecialties:['จัดการความเชี่ยวชาญ','Manage specialties']};
+export function settingChoices(key,language='th'){
+  return Object.fromEntries(Object.entries(CHOICES[key]||{}).map(([value,words])=>[value,words[language==='en'?1:0]]));
+}
+export function applySettingsTranslations(settingsApi=globalThis.game?.settings,language='th'){
+  // Update only presentation metadata; setting keys, values, scopes and permissions stay intact.
+  for(const collection of [settingsApi?.settings,settingsApi?.menus]){
+    for(const [id,data] of collection?.entries?.()??[]){
+      if(!id.startsWith('brp-uge.'))continue;
+      const key=id.slice('brp-uge.'.length),words=settingPresentation(key,language);
+      if(!words)continue;
+      data.name=words.name;data.hint=words.hint;
+      if(MENU_LABELS[key])data.label=MENU_LABELS[key][language==='en'?1:0];
+      if(data.choices&&typeof data.choices==='object'){
+        const captions=settingChoices(key,language);
+        data.choices={...data.choices,...Object.fromEntries(Object.entries(captions).filter(([k])=>Object.hasOwn(data.choices,k)))};
+      }
+    }
+  }
+}
 export function settingsGroupFor(key){return CATEGORY[key]||'optional';}
 export function settingPresentation(key,language='th'){
   const words=TEXT[key];if(!words)return null;
@@ -75,17 +113,9 @@ export function organizeBRPSettings(root,{language='th',onConfigureSkills=null}=
     const label=row.querySelector('label');const hint=row.querySelector('.hint, .form-hint, p.hint');
     if(label)label.textContent=words.name;
     if(hint)hint.textContent=words.hint;
-    if(key==='startingSkillsMode' && field.tagName==='SELECT'){
-      const captions=language==='en'
-        ? {all:'All installed Skills',book:'Rulebook-sourced Skills',selected:'GM-selected Skills'}
-        : {all:'ทักษะทั้งหมดที่ติดตั้ง',book:'เฉพาะทักษะจากหนังสือกฎ',selected:'GM เลือกเอง'};
-      for(const option of field.options){if(captions[option.value])option.textContent=captions[option.value];}
-    }
-    if(key==='startingSkillsSource' && field.tagName==='SELECT'){
-      const captions=language==='en'
-        ? {all:'World Items + Compendiums',world:'World Items only'}
-        : {all:'ไอเทมใน World และ Compendium',world:'เฉพาะไอเทมใน World'};
-      for(const option of field.options){if(captions[option.value])option.textContent=captions[option.value];}
+    if(field.tagName==='SELECT'){
+      const captions=settingChoices(key,language);
+      for(const option of field.options)if(captions[option.value])option.textContent=captions[option.value];
     }
     if(words.group!==lastGroup){
       lastGroup=words.group;
@@ -103,6 +133,16 @@ export function organizeBRPSettings(root,{language='th',onConfigureSkills=null}=
       row.append(button);
     }
     count++;
+  }
+  for(const button of element.querySelectorAll('button[data-key],button[data-setting-id],button[data-menu]')){
+    const id=[button.dataset.key,button.dataset.settingId,button.dataset.menu].find(v=>String(v||'').startsWith('brp-uge.'));
+    if(!id)continue;
+    const key=id.slice('brp-uge.'.length),words=settingPresentation(key,language);
+    if(!words||!MENU_LABELS[key])continue;
+    const row=button.closest('.form-group,.form-field,.standard-form-field,.setting')||button.parentElement;
+    const label=row?.querySelector('label'),hint=row?.querySelector('.hint,.form-hint,p.hint');
+    if(label)label.textContent=words.name;if(hint)hint.textContent=words.hint;
+    const span=button.querySelector('span');if(span)span.textContent=MENU_LABELS[key][language==='en'?1:0];else button.textContent=MENU_LABELS[key][language==='en'?1:0];
   }
   return count;
 }
