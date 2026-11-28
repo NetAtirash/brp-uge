@@ -18,3 +18,6 @@ assert.equal(calculateSkillBase(literacy,{int:15},{},[native,native]),0);
 assert.equal(calculateSkillBase(skill('Literacy','Own','',0),{int:15},{},[native]),0);
 assert.equal(canGainExperience(native),true);
 console.log('PASS: reputation-only advancement, matching language base, shared Wizard/Actor formula');
+
+const renamedNative={...native,system:{...native.system,nameEn:'Language (Thai)',specialty:'Thai'},flags:{'brp-uge':{specialtyBookKey:'own'}}};
+assert.equal(calculateSkillBase(literacy,{int:15},{},[renamedNative]),75);

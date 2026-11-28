@@ -96,3 +96,7 @@ assert.equal(loaded.personality,undefined);
 assert.equal(loaded.customPersonalities.length,1);
 assert.ok(externalOccupationDataError(item,loaded));
 console.log('PASS: full-module creation data, replacement, missing-file protection, no stale imports and no Actor/World writes');
+
+const aliasRegistry=[{...langRegistry[0],options:[...langRegistry[0].options,{key:'renamed',en:'Renamed',bookKey:'original',state:'enabled'}]}];
+const aliasProf={skillRefs:[],skillChoiceGroups:[{id:'lang',count:1,options:[{kind:'family',familyKey:'language'}],semanticGuards:{allowedCanonicalKeys:['language|original']}}]};
+assert.deepEqual(occupationPlan(aliasProf,[],aliasRegistry,[langSource]).groups[0].candidates.map(c=>c.key),['language|renamed']);

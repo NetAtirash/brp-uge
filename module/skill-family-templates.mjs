@@ -56,10 +56,11 @@ export function verifiedTemplateDefaults(item){return inspectTemplateDefaults(it
 export function resolveFamilyTemplates(documents=[]){
   const explicit=(documents||[]).filter(isSkillFamilyTemplate);
   const unique=[...new Map(explicit.map(d=>[d.uuid,d])).values()];
-  const sources=unique.filter(d=>String(d.uuid).startsWith('Compendium.'));
+  const isWorld=d=>String(d.uuid).startsWith('Item.')||String(d.uuid).startsWith('Compendium.world.');
+  const sources=unique.filter(d=>String(d.uuid).startsWith('Compendium.')&&!isWorld(d));
   const copies=[];
   const independent=unique.filter(d=>{
-    if(String(d.uuid).startsWith('Compendium.'))return true;
+    if(!isWorld(d))return true;
     const refs=[d.flags?.core?.sourceId,d.flags?.['brp-uge']?.originalSourceUuid,d.flags?.['brp-uge']?.sourceUuid];
     const source=sources.find(s=>refs.includes(s.uuid));
     if(!source)return true;

@@ -28,7 +28,7 @@ const TEXT = {
   itemTooltipLanguage:['ภาษาคำอธิบายไอเทม','Item tooltip language','ภาษาเริ่มต้นสำหรับคำอธิบายเมื่อชี้ไอเทม','Default language for item hover descriptions'],
   campaignPowerLevel:['ระดับพลังแคมเปญ','Campaign power level','กำหนดแต้มอาชีพและงบสร้างตัวละครตามระดับแคมเปญ','Controls occupation budget and character generation points by campaign level'],
   occupationBudgetMethod:['วิธีคำนวณแต้มอาชีพ','Occupation point calculation','เลือกงบแต้มคงที่หรือวิธีคำนวณโดยใช้ EDU','Choose a fixed point budget or optional EDU-based calculation'],
-  startingSkillsSource:['แหล่งข้อมูลทักษะเริ่มต้น','Starting skill sources','อ่านทักษะจากไอเทมใน World และ Compendium ที่ติดตั้ง หรือเฉพาะ World','Read skills from World Items and installed Compendiums, or only World Items'],
+  startingSkillsSource:['แหล่งข้อมูลทักษะเริ่มต้น','Starting skill sources','อ่านทักษะจากไอเทมในโลกเกมและคลังข้อมูลที่ติดตั้ง หรือเฉพาะโลกเกม','Read skills from World Items and installed Compendiums, or only World Items'],
   startingSkillsMode:['การเลือกทักษะเริ่มต้น','Starting skill selection','เพิ่มทุกทักษะ, เฉพาะทักษะที่มีแหล่งอ้างอิงจากหนังสือ หรือรายการที่ GM เลือกเอง','Copy all skills, provenance-marked rulebook skills, or an explicit GM selection'],
   characteristicMethod:['วิธีสร้างค่าคุณลักษณะ','Characteristic generation','วิธีทอยหรือจัดสรรค่าคุณลักษณะตอนสร้างตัวละคร','How starting characteristics are generated'],
   increasedPersonalSkillPoints:['แต้มทักษะส่วนตัวเพิ่มเติม','Increased personal skill points','เปิดกฎเสริมเพิ่มแต้มทักษะส่วนตัวตามระดับแคมเปญ','Use the optional higher personal skill budgets by campaign level'],

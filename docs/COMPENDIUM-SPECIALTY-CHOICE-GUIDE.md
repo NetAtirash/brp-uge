@@ -87,3 +87,15 @@ A particular verified seed may instead be constrained with kind:"specialty", fam
 - No hidden BRP UGE skill list or numeric defaults are bundled with the engine.
 - No automatic Actor/point migration. Existing owned Skills remain intact.
 - Do not publish a stable Game System or content-pack release without Foundry v14 manual testing.
+
+## RC.6 source integrity and skill mechanics (candidate)
+
+The installed module's canonical source takes precedence over a World Item or World Compendium copy **only when its source UUID proves the relationship**. Independent competing templates remain conflicts, not silently merged. The manager reports missing/empty defaults, rejected keys/names, review/hidden rows and pack read errors. `game.brp.auditSpecialtySources()` is a read-only diagnostic, not an installation requirement.
+
+For a specialty-bearing skill publish one template, stable key and bilingual defaults (do not use composite slash headings or unverified placeholder choices). All source references from occupations/personality must be updated: a required family must use an explicit family-specialty requirement, fixed occupation family UUID or typed family group; an exact-skill reference must not point at a generic template. Exact specialty references use stable book keys. Canonical Actor-owned keys and all existing allocations are not rewritten. RC.6 recognizes stable book-key aliases in explicit allowed-key guards.
+
+Status: the rules engine excludes the canonical Status family (including older standalone records) from automatic experience checks and normal training/experience awards; only a GM may record a manual or reputation adjustment through the advancement API. Use the existing Difficult roll option when the GM determines the task is outside the relevant area of influence. Existing records are not rewritten. Actor owners' generic manual Item editing is unchanged.
+
+Literacy: the engine supports an explicit `baseFormula: "LANGUAGE_BASE"` for a concrete Literacy specialty. It obtains the **base** of the matching concrete Language specialty (same normalized label or stable book-key alias), never total, and falls back to the supplied base if no unique match exists. A plain numeric base remains supported. INT/EDU ×5 uses the higher applicable characteristic in both Wizard and Actor. Full modern-mode equality of *total* Language and Literacy ratings requires a separate campaign policy decision, including how to handle existing independent allocations; it is not automatically enabled by this formula. Do not claim modern linked-total mode is implemented.
+
+Full rulebook audit and actual installed module compatibility are separate release gates: verify source Skill Documents after packaging and with Foundry v14, including optional rules, all four Personality and 44 Occupation templates, and all weapon references. No manual import or partial patch. Do not reset Actor-owned skills or GM World overlays.

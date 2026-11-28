@@ -149,7 +149,7 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
     }
     const usable=options.filter(o=>!o.hidden);
     const inspected=inspectTemplateDefaults(canonical);
-    const diagnostics={rawCount:inspected.rawCount,acceptedCount:inspected.options.length,rejected:inspected.rejected,ignoredCopies:family.sourceResolution?.copies||[],sourceUuids:family.sourceResolution?.sourceUuids||[],status:family.ambiguousTemplate?'conflicting-templates':!canonical?'missing-template':inspected.missing?'missing-default-field':!inspected.rawCount?'empty-defaults':inspected.rejected.length?'rejected-defaults':'loaded'};
+    const diagnostics={rawCount:inspected.rawCount,acceptedCount:inspected.options.length,hiddenCount:options.filter(o=>o.hidden).length,reviewCount:options.filter(o=>o.review).length,rejected:inspected.rejected,ignoredCopies:family.sourceResolution?.copies||[],sourceUuids:family.sourceResolution?.sourceUuids||[],status:family.ambiguousTemplate?'conflicting-templates':!canonical?'missing-template':inspected.missing?'missing-default-field':!inspected.rawCount?'empty-defaults':inspected.rejected.length?'rejected-defaults':'loaded'};
     result.push({...family,templates:canonical?[canonical]:examples,
       sourceCount:canonical?1:0,legacySourceCount:examples.length,
       options,activeCount:usable.length,ambiguous,
@@ -196,9 +196,10 @@ export function specialtyIdentity(item) {
 
 /** Read-only diagnostics; not a setup or import step. */
 export async function auditSpecialtySources(){
-  const docs=await getLibraryDocuments({types:['skill']});
+  const packErrors=[];
+  const docs=await getLibraryDocuments({types:['skill'],onPackError:(pack,error)=>packErrors.push({pack:pack.collection,message:String(error?.message||error)})});
   const registry=buildSpecialtyRegistry(docs,game.settings.get('brp-uge','specialtyRegistry'),game.settings.get('brp-uge','specialtyPresets'));
-  return {moduleVersion:game.modules?.get('brp-uge-compendium')?.version??null,
+  return {moduleVersion:game.modules?.get('brp-uge-compendium')?.version??null,packErrors,
     families:registry.map(g=>({family:g.key,source:g.canonicalTemplate?.uuid??null,defaults:g.bookDefaultCount,active:g.activeCount,diagnostics:g.diagnostics??null})),
     standalone:docs.filter(d=>!analyzeSkillFamily(d)?.supportsSpecialty).map(d=>({uuid:d.uuid,name:d.system?.nameEn||d.name}))};
 }

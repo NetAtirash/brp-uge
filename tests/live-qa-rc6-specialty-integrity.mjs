@@ -5,6 +5,9 @@ const source={uuid:'Compendium.example.skills.Item.aaaaaaaaaaaaaaaa',type:'skill
 const copy={...source,uuid:'Item.bbbbbbbbbbbbbbbb',flags:{core:{sourceId:source.uuid}},system:{...source.system,specialtyDefaults:[]}};
 assert.equal(resolveFamilyTemplates([copy,source]).canonical,source);
 assert.equal(resolveFamilyTemplates([copy,source]).copies.length,1);
+const worldPackCopy={...copy,uuid:'Compendium.world.skills.Item.cccccccccccccccc'};
+assert.equal(resolveFamilyTemplates([worldPackCopy,source]).canonical,source);
+assert.equal(resolveFamilyTemplates([worldPackCopy,copy,source]).copies.length,2);
 const unrelated={...copy,flags:{}};
 assert.equal(resolveFamilyTemplates([source,unrelated]).conflict,true);
 const registry=buildSpecialtyRegistry([copy,source]);
@@ -16,3 +19,4 @@ assert.equal(buildSpecialtyRegistry([{...source,system:{...source.system,special
 assert.equal(buildSpecialtyRegistry([source,unrelated])[0].diagnostics.status,'conflicting-templates');
 assert.equal(copy.system.specialtyDefaults.length,0);
 console.log('PASS: source provenance, canonical conflicts, rejected defaults diagnostics and source immutability');
+

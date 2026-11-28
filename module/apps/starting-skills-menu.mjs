@@ -27,7 +27,7 @@ export class StartingSkillsMenu extends APP {
       const th=item.system?.nameTh||en;
       const label=isTh?th:en;
       const alt=isTh?en:th;
-      return `<label class="brp-starting-skill brp-manager-skill"><input name="startingSkill" type="checkbox" value="${esc(key)}" ${mode==='selected'?(saved.has(key)?'checked':''):'checked'}><span><strong>${esc(label)}</strong>${alt!==label?` <small title="${esc(alt)}"></small>`:''}</span></label>`;
+      return `<label class="brp-starting-skill brp-manager-skill" data-search="${esc(en+" "+th)}"><input name="startingSkill" type="checkbox" value="${esc(key)}" ${mode==='selected'?(saved.has(key)?'checked':''):'checked'}><span><strong title="${esc(alt)}">${esc(label)}</strong></span></label>`;
     }).join('');
     const lang=(th,en)=>isTh?th:en;
     return `<div class="brp-manager-content">
@@ -58,7 +58,7 @@ export class StartingSkillsMenu extends APP {
     root.querySelector('[data-filter]')?.addEventListener('input',event=>{
       const query=event.target.value.trim().toLocaleLowerCase();
       for(const row of root.querySelectorAll('.brp-manager-skill')){
-        row.hidden=!!query && !row.textContent.toLocaleLowerCase().includes(query);
+        row.hidden=!!query && !String(row.dataset.search||row.textContent).toLocaleLowerCase().includes(query);
       }
     });
     root.querySelectorAll('[data-choose]').forEach(button=>button.addEventListener('click',()=>{

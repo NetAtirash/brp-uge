@@ -16,7 +16,7 @@ function compatiblePack(pack) {
 }
 
 /** A source reference is always the document's real UUID. */
-export async function getLibraryDocuments({types=null,includeWorld=true,includePacks=true,includeActors=false}={}) {
+export async function getLibraryDocuments({types=null,includeWorld=true,includePacks=true,includeActors=false,onPackError=null}={}) {
   const wanted=types ? new Set(types) : null;
   const docs=new Map();
   const add=(doc)=>{
@@ -32,7 +32,7 @@ export async function getLibraryDocuments({types=null,includeWorld=true,includeP
     if (!compatiblePack(pack)) continue;
     if (pack.documentName==='Actor' && !includeActors) continue;
     try {for(const doc of await pack.getDocuments()) add(doc);}
-    catch(error){ console.warn('BRP-UGE | Cannot read optional content pack',pack.collection,error); }
+    catch(error){ console.warn('BRP-UGE | Cannot read optional content pack',pack.collection,error); if(typeof onPackError==='function')onPackError(pack,error); }
   }
   return [...docs.values()];
 }

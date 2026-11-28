@@ -19,6 +19,7 @@ export class SpecialtyPresetsMenu extends App {
     position:{width:1020,height:750}
   };
   #documents=[];
+  #packErrors=[];
   #registry=[];
   #overlay=null;
   #snapshot='';
@@ -31,7 +32,8 @@ export class SpecialtyPresetsMenu extends App {
   #tr(th,en){return this.#isTh()?th:en;}
   async #load(){
     if(this.#overlay!==null)return;
-    this.#documents=await getLibraryDocuments({types:['skill']});
+    this.#packErrors=[];
+    this.#documents=await getLibraryDocuments({types:['skill'],onPackError:(pack,error)=>this.#packErrors.push({pack:pack.collection,message:String(error?.message||error)})});
     this.#snapshot=game.settings.get('brp-uge','specialtyRegistry');
     this.#overlay=readSpecialtyRegistry(this.#snapshot);
   }
@@ -106,8 +108,8 @@ export class SpecialtyPresetsMenu extends App {
       'missing-default-field':this.#tr('ไม่พบฟิลด์ข้อมูลตั้งต้น','Missing defaults field'),
       'empty-defaults':this.#tr('ไม่มีตัวเลือกตั้งต้นจากคลังข้อมูล','No default choices supplied by content'),
       'rejected-defaults':this.#tr('ตัวเลือกตั้งต้นบางรายการไม่ผ่านการตรวจสอบ','Some source defaults rejected')};
-    if(d.status==='loaded'&&!d.ignoredCopies.length)return '';
-    return '<details class="brp-manager-note" '+(d.status!=='loaded'?'open':'')+'><summary>'+esc(labels[d.status]||this.#tr('แหล่งข้อมูล','Source information'))+'</summary><p>'+esc(this.#tr('ข้อมูลตั้งต้นที่อ่านได้','Accepted source defaults'))+': '+d.acceptedCount+'/'+d.rawCount+'</p>'+d.sourceUuids.map(u=>'<p>'+esc(u)+'</p>').join('')+d.rejected.map(r=>'<p>'+esc(r.en||r.key)+': '+esc(({"missing-key-or-name":this.#tr('ไม่มีชื่อหรือรหัส','Missing name or key'),"invalid-name":this.#tr('ชื่อไม่ถูกต้อง','Invalid name'),"duplicate-key":this.#tr('รหัสซ้ำ','Duplicate key')})[r.reason]||r.reason)+'</p>').join('')+(d.ignoredCopies.length?'<p>'+esc(this.#tr('ไม่นับสำเนา World ที่มีต้นทางเดียวกัน','Ignored World copies with matching source'))+': '+d.ignoredCopies.length+'</p>':'')+'</details>';
+    if(d.status==='loaded'&&!d.ignoredCopies.length&&!d.reviewCount)return '';
+    return '<details class="brp-manager-note" '+(d.status!=='loaded'?'open':'')+'><summary>'+esc(labels[d.status]||this.#tr('แหล่งข้อมูล','Source information'))+'</summary><p>'+esc(this.#tr('ข้อมูลตั้งต้นที่อ่านได้','Accepted source defaults'))+': ' +d.acceptedCount+'/'+d.rawCount+'</p><p>'+esc(this.#tr('ซ่อน / รอตรวจสอบ','Hidden / pending review'))+': '+d.hiddenCount+' / '+d.reviewCount+'</p>'+d.sourceUuids.map(u=>'<p>'+esc(u)+'</p>').join('')+d.rejected.map(r=>'<p>'+esc(r.en||r.key)+': '+esc(({"missing-key-or-name":this.#tr('ไม่มีชื่อหรือรหัส','Missing name or key'),"invalid-name":this.#tr('ชื่อไม่ถูกต้อง','Invalid name'),"duplicate-key":this.#tr('รหัสซ้ำ','Duplicate key')})[r.reason]||r.reason)+'</p>').join('')+(d.ignoredCopies.length?'<p>'+esc(this.#tr('ไม่นับสำเนา World ที่มีต้นทางเดียวกัน','Ignored World copies with matching source'))+': '+d.ignoredCopies.length+'</p>':'')+'</details>';
   }
   async _renderHTML(){
     await this.#load();this.#refresh();
@@ -122,6 +124,7 @@ export class SpecialtyPresetsMenu extends App {
       '<header class="brp-manager-heading"><h2>'+this.#tr('จัดการทักษะและความเชี่ยวชาญ','Manage Skill Specialties')+'</h2>'+
         '<p>'+this.#tr('เลือกกลุ่มทักษะทางซ้ายเพื่อจัดการความเชี่ยวชาญ โดยไม่แก้ข้อมูลต้นฉบับ',
           'Select a family, then curate all Specialty names, including source items. Compendium rules are not modified.')+'</p></header>'+
+      (this.#packErrors.length?'<div role="alert" class="brp-manager-note brp-manager-warning">'+this.#tr('อ่านคลังข้อมูลบางชุดไม่สำเร็จ','Some content packs could not be read')+this.#packErrors.map(e=>'<p>'+esc(e.pack)+': '+esc(e.message)+'</p>').join('')+'</div>':'')+
       '<div class="brp-specialty-columns">'+
         '<aside class="brp-specialty-sidebar"><label class="brp-search-label">'+this.#tr('ค้นหากลุ่มทักษะ','Search Skill Families')+
         '<input type="search" data-family-search value="'+esc(this.#query)+'" placeholder="'+this.#tr('ค้นหาทักษะ…','Search…')+'"></label>'+

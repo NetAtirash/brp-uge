@@ -15,10 +15,11 @@ export function calculateSkillBase(item,characteristics,rules={},catalog=[]){
   if(f==='LANGUAGE_BASE'){
     const info=analyzeSkillFamily(item);
     if(info?.key!=='literacy'||!info.enSpecialty)return fallback;
-    const key=specialtyFamilyKey(info.enSpecialty);
-    const matches=[...catalog].filter(s=>{
+    const identity=(doc,parsed)=>new Set([specialtyFamilyKey(parsed.enSpecialty),specialtyFamilyKey(doc.flags?.['brp-uge']?.specialtyBookKey)].filter(Boolean));
+    const keys=identity(item,info);
+    const matches=[...(catalog?.values?.()??catalog??[])].filter(s=>{
       const other=analyzeSkillFamily(s);
-      return other?.key==='language'&&!other.isTemplate&&specialtyFamilyKey(other.enSpecialty)===key;
+      return other?.key==='language'&&!other.isTemplate&&[...identity(s,other)].some(k=>keys.has(k));
     });
     if(matches.length!==1||matches[0].system?.baseFormula==='LANGUAGE_BASE')return fallback;
     return calculateSkillBase(matches[0],c,rules,[]);
