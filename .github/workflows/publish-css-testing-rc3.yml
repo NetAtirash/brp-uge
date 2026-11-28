@@ -103,13 +103,13 @@ jobs:
               css = [n for n in z.namelist() if n.startswith("brp-uge/styles/") and n.endswith(".css")]
               assert css == ["brp-uge/styles/brp-runtime.min.css"]
               runtime = z.read(css[0])
-            source = Path("styles/brp-runtime.min.css").read_bytes()
-            overlay = Path("styles/brp-live-qa-accessibility.css").read_bytes()
-            assert runtime == source
-            assert runtime.endswith(b"\n" + overlay)
-            baseline = runtime[:-(len(overlay)+1)]
-            assert hashlib.sha256(baseline).hexdigest() == os.environ["BASELINE_CSS_SHA"]
-            print("Runtime CSS SHA-256:", hashlib.sha256(runtime).hexdigest())
+              source = Path("styles/brp-runtime.min.css").read_bytes()
+              overlay = Path("styles/brp-live-qa-accessibility.css").read_bytes()
+              assert runtime == source
+              assert runtime.endswith(b"\n" + overlay)
+              baseline = runtime[:-(len(overlay)+1)]
+              assert hashlib.sha256(baseline).hexdigest() == os.environ["BASELINE_CSS_SHA"]
+              print("Runtime CSS SHA-256:", hashlib.sha256(runtime).hexdigest())
               assert not any(n.startswith("brp-uge/packs/") for n in z.namelist())
           print("RC manifest and package verified; historical CSS baseline preserved and accessibility overlay verified")
           PY
