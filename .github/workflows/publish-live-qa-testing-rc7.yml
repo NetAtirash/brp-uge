@@ -1,0 +1,151 @@
+name: Publish BRP UGE v1.21.12 RC7 Live QA Corrections
+on:
+  push:
+    branches:
+      - testing
+    paths:
+      - '.github/workflows/publish-live-qa-testing-rc7.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: brp-uge-css-testing-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: contains(github.event.head_commit.message, '[publish-v1.21.12-rc.7]')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: v1.21.12-rc.7
+      SOURCE_SHA: 0891af9c6ad3b32de3ea384790dc0cea51b39ea7
+      STABLE_TAG: v1.21.11
+      TESTING_MANIFEST: https://raw.githubusercontent.com/NetAtirash/brp-uge/testing/channels/testing/system.json
+      BASELINE_CSS_SHA: 474b7866b6f5710ce627e49a57015cd1e437708ed0a0d2a430f03d1d4ac2b891
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Verify exact approved QA source and stable isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = testing
+          test "$(git diff --name-only "$SOURCE_SHA" HEAD)" = ".github/workflows/publish-live-qa-testing-rc7.yml"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)" = "$STABLE_TAG"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "ffa1a63a468cd96308f3c55e9d91e807ea8e013a"
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag already exists; refusing overwrite."
+            exit 1
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "::error::Release already exists; refusing overwrite."
+            exit 1
+          fi
+      - name: Run approved source integrity and regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          node scripts/build-css.mjs --check
+          echo "CSS rebuild verified by build-css --check; baseline and overlay verified below"
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(git ls-files -z '*.mjs')
+          for test in tests/*.mjs; do node "$test"; done
+      - name: Build isolated RC with persistent testing channel
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Historical regressions intentionally test the approved 1.21.11 source.
+          # Only the packaging copy receives the RC version; source is restored.
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          p = Path("system.json")
+          m = json.loads(p.read_text())
+          assert m["id"] == "brp-uge" and m["version"] == "1.21.11"
+          m["version"] = os.environ["TAG"][1:].split("-")[0]
+          p.write_text(json.dumps(m, ensure_ascii=False, indent=2) + "\n")
+          PY
+          python3 scripts/build_release.py --tag "$TAG" --output dist
+          git restore system.json
+          python3 - <<'PY'
+          import hashlib, json, os, zipfile
+          from pathlib import Path
+          root = Path("dist")
+          manifest = root / "system.json"
+          m = json.loads(manifest.read_text())
+          assert m["id"] == "brp-uge"
+          assert m["version"] == os.environ["TAG"][1:]
+          assert m["compatibility"]["minimum"] == "14"
+          assert m["compatibility"]["verified"] == "14"
+          assert m["styles"] == ["styles/brp-runtime.min.css"]
+          assert m["download"] == "https://github.com/" + os.environ["GITHUB_REPOSITORY"] + "/releases/download/" + os.environ["TAG"] + "/brp-uge.zip"
+          m["manifest"] = os.environ["TESTING_MANIFEST"]
+          data = (json.dumps(m, ensure_ascii=False, indent=2) + "\n").encode()
+          archive = root / "brp-uge.zip"
+          temporary = root / "brp-uge.tmp.zip"
+          with zipfile.ZipFile(archive) as src, zipfile.ZipFile(temporary, "w") as dst:
+              assert src.namelist().count("brp-uge/system.json") == 1
+              for info in src.infolist():
+                  dst.writestr(info, data if info.filename == "brp-uge/system.json" else src.read(info.filename))
+          temporary.replace(archive)
+          manifest.write_bytes(data)
+          with zipfile.ZipFile(archive) as z:
+              assert z.testzip() is None
+              assert z.read("brp-uge/system.json") == data
+              css = [n for n in z.namelist() if n.startswith("brp-uge/styles/") and n.endswith(".css")]
+              assert css == ["brp-uge/styles/brp-runtime.min.css"]
+              runtime = z.read(css[0])
+              source = Path("styles/brp-runtime.min.css").read_bytes()
+              overlay = Path("styles/brp-live-qa-accessibility.css").read_bytes()
+              assert runtime == source
+              assert runtime.endswith(b"\n" + overlay)
+              baseline = runtime[:-(len(overlay)+1)]
+              assert hashlib.sha256(baseline).hexdigest() == os.environ["BASELINE_CSS_SHA"]
+              print("Runtime CSS SHA-256:", hashlib.sha256(runtime).hexdigest())
+              assert not any(n.startswith("brp-uge/packs/") for n in z.namelist())
+              assert "brp-uge/module/creation-template-integration.mjs" in z.namelist()
+              assert "brp-uge/module/rules/skill-mechanics.mjs" in z.namelist()
+              assert "brp-uge/module/rules/wound-correction.mjs" in z.namelist()
+              assert "brp-uge/module/specialty-registry.mjs" in z.namelist()
+              assert not any(n.endswith(("personality-4-book-templates.json", "occupations-44-staged-choice-groups.json")) for n in z.namelist())
+          print("RC manifest and package verified; historical CSS baseline preserved and accessibility overlay verified")
+          PY
+          git diff --exit-code
+      - name: Publish isolated testing prerelease
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" dist/brp-uge.zip dist/system.json \
+            --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "BRP UGE v1.21.12-rc.7 — Live QA Corrections" \
+            --notes "Testing only. Validated candidate $SOURCE_SHA. Preserves Wizard and Actor Sheet scroll, fixes disabled published Specialty rows blocking navigation, improves bilingual choice labels and shortage diagnostics, corrects library tag contrast, and adds GM-only wound record recovery correction without changing current HP. Matching Compendium v1.0.0-rc.11 full module was inspected separately: all 8 Personality and 138 Occupation Thai group labels updated, 23 families and 156 defaults unchanged, 11 packs byte-identical to RC10. No book data bundled or changed. GM-defined specialties and unresolved exact keys/semantic guards remain prerequisites; modern Literacy total-link and existing Actor preservation require further QA. Full package replacement only. No import macros. Stable remains $STABLE_TAG. Live Foundry v14 QA required."
+          test "$(gh release view "$TAG" --json isPrerelease --jq .isPrerelease)" = true
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)" = "$STABLE_TAG"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "ffa1a63a468cd96308f3c55e9d91e807ea8e013a"
+          mkdir -p verified-download
+          gh release download "$TAG" --pattern system.json --pattern brp-uge.zip --dir verified-download
+          cmp dist/system.json verified-download/system.json
+          cmp dist/brp-uge.zip verified-download/brp-uge.zip
+      - name: Advance persistent testing manifest only after release verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p channels/testing
+          cp dist/system.json channels/testing/system.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add channels/testing/system.json
+          git commit -m "chore(testing): point Foundry testing channel to v1.21.12-rc.7"
+          git push origin HEAD:testing
+          test "$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)" = "$STABLE_TAG"
+          test "$(git ls-remote origin refs/heads/main | cut -f1)" = "ffa1a63a468cd96308f3c55e9d91e807ea8e013a"
+          echo "Testing channel committed: $TESTING_MANIFEST"
