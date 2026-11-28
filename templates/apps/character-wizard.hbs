@@ -157,7 +157,8 @@
           {{#if personalityLocked}}
             <p>{{#if isTh}}คงข้อมูลบุคลิกเดิมของตัวละคร{{else}}Existing personality preserved{{/if}}</p>
           {{else}}
-            {{#if personalitySourceMissing}}<p role="status">{{#if isTh}}ยังไม่มีข้อมูลเทมเพลตบุคลิกที่นำเข้า{{else}}No imported Personality templates{{/if}}</p>{{/if}}
+            {{#if creationContentError}}<p role="alert">{{creationContentError}}</p>{{/if}}
+            {{#if personalitySourceMissing}}<p role="status">{{#if isTh}}ยังไม่มีเทมเพลตบุคลิกจาก Compendium ที่เปิดใช้งาน{{else}}No Personality templates in the active Compendium{{/if}}</p>{{/if}}
             {{#if personalityEnabled}}
               <strong>{{#if isTh}}ทักษะบุคลิก (+20){{else}}Personality skills (+20){{/if}} · {{personalityCount}}/13</strong>
               {{#if personalityFixed.length}}

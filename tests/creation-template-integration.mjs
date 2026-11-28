@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {validatePersonalityManifest,validateOccupationOverlay,readCreationTemplateData,creationPersonalityTemplates,importCreationTemplates,externalOccupationPatch,occupationWithExternalPatch,personalityPlan,occupationPlan,choiceGroupView,validateChoicePlan,choicePlanCapacity} from '../module/creation-template-integration.mjs';
+import {validatePersonalityManifest,validateOccupationOverlay,readCreationTemplateData,creationPersonalityTemplates,importCreationTemplates,loadCreationTemplateData,externalOccupationDataError,CREATION_CONTENT_FILES,externalOccupationPatch,occupationWithExternalPatch,personalityPlan,occupationPlan,choiceGroupView,validateChoicePlan,choicePlanCapacity} from '../module/creation-template-integration.mjs';
 const make=(name,id)=>({type:'skill',name,uuid:'Item.'+id,system:{nameEn:name,referenceKey:name}});
 const fixed=Array.from({length:12},(_,i)=>make('Test '+i,String(i).padStart(16,'0')));
 const extra=make('Test Extra','eeeeeeeeeeeeeeee');
@@ -31,9 +31,10 @@ assert.equal(validateChoicePlan(occ,{pick:['test extra|']},catalog).valid,false)
 const writes=[];const mock={user:{isGM:false},settings:{get:()=> '{}',set:async(...a)=>writes.push(a)}};
 await assert.rejects(()=>importCreationTemplates({personality:manifest},mock));
 mock.user.isGM=true;
-const result=await importCreationTemplates({personality:manifest,occupations:overlay},mock);
-assert.equal(result.personalities,1);assert.equal(result.reviewIssues,1);assert.equal(writes.length,1);
-assert.equal(creationPersonalityTemplates(readCreationTemplateData(writes[0][2]))[0].typeKey,'synthetic');
+await assert.rejects(()=>importCreationTemplates({personality:manifest,occupations:overlay},mock));
+const result=await importCreationTemplates({customPersonalities:[template]},mock);
+assert.equal(result.custom,1);assert.equal(result.personalities,0);assert.equal(writes.length,1);
+assert.equal(creationPersonalityTemplates(readCreationTemplateData(writes[0][2]))[0].typeKey,'custom:synthetic');
 console.log('PASS: external template contract, GM-only import, fixed grants, counted unique groups, unresolved review blocker');
 
 const impossible={fixed:[],groups:[{count:2,candidates:[{key:'a'},{key:'b'}]},{count:1,candidates:[{key:'a'},{key:'b'}]}]};
@@ -55,3 +56,43 @@ assert.equal(occupationPlan(role,[],langRegistry,[langSource]).groups[0].candida
 const nativeTemplate={...template,fixedSkills:[...template.fixedSkills.slice(0,11),{requirement:'exact-specialty',familyKey:'language',specialtyKey:'own'}]};
 assert.ok(personalityPlan(nativeTemplate,catalog,langRegistry,[langSource]).fixed.some(c=>c.key==='language|native'));
 console.log('PASS: unique-slot feasibility, native default alias, hidden Specialty and explicit language role approval');
+
+// Fresh installation/replacement: both files are read from the enabled module,
+ // not from a previously imported World payload. All-or-nothing loading.
+const installed={active:true,version:'test-1'};
+const moduleGame={modules:new Map([['brp-uge-compendium',installed]]),settings:{get:()=>JSON.stringify({personality:{stale:true},occupations:{stale:true},customPersonalities:[template]}),set:()=>{throw Error('load must be read-only');}}};
+let filePayloads={personality:manifest,occupations:overlay},seen=[];
+const fetcher=async(url,options)=>{
+  seen.push([url,options.cache]);
+  const key=Object.keys(CREATION_CONTENT_FILES).find(k=>url.endsWith(CREATION_CONTENT_FILES[k]));
+  return filePayloads[key]?{ok:true,json:async()=>filePayloads[key]}:{ok:false,status:404};
+};
+let loaded=await loadCreationTemplateData(moduleGame,{fetcher,route:p=>'/prefix/'+p});
+assert.equal(loaded.source.status,'loaded');
+assert.equal(loaded.source.version,'test-1');
+assert.equal(loaded.personality,manifest);
+assert.equal(loaded.occupations,overlay);
+assert.equal(loaded.customPersonalities.length,1);
+assert.ok(seen.every(([url,cache])=>url.startsWith('/prefix/modules/brp-uge-compendium/')&&cache==='no-store'));
+assert.equal(externalOccupationDataError(item,loaded),null);
+installed.version='test-2';
+filePayloads={personality:{...manifest,templates:[{...template,nameEn:'Replacement'}]},occupations:overlay};
+loaded=await loadCreationTemplateData(moduleGame,{fetcher});
+assert.equal(loaded.source.version,'test-2');
+assert.equal(loaded.personality.templates[0].nameEn,'Replacement');
+delete filePayloads.occupations;
+loaded=await loadCreationTemplateData(moduleGame,{fetcher});
+assert.equal(loaded.source.status,'error');
+assert.equal(loaded.personality,undefined);
+assert.equal(loaded.occupations,undefined);
+assert.match(externalOccupationDataError(item,loaded),/404/);
+assert.equal(externalOccupationDataError({...item,parent:{documentName:'Actor'}},loaded),null);
+installed.active=false;
+seen=[];
+loaded=await loadCreationTemplateData(moduleGame,{fetcher});
+assert.equal(seen.length,0);
+assert.equal(loaded.source.status,'inactive');
+assert.equal(loaded.personality,undefined);
+assert.equal(loaded.customPersonalities.length,1);
+assert.ok(externalOccupationDataError(item,loaded));
+console.log('PASS: full-module creation data, replacement, missing-file protection, no stale imports and no Actor/World writes');

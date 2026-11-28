@@ -97,12 +97,47 @@ export function creationPersonalityTemplates(data){
   return [...list(data?.personality?.templates).map(t=>({...t,typeKey:t.systemPersonalityType})),
     ...list(data?.customPersonalities).map(t=>({...t,typeKey:'custom:'+t.id}))];
 }
-/** Explicit GM action only. Does not write Actor, Item, Pack, or other settings. */
+export const CREATION_CONTENT_MODULE='brp-uge-compendium';
+export const CREATION_CONTENT_FILES=Object.freeze({
+  personality:'data/creation/personality-4-book-templates.json',
+  occupations:'data/creation/occupations-44-staged-choice-groups.json'
+});
+/** One complete installed module is authoritative. Never merge old imported
+ * standard data with a new module, and never write settings/Actors on load. */
+export async function loadCreationTemplateData(gameApi=globalThis.game,{fetcher=globalThis.fetch,route=globalThis.foundry?.utils?.getRoute??(p=>p)}={}){
+  const source={moduleId:CREATION_CONTENT_MODULE,version:null,status:'inactive'};
+  const customRaw=gameApi?.settings?.get('brp-uge','creationTemplateData')??'{}';
+  let customPersonalities=[];
+  try {
+    const raw=typeof customRaw==='string'?JSON.parse(customRaw):customRaw;
+    const checked=readCreationTemplateData({customPersonalities:raw?.customPersonalities??[]});
+    if(checked.error)throw Error(checked.error);
+    customPersonalities=checked.customPersonalities;
+  }catch(error){return {source,error:'Invalid custom Personality settings: '+error.message};}
+  const installed=gameApi?.modules?.get(CREATION_CONTENT_MODULE);
+  if(!installed?.active)return {source,customPersonalities};
+  source.version=installed.version??null;
+  try {
+    const entries=await Promise.all(Object.entries(CREATION_CONTENT_FILES).map(async ([key,path])=>{
+      const response=await fetcher(route('modules/'+CREATION_CONTENT_MODULE+'/'+path),{cache:'no-store'});
+      if(!response.ok)throw Error(path+' (HTTP '+response.status+')');
+      return [key,await response.json()];
+    }));
+    const data=readCreationTemplateData({...Object.fromEntries(entries),customPersonalities});
+    if(data.error)throw Error(data.error);
+    if(!data.personality?.templates?.length||!data.occupations?.items?.length)throw Error('Incomplete creation template bundle');
+    return {...data,source:{...source,status:'loaded'}};
+  }catch(error){
+    return {customPersonalities,source:{...source,status:'error'},error:'Compendium creation data unavailable: '+error.message};
+  }
+}
+/** Explicit GM action for campaign-specific custom personalities only. Legacy
+ * standard imports are ignored; the installed module is authoritative. */
 export async function importCreationTemplates(input, gameApi=globalThis.game){
   requireValue(gameApi?.user?.isGM,'GM approval required');
   requireValue(obj(input),'Expected external template documents');
-  const previous=readCreationTemplateData(gameApi.settings.get('brp-uge','creationTemplateData'));
-  const next={...previous,...input};delete next.error;
+  requireValue(Object.keys(input).length===1&&Object.hasOwn(input,'customPersonalities'),'Standard templates must be installed as a complete Compendium module');
+  const next={customPersonalities:input.customPersonalities};
   const checked=readCreationTemplateData(next);
   requireValue(!checked.error,checked.error);
   requireValue(Object.keys(input).every(k=>['personality','occupations','customPersonalities'].includes(k)),'Unknown import field');
@@ -111,12 +146,19 @@ export async function importCreationTemplates(input, gameApi=globalThis.game){
     occupations:list(next.occupations?.items).length,groups:list(next.occupations?.items).reduce((n,i)=>n+i.patch.skillChoiceGroups.length,0),
     reviewIssues:list(next.occupations?.items).reduce((n,i)=>n+i.extendedReview.requirements.length,0)};
 }
-export function externalOccupationPatch(item,data){
-  // Source identity must be proven, including copied World records; never match display names.
-  // Existing Actor Items are not replaced by an external import.
+export function externalOccupationSourceId(item){
   if(item?.parent?.documentName==='Actor'||item?.uuid?.startsWith('Actor.'))return null;
+  const prefix='Compendium.'+CREATION_CONTENT_MODULE+'.occupations.Item.';
   const refs=[item?.uuid,item?.flags?.core?.sourceId,item?.flags?.['brp-uge']?.sourceUuid,item?.flags?.['brp-uge']?.originalSourceUuid];
-  return list(data?.occupations?.items).find(i=>refs.includes('Compendium.brp-uge-compendium.occupations.Item.'+i._id))||null;
+  return refs.find(ref=>typeof ref==='string'&&ref.startsWith(prefix))?.slice(prefix.length)||null;
+}
+export function externalOccupationPatch(item,data){
+  const id=externalOccupationSourceId(item);
+  return id?list(data?.occupations?.items).find(i=>i._id===id)||null:null;
+}
+export function externalOccupationDataError(item,data){
+  if(!externalOccupationSourceId(item)||externalOccupationPatch(item,data))return null;
+  return data?.error||'Occupation template unavailable in the active Compendium module';
 }
 export function occupationWithExternalPatch(base,patch){
   return patch?{...base,skillRefs:[...patch.patch.skillRefs],skillChoiceGroups:patch.patch.skillChoiceGroups,
@@ -199,7 +241,9 @@ export function occupationPlan(prof,catalog,registry,library,lang='en'){
   const merged=groups.map(g=>({...g,semanticGuards:raw.find(r=>r.id===g.id)?.semanticGuards,options:raw.find(r=>r.id===g.id)?.options||g.options}));
   // A malformed or empty raw group must not disappear as though complete.
   for(const g of raw)if(!merged.some(x=>x.id===g.id))merged.push(g);
-  return buildPlan({fixed,groups:merged,reviews:list(prof?.externalReview?.requirements),catalog,registry,library,lang});
+  const plan=buildPlan({fixed,groups:merged,reviews:list(prof?.externalReview?.requirements),catalog,registry,library,lang});
+  if(prof?.externalDataError)plan.errors.push(prof.externalDataError);
+  return plan;
 }
 export function choiceGroupView(plan,selections){
   return plan.groups.map(g=>{
@@ -252,8 +296,7 @@ export function choicePlanCapacity(plan){
   return {possible:matched===slots.length,matched,required:slots.length};
 }
 export async function auditCreationTemplates(gameApi=globalThis.game){
-  const data=readCreationTemplateData(gameApi.settings.get('brp-uge','creationTemplateData'));
-  if(data.error)throw new Error(data.error);
+  const data=await loadCreationTemplateData(gameApi);
   const library=await getLibraryDocuments({types:['skill','occupation']});
   const catalog=library.filter(i=>i.type==='skill');
   const registry=buildSpecialtyRegistry(catalog,gameApi.settings.get('brp-uge','specialtyRegistry'),gameApi.settings.get('brp-uge','specialtyPresets'));
@@ -267,5 +310,5 @@ export async function auditCreationTemplates(gameApi=globalThis.game){
     if(!source)plan.errors.push('Occupation source unavailable: '+p._id);
     return inspect(p.stableKey||p._id,plan);
   });
-  return {personalityCount:personalities.length,occupationCount:occupations.length,personalities,occupations};
+  return {source:data.source,error:data.error??null,personalityCount:personalities.length,occupationCount:occupations.length,personalities,occupations};
 }

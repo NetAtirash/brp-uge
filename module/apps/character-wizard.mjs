@@ -17,7 +17,7 @@ import { buildSpecialtyRegistry, findSpecialtyCandidate, specialtyTemplateFor, s
 import { normalizeOccupationChoiceGroups, resolveOccupationTemplateGroups, validateOccupationChoices, occupationSkillEligible, occupationGroupAllowsSkill, occupationChoiceMetadataMissing } from "../occupation-choice-rules.mjs";
 import { canonicalSkillKey } from "../skill-foundation.mjs";
 import {isSkillFamilyTemplate} from "../skill-family-templates.mjs";
-import {readCreationTemplateData,creationPersonalityTemplates,externalOccupationPatch,occupationWithExternalPatch,personalityPlan,occupationPlan,choiceGroupView,validateChoicePlan} from "../creation-template-integration.mjs";
+import {loadCreationTemplateData,creationPersonalityTemplates,externalOccupationDataError,externalOccupationPatch,occupationWithExternalPatch,personalityPlan,occupationPlan,choiceGroupView,validateChoicePlan} from "../creation-template-integration.mjs";
 import {wizardSpecialtyFamilies,wizardOccupationFamilyChoices,countedChoiceChange} from "../wizard-specialty-choices.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -208,6 +208,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       this.#refreshSpecialtyRegistry();
       return;
     }
+    this.templateDataCache=await loadCreationTemplateData();
     const docs=await getLibraryDocuments();
     const byType=(type)=>docs.filter(d=>d.type===type).map(d=>{
       const data=documentToEmbeddedItem(d);
@@ -261,6 +262,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
         skillRefs:[...(item.system.skillRefs??[])],
         skillChoiceGroups:normalizeOccupationChoiceGroups(item.system.skillChoiceGroups),
         externalReview:item.flags?.['brp-uge']?.creationExternalReview,
+        externalDataError:externalOccupationDataError(item,this.#templateData()),
         starterWeaponRefs:[...(item.system.starterWeaponRefs??[])],
         starterArmorRefs:[...(item.system.starterArmorRefs??[])]
       },externalOccupationPatch(item,this.#templateData())));
@@ -309,11 +311,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       .replace(/&lt;/gi,'<').replace(/&gt;/gi,'>').replace(/\n[ \t]*\n[ \t]*\n/g,'\n\n').trim();
   }
 
-  #templateData(){
-    const raw=game.settings.get('brp-uge','creationTemplateData');
-    if(raw!==this.templateDataSnapshot){this.templateDataSnapshot=raw;this.templateDataCache=readCreationTemplateData(raw);}
-    return this.templateDataCache||{};
-  }
+  #templateData(){return this.templateDataCache||{};}
   #personalityLocked(){return Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));}
   #personalityTemplate(){return creationPersonalityTemplates(this.#templateData()).find(t=>t.typeKey===this.wizardData.personalityType);}
   #personalityPlan(lang='en'){return personalityPlan(this.#personalityTemplate(),this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);}
@@ -511,6 +509,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     context.personalityLocked=this.#personalityLocked();
     context.personalityEnabled=this.wizardData.personalityType!=='none';
     context.personalitySourceMissing=!personalityTemplates.length||Boolean(templateData.error);
+    context.creationContentError=templateData.error;
     if(context.personalityEnabled&&!context.personalityLocked){
       const plan=this.#personalityPlan(uiLang);
       const status=validateChoicePlan(plan,this.wizardData.personalitySelections,this.skillCatalog);
@@ -1024,6 +1023,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     try{
       // Refresh rules sources explicitly without rebuilding the Skill catalog:
       // index-based Wizard allocations must remain stable while the user edits.
+      this.templateDataCache=await loadCreationTemplateData();
       this.librarySkillDocs=await getLibraryDocuments({types:['skill']});
       this.specialtyRegistrySnapshot=null;
       this.#refreshSpecialtyRegistry();
@@ -1206,6 +1206,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     }
 
     try {
+      this.templateDataCache=await loadCreationTemplateData();
       this.#refreshSpecialtyRegistry();
       await this.#syncPersonalityDraft();
       if(!this.#personalityLocked()&&this.wizardData.personalityType!=='none'){

@@ -1,26 +1,22 @@
-# External creation templates — integration contract (testing)
+# Full-package testing and external creation data
 
-No book content or new Item type is bundled. The World GM imports the two original Compendium handoff JSON manifests by explicit call:
+## Required development/testing workflow
 
-```js
-await game.brp.importCreationTemplates({personality: personalityManifest, occupations: occupationOverlay});
-```
+Every testing release contains a complete Game System ZIP and its manifest; no partial patches for the tester. Install the system via the existing Testing Manifest URL after removing the previous system version through Setup. Keep the same system ID. Back up test World and package first; never delete World data. Install Compendium by replacing the entire module directory while Foundry is stopped, with a complete matching module package. No manual JSON imports, file-by-file overlays or macro prerequisites. Restart, enable the module, and test in a copied World. For clean installation tests also use a fresh World.
 
-Supported versions: `brp-personality-template-v1-proposed` and `occupation-overlay-1.0`. A partial import leaves the other manifest intact. The data is stored in a restricted World setting, never written into Actor-owned Items or content packs. Custom personalities can be separately approved by a GM via `customPersonalities` (array of the same template records, IDs namespaced by the engine; 13 slots and +20 each). No arbitrary 13-skill fallback exists for standard templates.
+## Module package contract
 
-Occupation overlay matches exact Compendium provenance (brp-uge-compendium.occupations Item UUID), not translations. Existing Actor-owned occupations are not patched. Fixed references, counted groups, Registry-approved concrete specialties and uniqueness across fixed and choices are checked before save. Exact specialty book default keys survive registry display-name overrides. "Other language" excludes the Own option and stable bookKey; if a campaign represents the actual native language as an additional named specialty, it must explicitly avoid duplicate native-language registry entries. Programming-language role requires GM-supplied allowedCanonicalKeys in the external review guard; unknown source tokens must be resolved in the external manifest, never guessed. Suggestions are advisory, not filters. No in-place migration or silent point reset.
+Module ID: brp-uge-compendium. The package root must contain module.json, all its packs/assets, and both JSON manifests:
 
-The source manifest version 1.21.11 is intentional; pre-release version is stamped during packaging. Testing channel currently points to RC.3. Do not publish or merge without approval. Actual Foundry/pack integration QA remains required.
+- data/creation/personality-4-book-templates.json — schemaVersion brp-personality-template-v1-proposed
+- data/creation/occupations-44-staged-choice-groups.json — schemaVersion occupation-overlay-1.0
 
-## Live audit (read-only)
-After import and with Compendium enabled, a GM can run:
+Ship both with the same module version and preserve stable Skill/Occupation IDs. The engine reads both from the active module on Wizard load; file requests bypass browser cache. Missing or invalid files fail closed for module-backed occupations and standard Personality. No fallback to legacy World-imported book data; those old settings are not automatically deleted. Custom GM-approved Personality and Specialty Registry remain World data. Actor-owned Items and existing points are not migrated by a package replacement.
 
-```js
-const report = await game.brp.auditCreationTemplates();
-console.table(report.personalities);
-console.table(report.occupations);
-```
+The engine exposes game.brp.importCreationTemplates only for explicit GM-approved customPersonalities; no standard-content imports. The optional read-only diagnostic game.brp.auditCreationTemplates() returns module source/version, load errors, and all template readiness checks; it is not an installation step.
 
-This checks installed source documents, approved specialties and whether all counted slots can be satisfied with unique canonical keys. It does not allocate any points or save a character. For an occupation with unresolved source tokens, amend the authoritative external data and re-import, rather than suppressing validation. The file-level import accepts all 4 Personality and 44 Occupation records / 138 groups / 24 review clauses from the provided handoff. That does not certify the installed skill catalog.
+Both manifests must be included in the complete Compendium ZIP by its maintainer. The Game System release does not include these content files. Remaining unresolved source tokens and programming-language constraints are still validated, not bypassed.
 
-The Wizard keeps an explicit occupation's validated external choice snapshot on new Actor-owned occupation items, and does not rewrite an unchanged existing item. Existing completed Personality selections are protected.
+## Release gate
+
+Verify matching versions, full ZIP integrity, manifest destination and CI before publishing. No main merge or stable release changes without explicit approval. The testing channel advances only after approved release verification. Foundry VTT v14 live QA is still required.
