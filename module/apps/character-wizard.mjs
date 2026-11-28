@@ -316,7 +316,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   #templateData(){return this.templateDataCache||{};}
   #personalityLocked(){return Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));}
   #personalityTemplate(){return creationPersonalityTemplates(this.#templateData()).find(t=>t.typeKey===this.wizardData.personalityType);}
-  #personalityPlan(lang='en'){return personalityPlan(this.#personalityTemplate(),this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);}
+  #personalityPlan(lang=game.settings.get('brp-uge','uiLanguage')||'en'){return personalityPlan(this.#personalityTemplate(),this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);}
   #personalityBonus(skill){
     if(this.#personalityLocked()||!this.wizardData.touchedPersonality){
       const existing=[...(this.targetActor?.items??[])].find(i=>i.type==='skill'&&sameSkill(i,skill));
@@ -336,7 +336,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     }
     this.wizardData.personalitySkillKeys=validateChoicePlan(this.#personalityPlan(),this.wizardData.personalitySelections,this.skillCatalog).keys;
   }
-  #occupationPlan(prof=this.#getProfession(),lang='en'){
+  #occupationPlan(prof=this.#getProfession(),lang=game.settings.get('brp-uge','uiLanguage')||'en'){
     return occupationPlan(prof,this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);
   }
   #isOccupationalSkill(skillEntry,prof,plan=this.#occupationPlan(prof)) {
@@ -869,39 +869,44 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     finally{this.choiceBusy=false;}
   }
 
-  static #onGoStep(event, target) {
+  async #renderStepTop(){
+    await this.render();
+    const body=this.element.querySelector('.wiz-body');if(body)body.scrollTop=0;
+    const list=this.element.querySelector('.wiz-skill-list');if(list)list.scrollTop=0;
+  }
+  static async #onGoStep(event, target) {
     event.preventDefault();
     this.step = Math.clamp(Number(target.dataset.step || 1), 1, 6);
-    this.render();
+    await this.#renderStepTop();
   }
 
-  static #onPrevStep(event) {
+  static async #onPrevStep(event) {
     event.preventDefault();
-    if(this.step===4&&this.occupationStage>1){this.occupationStage--;this.render();return;}
+    if(this.step===4&&this.occupationStage>1){this.occupationStage--;return this.#renderStepTop();}
     this.step = Math.max(1, this.step - 1);
-    this.render();
+    await this.#renderStepTop();
   }
 
-  static #onNextStep(event) {
+  static async #onNextStep(event) {
     event.preventDefault();
     if(this.step===3&&!this.#personalityLocked()&&this.wizardData.personalityType!=='none'&&!validateChoicePlan(this.#personalityPlan(),this.wizardData.personalitySelections,this.skillCatalog).valid){this.render();return;}
-    if(this.step===4&&this.occupationStage<3){this.#setOccupationStage(this.occupationStage+1);return;}
+    if(this.step===4&&this.occupationStage<3)return this.#setOccupationStage(this.occupationStage+1);
     this.step = Math.min(6, this.step + 1);
-    this.render();
+    await this.#renderStepTop();
   }
 
-  #setOccupationStage(stage) {
+  async #setOccupationStage(stage) {
     if(stage===3){
       const prof=this.#getProfession();
       const missing=prof?.sourceUuid&&occupationChoiceMetadataMissing(prof,this.#plainRuleText((prof.description||'')+' '+(prof.descriptionTh||'')));
       const coverage=occupationSkillCoverage(this.skillCatalog,prof?.skillRefs??[]);
       if(missing||coverage.missing.length||!this.#occupationChoiceStatus(prof).valid){
-        this.occupationStage=2;this.render();return;
+        this.occupationStage=2;return this.#renderStepTop();
       }
     }
-    this.occupationStage=Math.clamp(stage,1,3);this.render();
+    this.occupationStage=Math.clamp(stage,1,3);await this.#renderStepTop();
   }
-  static #onGoOccupationStage(event,target) {event.preventDefault();this.#setOccupationStage(Number(target.dataset.stage));}
+  static #onGoOccupationStage(event,target) {event.preventDefault();return this.#setOccupationStage(Number(target.dataset.stage));}
   async #renderChoiceChange(input) {
     const scroll=this.element.querySelector('.wiz-body')?.scrollTop||0;
     const group=input.dataset.groupId;

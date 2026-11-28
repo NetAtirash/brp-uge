@@ -134,8 +134,8 @@ export function organizeBRPSettings(root,{language='th',onConfigureSkills=null}=
     }
     count++;
   }
-  for(const button of element.querySelectorAll('button[data-key],button[data-setting-id],button[data-menu]')){
-    const id=[button.dataset.key,button.dataset.settingId,button.dataset.menu].find(v=>String(v||'').startsWith('brp-uge.'));
+  for(const button of element.querySelectorAll('button[data-key],button[data-setting-id],button[data-menu],button[name]')){
+    const id=[button.dataset.key,button.dataset.settingId,button.dataset.menu,button.name].find(v=>String(v||'').startsWith('brp-uge.'));
     if(!id)continue;
     const key=id.slice('brp-uge.'.length),words=settingPresentation(key,language);
     if(!words||!MENU_LABELS[key])continue;
@@ -150,6 +150,7 @@ export function installBRPSettingsUI(){
   if(!globalThis.Hooks)return;
   const callback=(_app,html)=>{
     const language=globalThis.game?.settings?.get?.('brp-uge','uiLanguage')||'th';
+    applySettingsTranslations(globalThis.game?.settings,language);
     organizeBRPSettings(html,{language,onConfigureSkills:()=>globalThis.game?.brp?.configureStartingSkills?.()});
   };
   Hooks.on('renderSettingsConfig',callback);

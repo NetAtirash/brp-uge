@@ -21,3 +21,16 @@ assert.match(read('module/apps/specialty-presets-menu.mjs'),/if\(existing&&en===
 assert.match(read('templates/actor/character-sheet.hbs'),/data-action="editWoundRecovery"/);
 assert.match(read('styles/brp-live-qa-accessibility.css'),/comp-folder-tag/);
 console.log('PASS: GM-only wound correction, source-row preservation, scroll and contrast contracts');
+
+import {creationGroupLabel,personalityPlan} from '../module/creation-template-integration.mjs';
+const family={key:'example',thFamily:'ตัวอย่าง',enFamily:'Example',options:[]};
+const example={id:'example',count:1,labelEn:'Only English',options:[{kind:'family',familyKey:'example'}]};
+assert.equal(creationGroupLabel(example,0,[family],[],'th'),'ตัวอย่าง');
+assert.equal(creationGroupLabel(example,0,[family],[],'en'),'Only English');
+const missing=personalityPlan({fixedSkills:[],choiceGroups:[example],requiredTotalSkills:1,bonus:{value:20}},[],[family],[],'th');
+assert.equal(missing.errors.length,1);
+assert.match(missing.errors[0],/ตัวอย่าง — มีตัวเลือกที่ใช้ได้ 0\/1/);
+assert.doesNotMatch(missing.errors[0],/duplicate|ซ้ำ/);
+assert.match(read('module/apps/specialty-presets-menu.mjs'),/cfg.hidden\|\|\[\]/);
+assert.match(read('module/apps/character-wizard.mjs'),/#renderStepTop/);
+console.log('PASS: localized label fallback and shortage diagnostic without false duplicate error');

@@ -1,5 +1,6 @@
 /** External creation content. No book-specific template records in this engine. */
 import {canonicalSkillKey} from './skill-foundation.mjs';
+import {categoryLabel} from './reference-utils.mjs';
 import {linkedOccupationSkill} from './occupation-skill-linking.mjs';
 import {analyzeSkillFamily,specialtyFamilyKey} from './skill-specialties.mjs';
 import {isSkillFamilyTemplate} from './skill-family-templates.mjs';
@@ -196,43 +197,58 @@ function optionCandidates(option,catalog,registry,library,lang,guard={}){
     return true;
   }).map(o=>({key:family.key+'|'+o.key,label:(lang==='th'?family.thFamily:family.enFamily)+' ('+(lang==='th'?(o.th||o.en):o.en)+')'}));
 }
+/** Localized fallback from installed skill metadata, never translated rule prose. */
+export function creationGroupLabel(group,index,registry,library,lang='en'){
+  const provided=lang==='th'?text(group.labelTh):text(group.labelEn);
+  if(provided)return provided;
+  const options=list(group.options);
+  if(options.length&&options.every(o=>o.familyKey&&specialtyFamilyKey(o.familyKey)===specialtyFamilyKey(options[0].familyKey))){
+    const family=registry.find(f=>f.key===specialtyFamilyKey(options[0].familyKey));
+    const name=lang==='th'?family?.thFamily:family?.enFamily;
+    if(name)return name;
+  }
+  const sources=options.map(o=>o.kind==='skill'?library.find(s=>o.ref&&linkedOccupationSkill(s,o.ref)||o.canonicalSkillKey&&canonicalSkillKey(s)===o.canonicalSkillKey):registry.find(f=>f.key===specialtyFamilyKey(o.familyKey))?.canonicalTemplate);
+  const categories=[...new Set(sources.map(s=>s?.system?.category))];
+  if(sources.length&&categories.length===1&&categories[0])return categoryLabel(categories[0],lang);
+  return lang==='th'?'กลุ่มตัวเลือก '+(index+1):'Choice group '+(index+1);
+}
 function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library=[],lang='en'}){
   const fixedChoices=new Map(),errors=[],rawGroups=[...groups];
   for(const [i,r] of fixed.entries()){
     const option=r.requirement==='exact-skill'?{kind:'skill',ref:r.sourceUuid,canonicalSkillKey:r.canonicalSkillKey}:
       {kind:r.requirement==='exact-specialty'?'specialty':'family',familyKey:r.familyKey,specialtyKey:r.specialtyKey};
     if(r.requirement==='family-specialty'){
-      rawGroups.push({id:'fixed-family-'+i,labelEn:r.familyKey,labelTh:registry.find(f=>f.key===r.familyKey)?.thFamily||r.familyKey,count:1,options:[option],semanticGuards:r.constraint||{},fixedRequirement:true});
+      rawGroups.push({id:'fixed-family-'+i,labelEn:r.familyKey,labelTh:registry.find(f=>f.key===r.familyKey)?.thFamily||'',count:1,options:[option],semanticGuards:r.constraint||{},fixedRequirement:true});
       continue;
     }
     const matches=optionCandidates(option,catalog,registry,library,lang,r.constraint||{});
-    if(matches.length!==1){errors.push('Unavailable or ambiguous fixed skill: '+(r.canonicalSkillKey||r.sourceUuid||r.familyKey+'|'+r.specialtyKey));continue;}
+    if(matches.length!==1){errors.push((lang==='th'?'ไม่พบหรือพบข้อมูลทักษะบังคับซ้ำ: ':'Unavailable or ambiguous fixed skill: ')+(r.canonicalSkillKey||r.sourceUuid||r.familyKey+'|'+r.specialtyKey));continue;}
     const c=matches[0];
-    if(fixedChoices.has(c.key))errors.push('Duplicate fixed skill: '+c.key);
+    if(fixedChoices.has(c.key))errors.push((lang==='th'?'ทักษะบังคับซ้ำ: ':'Duplicate fixed skill: ')+c.key);
     fixedChoices.set(c.key,c);
   }
   const planned=rawGroups.map((g,index)=>{
+    const label=creationGroupLabel(g,index,registry,library,lang);
     const review=reviews.find(r=>r.groupId===g.id);
     const guards={...(review?.semanticGuards||{}),...(g.semanticGuards||{})};
     try{validateGuard(guards);}catch(e){errors.push(g.id+': '+e.message);}
-    if(review?.unresolvedTokens?.length)errors.push(g.id+': unresolved source: '+review.unresolvedTokens.map(t=>t.token).join(', '));
-    if(guards.languageRole==='programming_language'&&!guards.allowedCanonicalKeys?.length)errors.push(g.id+': GM-approved programming language keys required');
+    if(review?.unresolvedTokens?.length)errors.push(label+(lang==='th'?' — ยังไม่พบข้อมูลอ้างอิง: ':' — unresolved source: ')+review.unresolvedTokens.map(t=>t.token).join(', '));
+    if(guards.languageRole==='programming_language'&&!guards.allowedCanonicalKeys?.length)errors.push(label+(lang==='th'?' — ยังไม่ได้กำหนดภาษาคอมพิวเตอร์ที่อนุมัติ':' — GM-approved programming language keys required'));
     const candidates=new Map();
     for(const o of list(g.options))for(const c of optionCandidates(o,catalog,registry,library,lang,guards)){
       if(!fixedChoices.has(c.key))candidates.set(c.key,c);
     }
-    const label=lang==='th'?(g.labelTh||'กลุ่มตัวเลือก '+(index+1)):(g.labelEn||'Choice group '+(index+1));
-    if(candidates.size<g.count)errors.push(lang==='th'?label+' — มีตัวเลือกที่ใช้ได้ '+candidates.size+'/'+g.count+' กรุณาให้ GM ตรวจสอบความเชี่ยวชาญที่เปิดใช้และข้อมูลต้นทาง':label+' — insufficient eligible skills ('+candidates.size+'/'+g.count+')');
+    if(candidates.size<g.count)errors.push(lang==='th'?label+' — มีตัวเลือกที่ใช้ได้ '+candidates.size+'/'+g.count:label+' — insufficient eligible skills ('+candidates.size+'/'+g.count+')');
     return {...g,label,candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
   });
-  if(!unique(planned.map(g=>g.id)))errors.push('Duplicate choice group IDs');
-  const plan={fixed:[...fixedChoices.values()],groups:planned,errors};
+  if(!unique(planned.map(g=>g.id)))errors.push(lang==='th'?'รหัสกลุ่มตัวเลือกซ้ำ':'Duplicate choice group IDs');
+  const plan={fixed:[...fixedChoices.values()],groups:planned,errors,lang};
   const capacity=choicePlanCapacity(plan);
   if(!capacity.possible&&planned.every(g=>g.candidates.length>=g.count))errors.push(lang==='th'?'กลุ่มตัวเลือกไม่สามารถเลือกให้ครบโดยไม่ซ้ำกัน ('+capacity.matched+'/'+capacity.required+')':'Choice groups cannot be satisfied without duplicate skills ('+capacity.matched+'/'+capacity.required+')');
   return plan;
 }
 export function personalityPlan(template,catalog,registry,library,lang='en'){
-  if(!template)return {fixed:[],groups:[],errors:['External Personality template unavailable']};
+  if(!template)return {fixed:[],groups:[],lang,errors:[lang==='th'?'ไม่พบข้อมูลรูปแบบบุคลิก':'External Personality template unavailable']};
   return {...buildPlan({fixed:template.fixedSkills,groups:template.choiceGroups,catalog,registry,library,lang}),requiredTotal:template.requiredTotalSkills,bonus:template.bonus.value};
 }
 export function occupationPlan(prof,catalog,registry,library,lang='en'){
@@ -258,19 +274,20 @@ export function choiceGroupView(plan,selections){
   });
 }
 export function validateChoicePlan(plan,selections,catalog){
+  const th=plan.lang==='th';
   const errors=[...plan.errors],keys=new Set(plan.fixed.map(c=>c.key)),known=new Set(catalog.filter(concreteSkill).map(canonicalSkillKey));
-  for(const c of plan.fixed)if(!known.has(c.key))errors.push('Fixed skill unavailable: '+c.key);
-  for(const [id,chosen] of Object.entries(selections||{}))if(list(chosen).length&&!plan.groups.some(g=>g.id===id))errors.push('Unknown choice group: '+id);
+  for(const c of plan.fixed)if(!known.has(c.key))errors.push((th?'ไม่พบทักษะบังคับ: ':'Fixed skill unavailable: ')+c.label);
+  for(const [id,chosen] of Object.entries(selections||{}))if(list(chosen).length&&!plan.groups.some(g=>g.id===id))errors.push((th?'ไม่พบกลุ่มตัวเลือก: ':'Unknown choice group: ')+id);
   for(const g of plan.groups){
     const chosen=list(selections?.[g.id]);
-    if(chosen.length!==g.count)errors.push(g.id+': select '+g.count+' skills');
+    if(chosen.length!==g.count)errors.push(g.label+(th?' — เลือกให้ครบ ':' — select ')+g.count+(th?' รายการ':' skills'));
     for(const key of chosen){
-      if(keys.has(key))errors.push('Duplicate skill: '+key);
-      if(!g.candidates.some(c=>c.key===key)||!known.has(key))errors.push(g.id+': unavailable skill: '+key);
+      if(keys.has(key))errors.push((th?'ทักษะซ้ำ: ':'Duplicate skill: ')+(g.candidates.find(c=>c.key===key)?.label||key));
+      if(!g.candidates.some(c=>c.key===key)||!known.has(key))errors.push(g.label+(th?' — ไม่พบทักษะ: ':' — unavailable skill: ')+key);
       else keys.add(key);
     }
   }
-  if(plan.requiredTotal!==undefined&&keys.size!==plan.requiredTotal)errors.push('Personality skill total: '+keys.size+'/'+plan.requiredTotal);
+  if(plan.requiredTotal!==undefined&&keys.size!==plan.requiredTotal)errors.push((th?'จำนวนทักษะบุคลิก: ':'Personality skill total: ')+keys.size+'/'+plan.requiredTotal);
   return {valid:errors.length===0,errors,keys:[...keys].filter(k=>known.has(k))};
 }
 

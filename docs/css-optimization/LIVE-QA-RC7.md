@@ -5,3 +5,5 @@ RC6+RC10 user evidence: 22 passed, 4 failed, 1 not tested after clarifying Statu
 - Foundry v14 scrollable part declarations preserve scroll for same-part renders. Live QA still required. 
 - GM recovery correction updates only record flags and recovered amount, not current HP, treatment count, closure, or major wound consequences. Existing HP can be adjusted separately.
 - Existing actor safety not tested in a new World. Test copied existing World separately. No automatic migration. No main merge or stable/channel update before release approval. Full-package only.
+
+Follow-up: preserve legacy hidden book choices when collecting an untouched family, reset manager draft on close, restore scroll within same stage but return to top on intentional navigation. Localized fallback derives family/category label from installed metadata. RC10 has 0/8 Thai Personality group labels; all 138 occupation group labels exist, but wording is generic in some. The source labels must be corrected by the content maintainer for full fidelity. Remaining Live QA required.

@@ -28,6 +28,11 @@ export class SpecialtyPresetsMenu extends App {
   #saving=false;
 
   get title(){return game.settings.get('brp-uge','uiLanguage')==='en'?'BRP UGE · Specialty Management':'BRP UGE · จัดการความเชี่ยวชาญ';}
+  _onClose(options){
+    const result=super._onClose(options);
+    this.#overlay=null;this.#snapshot='';this.#family='';this.#query='';this.#registry=[];
+    return result;
+  }
   #isTh(){return game.settings.get('brp-uge','uiLanguage')!=='en';}
   #tr(th,en){return this.#isTh()?th:en;}
   async #load(){
@@ -71,7 +76,7 @@ export class SpecialtyPresetsMenu extends App {
       '<div class="brp-specialty-row-head"><span class="brp-specialty-source-kind">'+esc(origin)+'</span>'+
       (entry.review?'<span class="brp-specialty-review-note">'+this.#tr('ต้องตรวจสอบ','Needs review')+'</span>':
         entry.sourceAmbiguous?'<span class="brp-specialty-review-note">'+this.#tr('GM กำหนดแล้ว','GM curated')+'</span>':'')+
-      (source?'<button type="button" data-open-source="'+esc(entry.sourceUuid)+'">'+this.#tr('เปิด Item ต้นฉบับ','Open source Item')+'</button>':'')+
+      (source?'<button type="button" data-open-source="'+esc(entry.sourceUuid)+'">'+this.#tr('เปิดไอเทมต้นฉบับ','Open source Item')+'</button>':'')+
       (!source?'<button type="button" data-archive>'+this.#tr('ซ่อน','Archive')+'</button>':'')+
       (newRow?'<button type="button" data-remove-draft>'+this.#tr('ยกเลิกรายการใหม่','Remove draft')+'</button>':'')+'</div>'+
       '<div class="brp-specialty-row-fields">'+
@@ -170,7 +175,8 @@ export class SpecialtyPresetsMenu extends App {
       // Do not validate them as newly authored/selectable specialties.
       const existing=bookKey?group.options.find(o=>o.source==='book'&&o.bookKey===bookKey):null;
       if(existing&&en===existing.en&&th===existing.th&&state===(existing.review?'review':existing.hidden?'hidden':existing.state)){
-        if(cfg.bookOverrides?.[bookKey])bookOverrides[bookKey]=cfg.bookOverrides[bookKey];
+        if((cfg.hidden||[]).includes(k)&&state==='hidden')bookOverrides[bookKey]={en,th,state};
+        else if(cfg.bookOverrides?.[bookKey])bookOverrides[bookKey]=cfg.bookOverrides[bookKey];
         if(state==='enabled'){
           if(seen.has(k))throw new Error(this.#tr('ความเชี่ยวชาญเปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
           seen.add(k);
@@ -270,11 +276,11 @@ export class SpecialtyPresetsMenu extends App {
       try{
         this.#collect();
         if(game.settings.get('brp-uge','specialtyRegistry')!==this.#snapshot)
-          throw new Error(this.#tr('มี GM อีกคนเปลี่ยน Registry แล้ว กรุณาเปิดใหม่','Registry changed elsewhere. Reopen to avoid overwriting.'));
+          throw new Error(this.#tr('มี GM อีกคนเปลี่ยนรายการความเชี่ยวชาญแล้ว กรุณาเปิดใหม่','Registry changed elsewhere. Reopen to avoid overwriting.'));
         this.#saving=true;
         const data=readSpecialtyRegistry(this.#overlay);
         await game.settings.set('brp-uge','specialtyRegistry',JSON.stringify(data));
-        ui.notifications.info(this.#tr('บันทึก Specialty Management แล้ว','Specialty Management saved'));
+        ui.notifications.info(this.#tr('บันทึกการจัดการความเชี่ยวชาญแล้ว','Specialty Management saved'));
         await this.close();
       }catch(error){ui.notifications.error(error.message);}
       finally{this.#saving=false;}
