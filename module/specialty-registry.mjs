@@ -1,4 +1,4 @@
-import {readSemanticMetadata} from './semantic-specialty.mjs';
+import {readSemanticMetadata,readCampaignApprovals} from './semantic-specialty.mjs';
 /**
  * Effective registry for ONE template Skill Item per specialty-capable family.
  *
@@ -52,8 +52,9 @@ const readOverrides=raw=>{
 export function readSpecialtyRegistry(raw) {
   let value=raw;
   if(typeof value==='string')try{value=JSON.parse(value);}catch{value={};}
-  const out={schemaVersion:3,families:{}};
+  const out={schemaVersion:3,families:{},campaignApprovals:{}};
   if(!value||typeof value!=='object'||Array.isArray(value))return out;
+  out.campaignApprovals=readCampaignApprovals(value.campaignApprovals);
   for(const [name,rawData] of Object.entries(value.families||{})){
     const key=keyOf(name),data=rawData||{};
     if(!key)continue;

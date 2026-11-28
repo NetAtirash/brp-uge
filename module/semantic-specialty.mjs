@@ -36,3 +36,15 @@ export function semanticInstruction(requirement,familyLabel,lang='en'){
   const parts=[familyLabel,r.type&&label(r.type),r.context&&label(r.context),r.conceptKey].filter(Boolean);
   return parts.join(' · ')+(r.type?(th?' — GM: เพิ่มหรือจัดประเภทความเชี่ยวชาญจริง ระบุรหัสบริบท และเปิดให้เลือกในจัดการความเชี่ยวชาญ':' — GM: add or classify a concrete specialty, set a concept key and enable it in Specialty Management'):(th?' — เปิดใช้รายการที่ได้รับอนุญาตจากข้อมูลต้นทาง':' — Enable a source-approved specialty'))+(r.allowedCanonicalKeys?' ['+r.allowedCanonicalKeys.join(', ')+']':'');
 }
+
+export function validCampaignApprovalKey(value){return token(value)&&!['constructor','prototype','__proto__'].includes(value);}
+export function readCampaignApprovals(raw){
+  if(!object(raw))return {};
+  return Object.fromEntries(Object.entries(raw).filter(([id,keys])=>validCampaignApprovalKey(id)&&Array.isArray(keys)).map(([id,keys])=>[id,[...new Set(keys.filter(k=>typeof k==='string'&&/^[^|]+\|[^|]*$/.test(k)&&k===k.trim()&&k===k.toLowerCase()))]]));
+}
+export function campaignGuard(guard,approvals){
+  if(!guard.campaignApprovalKey)return guard;
+  const allowed=Object.hasOwn(approvals||{},guard.campaignApprovalKey)?approvals[guard.campaignApprovalKey]:[];
+  const keys=Array.isArray(allowed)?allowed:[];
+  return {...guard,allowedCanonicalKeys:Array.isArray(guard.allowedCanonicalKeys)?guard.allowedCanonicalKeys.filter(k=>keys.includes(k)):keys};
+}

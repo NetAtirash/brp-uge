@@ -1,3 +1,4 @@
+import {loadCreationTemplateData,campaignApprovalGroups} from '../creation-template-integration.mjs';
 import {readSemanticMetadata,SEMANTIC_TYPES,SEMANTIC_CONTEXTS} from '../semantic-specialty.mjs';
 /**
  * Source-aware GM Specialty Manager for Foundry v14.
@@ -27,11 +28,14 @@ export class SpecialtyPresetsMenu extends App {
   #family='';
   #query='';
   #saving=false;
+  #creationData=null;
+  #approvalMode=false;
+  #approvalGroup='';
 
   get title(){return game.settings.get('brp-uge','uiLanguage')==='en'?'BRP UGE · Specialty Management':'BRP UGE · จัดการความเชี่ยวชาญ';}
   _onClose(options){
     const result=super._onClose(options);
-    this.#overlay=null;this.#snapshot='';this.#family='';this.#query='';this.#registry=[];
+    this.#overlay=null;this.#snapshot='';this.#family='';this.#query='';this.#registry=[];this.#creationData=null;this.#approvalMode=false;this.#approvalGroup='';
     return result;
   }
   #isTh(){return game.settings.get('brp-uge','uiLanguage')!=='en';}
@@ -39,7 +43,8 @@ export class SpecialtyPresetsMenu extends App {
   async #load(){
     if(this.#overlay!==null)return;
     this.#packErrors=[];
-    this.#documents=await getLibraryDocuments({types:['skill'],onPackError:(pack,error)=>this.#packErrors.push({pack:pack.collection,message:String(error?.message||error)})});
+    this.#documents=await getLibraryDocuments({types:['skill','occupation'],onPackError:(pack,error)=>this.#packErrors.push({pack:pack.collection,message:String(error?.message||error)})});
+    this.#creationData=await loadCreationTemplateData();
     this.#snapshot=game.settings.get('brp-uge','specialtyRegistry');
     this.#overlay=readSpecialtyRegistry(this.#snapshot);
   }
@@ -127,6 +132,24 @@ export class SpecialtyPresetsMenu extends App {
     if(d.status==='loaded'&&!d.ignoredCopies.length&&!d.reviewCount)return '';
     return '<details class="brp-manager-note" '+(d.status!=='loaded'?'open':'')+'><summary>'+esc(labels[d.status]||this.#tr('แหล่งข้อมูล','Source information'))+'</summary><p>'+esc(this.#tr('ข้อมูลตั้งต้นที่อ่านได้','Accepted source defaults'))+': ' +d.acceptedCount+'/'+d.rawCount+'</p><p>'+esc(this.#tr('ซ่อน / รอตรวจสอบ','Hidden / pending review'))+': '+d.hiddenCount+' / '+d.reviewCount+'</p>'+d.sourceUuids.map(u=>'<p>'+esc(u)+'</p>').join('')+d.rejected.map(r=>'<p>'+esc(r.en||r.key)+': '+esc(({"missing-key-or-name":this.#tr('ไม่มีชื่อหรือรหัส','Missing name or key'),"invalid-name":this.#tr('ชื่อไม่ถูกต้อง','Invalid name'),"duplicate-key":this.#tr('รหัสซ้ำ','Duplicate key')})[r.reason]||r.reason)+'</p>').join('')+(d.ignoredCopies.length?'<p>'+esc(this.#tr('ไม่นับสำเนา World ที่มีต้นทางเดียวกัน','Ignored World copies with matching source'))+': '+d.ignoredCopies.length+'</p>':'')+'</details>';
   }
+  #approvalGroups(){
+    return campaignApprovalGroups(this.#creationData,this.#documents.filter(d=>d.type==='skill'),this.#registry,this.#documents,this.#isTh()?'th':'en');
+  }
+  #approvalHTML(){
+    const groups=this.#approvalGroups();
+    if(!groups.some(g=>g.id===this.#approvalGroup))this.#approvalGroup=groups[0]?.id||'';
+    const group=groups.find(g=>g.id===this.#approvalGroup);
+    if(!group)return '<p>'+this.#tr('ยังไม่มีกลุ่มที่คลังข้อมูลกำหนดให้ GM อนุมัติ','No groups requiring campaign approval in the installed content')+'</p>';
+    const selected=new Set(this.#overlay.campaignApprovals[group.id]||[]);
+    const available=new Set(group.candidates.map(c=>c.key));
+    const stale=[...selected].filter(k=>!available.has(k));
+    return '<h3>'+this.#tr('ทักษะที่อนุมัติตามแคมเปญ','Campaign-approved skills')+'</h3>'+
+      '<label>'+this.#tr('กลุ่มตัวเลือก','Choice group')+'<select data-approval-group>'+
+      groups.map(g=>'<option value="'+esc(g.id)+'" '+(g.id===group.id?'selected':'')+'>'+esc(g.labels.join(' / '))+'</option>').join('')+'</select></label>'+
+      '<p>'+this.#tr('เลือกทักษะที่เหมาะกับแคมเปญและยุคสมัย ระบบจะตรวจเงื่อนไขจากคลังอีกครั้ง','Select campaign- and era-appropriate skills. Source constraints still apply.')+'</p>'+
+      '<div data-approved-choices>'+group.candidates.map(c=>'<label><input type="checkbox" data-approval-key="'+esc(c.key)+'" '+(selected.has(c.key)?'checked':'')+'> '+esc(c.label)+'</label>').join('')+
+      stale.map(k=>'<label><input type="checkbox" data-approval-key="'+esc(k)+'" checked> '+esc(k)+' ('+this.#tr('ไม่พร้อมใช้งาน','unavailable')+')</label>').join('')+'</div>';
+  }
   async _renderHTML(){
     await this.#load();this.#refresh();
     const group=this.#registry.find(f=>f.key===this.#family);
@@ -141,12 +164,13 @@ export class SpecialtyPresetsMenu extends App {
         '<p>'+this.#tr('เลือกกลุ่มทักษะทางซ้ายเพื่อจัดการความเชี่ยวชาญ โดยไม่แก้ข้อมูลต้นฉบับ',
           'Select a family, then curate all Specialty names, including source items. Compendium rules are not modified.')+'</p></header>'+
       (this.#packErrors.length?'<div role="alert" class="brp-manager-note brp-manager-warning">'+this.#tr('อ่านคลังข้อมูลบางชุดไม่สำเร็จ','Some content packs could not be read')+this.#packErrors.map(e=>'<p>'+esc(e.pack)+': '+esc(e.message)+'</p>').join('')+'</div>':'')+
+      '<div><button type="button" data-approval-mode>'+this.#tr(this.#approvalMode?'กลับไปจัดการความเชี่ยวชาญ':'ทักษะที่อนุมัติตามแคมเปญ',this.#approvalMode?'Back to specialties':'Campaign-approved skills')+'</button></div>'+
       '<div class="brp-specialty-columns">'+
         '<aside class="brp-specialty-sidebar"><label class="brp-search-label">'+this.#tr('ค้นหากลุ่มทักษะ','Search Skill Families')+
         '<input type="search" data-family-search value="'+esc(this.#query)+'" placeholder="'+this.#tr('ค้นหาทักษะ…','Search…')+'"></label>'+
         '<nav class="brp-specialty-family-list">'+sidebar+'</nav></aside>'+
         '<section class="brp-specialty-detail">'+
-        (group?'<div class="brp-family-detail-heading"><h3>'+esc(current)+'</h3>'+
+        (this.#approvalMode?this.#approvalHTML():group?'<div class="brp-family-detail-heading"><h3>'+esc(current)+'</h3>'+
           '<span>'+group.activeCount+' '+this.#tr('ตัวเลือกที่เปิดให้ผู้เล่น','available choices')+'</span></div>'+
           (group.requiresContentMigration?'<p class="brp-manager-note brp-manager-warning">'+this.#tr(
             'คลังข้อมูลยังใช้ไอเทมแยกตามความเชี่ยวชาญ ต้องมีแม่แบบหนึ่งรายการต่อกลุ่มทักษะ',
@@ -170,6 +194,10 @@ export class SpecialtyPresetsMenu extends App {
   _replaceHTML(html,root){root.innerHTML=html;}
 
   #collect(){
+    if(this.#approvalMode){
+      if(this.#approvalGroup)this.#overlay.campaignApprovals[this.#approvalGroup]=[...this.element.querySelectorAll('[data-approval-key]:checked')].map(el=>el.dataset.approvalKey);
+      return;
+    }
     if(!this.#family)return;
     const group=this.#registry.find(f=>f.key===this.#family);
     if(!group)return;
@@ -243,6 +271,8 @@ export class SpecialtyPresetsMenu extends App {
   _onRender(context,options){
     super._onRender(context,options);
     const root=this.element;
+    root.querySelector('[data-approval-mode]')?.addEventListener('click',async()=>{try{this.#collect();this.#approvalMode=!this.#approvalMode;await this.render();}catch(error){ui.notifications.warn(error.message);}});
+    root.querySelector('[data-approval-group]')?.addEventListener('change',async e=>{try{this.#collect();this.#approvalGroup=e.target.value;await this.render();}catch(error){ui.notifications.warn(error.message);}});
     for(const el of root.querySelectorAll('[data-state]'))el.value=el.dataset.renderedState;
     const filter=root.querySelector('[data-family-search]');
     const applyFilter=()=>{
@@ -254,7 +284,7 @@ export class SpecialtyPresetsMenu extends App {
     filter?.addEventListener('compositionend',e=>{this.#query=e.target.value;applyFilter();});
     applyFilter();
     root.querySelectorAll('[data-family]').forEach(button=>button.addEventListener('click',async()=>{
-      try{this.#collect();this.#family=button.dataset.family;await this.render();}
+      try{this.#collect();this.#approvalMode=false;this.#family=button.dataset.family;await this.render();}
       catch(error){ui.notifications.warn(error.message);}
     }));
     root.querySelector('[data-add-specialty]')?.addEventListener('click',()=>{

@@ -1,4 +1,4 @@
-import {validSemanticRequirement,semanticMatches,semanticInstruction,readSemanticMetadata} from './semantic-specialty.mjs';
+import {validSemanticRequirement,semanticMatches,semanticInstruction,readSemanticMetadata,validCampaignApprovalKey,campaignGuard} from './semantic-specialty.mjs';
 /** External creation content. No book-specific template records in this engine. */
 import {canonicalSkillKey} from './skill-foundation.mjs';
 import {categoryLabel} from './reference-utils.mjs';
@@ -8,7 +8,7 @@ import {isSkillFamilyTemplate} from './skill-family-templates.mjs';
 import {specialtyNeedsReview,specialtyTemplateFor} from './specialty-registry.mjs';
 import {resolveOccupationTemplateGroups} from './occupation-choice-rules.mjs';
 import {getLibraryDocuments} from './library-provider.mjs';
-import {buildSpecialtyRegistry} from './specialty-registry.mjs';
+import {buildSpecialtyRegistry,readSpecialtyRegistry} from './specialty-registry.mjs';
 
 const text=v=>typeof v==='string'?v.trim():'';
 const list=v=>Array.isArray(v)?v:[];
@@ -21,13 +21,14 @@ const keyOk=v=>typeof v==='string'&&/^[^|]+\|[^|]*$/.test(v)&&v===v.trim();
 const positive=v=>Number.isSafeInteger(v)&&v>0;
 const plainSkill=s=>s?.type==='skill'&&!isSkillFamilyTemplate(s)&&!analyzeSkillFamily(s)?.supportsSpecialty;
 const concreteSkill=s=>s?.type==='skill'&&!isSkillFamilyTemplate(s)&&(!analyzeSkillFamily(s)?.supportsSpecialty||!specialtyNeedsReview(analyzeSkillFamily(s)?.enSpecialty));
-const guardKeys=new Set(['nonNative','excludeAlreadySelected','suggestions','suggested','languageRole','allowedCanonicalKeys','notBookDefault','mustBeNonNative']);
+const guardKeys=new Set(['nonNative','excludeAlreadySelected','suggestions','suggested','languageRole','allowedCanonicalKeys','notBookDefault','mustBeNonNative','campaignApprovalKey']);
 function validateGuard(g){
   requireValue(obj(g),'Invalid semantic guard');
   for(const k of Object.keys(g))requireValue(guardKeys.has(k),'Unsupported semantic guard: '+k);
   for(const k of ['nonNative','excludeAlreadySelected','mustBeNonNative'])if(k in g)requireValue(typeof g[k]==='boolean','Invalid guard: '+k);
   if('languageRole' in g)requireValue(g.languageRole==='programming_language','Unsupported language role');
   if('allowedCanonicalKeys' in g)requireValue(Array.isArray(g.allowedCanonicalKeys)&&g.allowedCanonicalKeys.every(keyOk),'Invalid approved keys');
+  if('campaignApprovalKey' in g)requireValue(validCampaignApprovalKey(g.campaignApprovalKey),'Invalid campaign approval key');
   if('notBookDefault' in g)requireValue(!!text(g.notBookDefault),'Invalid book default exclusion');
 }
 function validateGroups(groups){
@@ -55,7 +56,7 @@ function validatePersonality(t,custom=false){
     requireValue(s.requirement==='exact-skill'?(refOk(s.sourceUuid)||keyOk(s.canonicalSkillKey))&&(!s.canonicalSkillKey||keyOk(s.canonicalSkillKey)):
       !!text(s.familyKey)&&(s.requirement!=='exact-specialty'||!!text(s.specialtyKey)),'Invalid fixed skill requirement');
     if(s.requirement==='semantic-specialty')requireValue(validSemanticRequirement(s.semantic,specialtyFamilyKey(s.familyKey)),'Invalid fixed semantic requirement');
-    if(s.constraint!==undefined)validateGuard(s.constraint);
+    if(s.constraint!==undefined){validateGuard(s.constraint);requireValue(!s.constraint.campaignApprovalKey,'Campaign approvals belong to choice groups');}
   }
   requireValue(t.fixedSkills.length+t.choiceGroups.reduce((n,g)=>n+g.count,0)===t.requiredTotalSkills,'Personality slot count mismatch');
 }
@@ -236,7 +237,7 @@ export function choiceShortageDetails(group,candidateCount,registry,lang='en'){
   if(empty.length)parts.push((th?'ยังไม่มีความเชี่ยวชาญที่เปิดใช้ในกลุ่ม: ':'No enabled specialties in: ')+[...new Set(empty)].join(', '));
   return parts.join(' · ');
 }
-function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library=[],lang='en'}){
+function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library=[],lang='en',approvals={}}){
   const fixedChoices=new Map(),errors=[],rawGroups=[...groups];
   for(const [i,r] of fixed.entries()){
     const option=r.requirement==='exact-skill'?{kind:'skill',ref:r.sourceUuid,canonicalSkillKey:r.canonicalSkillKey}:
@@ -260,9 +261,14 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
     try{guardList.forEach(validateGuard);}catch(e){validGuards=false;errors.push(g.id+': '+e.message);}
     if(review?.unresolvedTokens?.length)errors.push(label+(lang==='th'?' — ยังไม่พบข้อมูลอ้างอิง: ':' — unresolved source: ')+review.unresolvedTokens.map(t=>t.token).join(', '));
 
+    const effectiveGuards=guardList.map(guard=>campaignGuard(guard,approvals));
     const candidates=new Map(),unavailableExactOptions=[];
     for(const o of list(g.options)){
-      const available=validGuards?optionCandidates(o,catalog,registry,library,lang,guardList[0]).filter(c=>optionCandidates(o,catalog,registry,library,lang,guardList[1]).some(x=>x.key===c.key)):[];
+      let available=validGuards?optionCandidates(o,catalog,registry,library,lang,effectiveGuards[0]):[];
+      if(validGuards&&Object.keys(effectiveGuards[1]).length){
+        const permitted=new Set(optionCandidates(o,catalog,registry,library,lang,effectiveGuards[1]).map(c=>c.key));
+        available=available.filter(c=>permitted.has(c.key));
+      }
       if(['specialty','semantic-specialty'].includes(o.kind)&&!available.length){
         const family=registry.find(f=>f.key===specialtyFamilyKey(o.familyKey));
         const familyLabel=(lang==='th'?family?.thFamily:family?.enFamily)||o.familyKey;
@@ -270,6 +276,7 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
       }
       for(const c of available)if(!fixedChoices.has(c.key))candidates.set(c.key,c);
     }
+    if(candidates.size<g.count&&guardList.some(g=>g.campaignApprovalKey))errors.push(label+(lang==='th'?' — GM: กำหนดรายการทักษะที่อนุมัติสำหรับกลุ่มนี้ในจัดการความเชี่ยวชาญ':' — GM: configure the approved skills for this group in Specialty Management'));
     if(candidates.size<g.count&&guards.languageRole==='programming_language')errors.push(label+' — '+semanticInstruction({type:'programming-language'},lang==='th'?'ภาษา':'Language',lang));
     if(candidates.size<g.count)errors.push(lang==='th'?label+' — มีตัวเลือกที่ใช้ได้ '+candidates.size+'/'+g.count:label+' — insufficient eligible skills ('+candidates.size+'/'+g.count+')');
     return {...g,label,unavailableExactOptions,shortageDetails:[choiceShortageDetails(g,candidates.size,registry,lang),...(candidates.size<g.count?unavailableExactOptions.filter(o=>o.semantic).map(o=>o.label):[])].filter(Boolean).join(' · '),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
@@ -280,11 +287,11 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
   if(!capacity.possible&&planned.every(g=>g.candidates.length>=g.count))errors.push(lang==='th'?'กลุ่มตัวเลือกไม่สามารถเลือกให้ครบโดยไม่ซ้ำกัน ('+capacity.matched+'/'+capacity.required+')':'Choice groups cannot be satisfied without duplicate skills ('+capacity.matched+'/'+capacity.required+')');
   return plan;
 }
-export function personalityPlan(template,catalog,registry,library,lang='en'){
+export function personalityPlan(template,catalog,registry,library,lang='en',approvals={}){
   if(!template)return {fixed:[],groups:[],lang,errors:[lang==='th'?'ไม่พบข้อมูลรูปแบบบุคลิก':'External Personality template unavailable']};
-  return {...buildPlan({fixed:template.fixedSkills,groups:template.choiceGroups,catalog,registry,library,lang}),requiredTotal:template.requiredTotalSkills,bonus:template.bonus.value};
+  return {...buildPlan({fixed:template.fixedSkills,groups:template.choiceGroups,catalog,registry,library,lang,approvals}),requiredTotal:template.requiredTotalSkills,bonus:template.bonus.value};
 }
-export function occupationPlan(prof,catalog,registry,library,lang='en'){
+export function occupationPlan(prof,catalog,registry,library,lang='en',approvals={}){
   const refs=list(prof?.skillRefs);
   const fixed=refs.filter(ref=>!library.some(s=>isSkillFamilyTemplate(s)&&linkedOccupationSkill(s,ref))).map(ref=>({requirement:'exact-skill',sourceUuid:ref}));
   const groups=resolveOccupationTemplateGroups(prof,library);
@@ -292,7 +299,7 @@ export function occupationPlan(prof,catalog,registry,library,lang='en'){
   const merged=groups.map(g=>({...g,semanticGuards:raw.find(r=>r.id===g.id)?.semanticGuards,options:raw.find(r=>r.id===g.id)?.options||g.options}));
   // A malformed or empty raw group must not disappear as though complete.
   for(const g of raw)if(!merged.some(x=>x.id===g.id))merged.push(g);
-  const plan=buildPlan({fixed,groups:merged,reviews:list(prof?.externalReview?.requirements),catalog,registry,library,lang});
+  const plan=buildPlan({fixed,groups:merged,reviews:list(prof?.externalReview?.requirements),catalog,registry,library,lang,approvals});
   if(prof?.externalDataError)plan.errors.push(prof.externalDataError);
   return plan;
 }
@@ -347,19 +354,59 @@ export function choicePlanCapacity(plan){
   for(let i=0;i<slots.length;i++)if(assign(i,new Set()))matched++;
   return {possible:matched===slots.length,matched,required:slots.length};
 }
+/** GM editor preview: drop only campaign approval constraints in a read-only copy.
+ * The runtime plan and validation never use this preview to authorize a choice. */
+export function campaignApprovalGroups(data,catalog,registry,library,lang='en'){
+  const out=new Map();
+  const strip=g=>{if(!g)return g;const {campaignApprovalKey,...rest}=g;return rest;};
+  const record=(groups,reviews,plan,title)=>{
+    for(const g of groups){
+      const review=reviews.find(r=>r.groupId===g.id);
+      const ids=new Set([g.semanticGuards?.campaignApprovalKey,review?.semanticGuards?.campaignApprovalKey].filter(validCampaignApprovalKey));
+      const p=plan.groups.find(x=>x.id===g.id);
+      for(const id of ids){
+        const old=out.get(id)||{id,labels:[],candidates:new Map()};
+        old.labels.push(title+' — '+(p?.label||g.id));
+        for(const c of p?.candidates||[]){
+          const [family,specialty]=c.key.split('|');
+          const option=registry.find(f=>f.key===family)?.options?.find(o=>o.key===specialty);
+          const approvalKey=option?.bookKey?family+'|'+option.bookKey:c.key;
+          old.candidates.set(approvalKey,{key:approvalKey,label:c.label});
+        }
+        out.set(id,old);
+      }
+    }
+  };
+  for(const p of list(data?.occupations?.items)){
+    const raw=occupationWithExternalPatch({},p),groups=list(raw.skillChoiceGroups),reviews=list(raw.externalReview?.requirements);
+    if(!groups.some(g=>g.semanticGuards?.campaignApprovalKey)&&!reviews.some(r=>r.semanticGuards?.campaignApprovalKey))continue;
+    const copy={...raw,skillChoiceGroups:groups.map(g=>({...g,semanticGuards:strip(g.semanticGuards)})),externalReview:{...raw.externalReview,requirements:reviews.map(r=>({...r,semanticGuards:strip(r.semanticGuards)}))}};
+    const source=library.find(d=>d.type==='occupation'&&externalOccupationSourceId(d)===p._id);
+    const title=(lang==='th'?source?.system?.nameTh:source?.system?.nameEn)||source?.name||p.stableKey||p._id;
+    record(groups,reviews,occupationPlan(copy,catalog,registry,library,lang),title);
+  }
+  for(const t of creationPersonalityTemplates(data)){
+    const groups=list(t.choiceGroups);
+    if(!groups.some(g=>g.semanticGuards?.campaignApprovalKey))continue;
+    const copy={...t,choiceGroups:groups.map(g=>({...g,semanticGuards:strip(g.semanticGuards)}))};
+    record(groups,[],personalityPlan(copy,catalog,registry,library,lang),lang==='th'?t.nameTh:t.nameEn);
+  }
+  return [...out.values()].map(g=>({...g,candidates:[...g.candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))}));
+}
 export async function auditCreationTemplates(gameApi=globalThis.game){
   const data=await loadCreationTemplateData(gameApi);
   const library=await getLibraryDocuments({types:['skill','occupation']});
   const catalog=library.filter(i=>i.type==='skill');
   const registry=buildSpecialtyRegistry(catalog,gameApi.settings.get('brp-uge','specialtyRegistry'),gameApi.settings.get('brp-uge','specialtyPresets'));
   const lang=gameApi.settings.get('brp-uge','uiLanguage')||'en';
+  const approvals=readSpecialtyRegistry(gameApi.settings.get('brp-uge','specialtyRegistry')).campaignApprovals;
   const inspect=(id,plan)=>{const capacity=choicePlanCapacity(plan);return {id,ready:plan.errors.length===0&&capacity.possible,errors:plan.errors,
     fixed:plan.fixed.length,groups:plan.groups.length,matched:capacity.matched,required:capacity.required,
     unavailableExactOptions:plan.groups.flatMap(g=>list(g.unavailableExactOptions).map(o=>({...o,groupId:g.id,groupCount:g.count,available:g.candidates.length,shortage:g.candidates.length<g.count}))) };};
-  const personalities=creationPersonalityTemplates(data).map(t=>inspect(t.typeKey,personalityPlan(t,catalog,registry,catalog,lang)));
+  const personalities=creationPersonalityTemplates(data).map(t=>inspect(t.typeKey,personalityPlan(t,catalog,registry,catalog,lang,approvals)));
   const occupations=list(data.occupations?.items).map(p=>{
     const source=library.find(i=>i.type==='occupation'&&externalOccupationPatch(i,data)?._id===p._id);
-    const plan=occupationPlan(occupationWithExternalPatch({},p),catalog,registry,catalog,lang);
+    const plan=occupationPlan(occupationWithExternalPatch({},p),catalog,registry,catalog,lang,approvals);
     if(!source)plan.errors.push('Occupation source unavailable: '+p._id);
     return inspect(p.stableKey||p._id,plan);
   });

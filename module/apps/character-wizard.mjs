@@ -1,3 +1,4 @@
+import {readSpecialtyRegistry as readCreationRegistry} from '../specialty-registry.mjs';
 import {calculateSkillBase} from '../rules/skill-mechanics.mjs';
 import { applyBRPControlLanguage } from "../ui-controls.mjs";
 import { BRP_CONFIG, getCampaignRules, isPowerSystemEnabled } from "../config.mjs";
@@ -200,6 +201,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const snapshot=JSON.stringify([raw,legacy]);
     if(snapshot===this.specialtyRegistrySnapshot)return false;
     this.specialtyRegistry=buildSpecialtyRegistry(this.librarySkillDocs,raw,legacy);
+    this.campaignApprovals=readCreationRegistry(raw).campaignApprovals;
     this.specialtyRegistrySnapshot=snapshot;
     return true;
   }
@@ -315,7 +317,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   #templateData(){return this.templateDataCache||{};}
   #personalityLocked(){return Boolean(this.targetActor?.getFlag?.('brp-uge','creationCompleted'));}
   #personalityTemplate(){return creationPersonalityTemplates(this.#templateData()).find(t=>t.typeKey===this.wizardData.personalityType);}
-  #personalityPlan(lang=game.settings.get('brp-uge','uiLanguage')||'en'){return personalityPlan(this.#personalityTemplate(),this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);}
+  #personalityPlan(lang=game.settings.get('brp-uge','uiLanguage')||'en'){return personalityPlan(this.#personalityTemplate(),this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang,this.campaignApprovals);}
   #personalityBonus(skill){
     if(this.#personalityLocked()||!this.wizardData.touchedPersonality){
       const existing=[...(this.targetActor?.items??[])].find(i=>i.type==='skill'&&sameSkill(i,skill));
@@ -336,7 +338,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     this.wizardData.personalitySkillKeys=validateChoicePlan(this.#personalityPlan(),this.wizardData.personalitySelections,this.skillCatalog).keys;
   }
   #occupationPlan(prof=this.#getProfession(),lang=game.settings.get('brp-uge','uiLanguage')||'en'){
-    return occupationPlan(prof,this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang);
+    return occupationPlan(prof,this.skillCatalog,this.specialtyRegistry,this.librarySkillDocs,lang,this.campaignApprovals);
   }
   #isOccupationalSkill(skillEntry,prof,plan=this.#occupationPlan(prof)) {
     if(!skillEntry||isSkillFamilyTemplate(skillEntry))return false;
