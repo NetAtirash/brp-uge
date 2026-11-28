@@ -1,3 +1,4 @@
+import {canGainExperience} from '../rules/skill-mechanics.mjs';
 import { powerChance, getDisplayItemName, getNameLanguage, escapeForChat } from "../character-tools.mjs";
 import { BRPRolls } from "../rolls/brp-rolls.mjs";
 
@@ -102,7 +103,7 @@ export const BRP_MACROS = {
   experienceImprovement: async (actor) => {
     const targetActor = actor ?? canvas.tokens.controlled[0]?.actor ?? game.user.character;
     if (!targetActor) return ui.notifications.warn("กรุณาเลือกโทเคนก่อน");
-    const checked = targetActor.items.filter((i) => ["skill", "power"].includes(i.type) && i.system.checked);
+    const checked = targetActor.items.filter((i) => ["skill", "power"].includes(i.type) && i.system.checked && canGainExperience(i));
     if (!checked.length) return ui.notifications.info("ยังไม่มีทักษะหรือพลังที่ทำเครื่องหมายพัฒนา");
     const confirm = await BRPRolls.confirmRoll({
       title: `EXP / Improvement (${checked.length} checks)`,

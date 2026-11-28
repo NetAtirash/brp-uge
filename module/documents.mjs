@@ -1,3 +1,4 @@
+import {calculateSkillBase,canRecordAdvancement} from './rules/skill-mechanics.mjs';
 import {findActorSkill} from "./reference-utils.mjs";
 import { BRP_CONFIG, getCampaignRules } from "./config.mjs";
 import { compareBRPTurns, brpActionRank } from "./combat/combat-flow-utils.mjs";
@@ -23,6 +24,7 @@ export class BRPActor extends Actor {
     if (!item || !["skill", "power"].includes(item.type)) throw new Error("ไม่พบทักษะหรือพลังที่ต้องการพัฒนา");
     const log = foundry.utils.deepClone(this.system.advancementLog ?? []);
     const entry = id ? log.find(x => x.id === id) : null;
+    if(!canRecordAdvancement(item,method,globalThis.game?.user?.isGM))throw new Error(getNameLanguage()==='en'?'Status changes require a GM reputation adjustment':'สถานะทางสังคมปรับได้โดย GM ตามชื่อเสียงเท่านั้น');
     if (id && !entry) throw new Error("ไม่พบรายการบันทึกการพัฒนา");
     const patch = {
       id: id || foundry.utils.randomID(), itemId, itemName: item.name, itemType: item.type,
@@ -373,15 +375,7 @@ export class BRPItem extends Item {
   }
 
   computeDynamicBase() {
-    const formula = this.system.baseFormula;
-    const c = this.actor?.system?.derived?.effectiveCharacteristics;
-    if (!formula || !c) return Number(this.system.base ?? 0);
-    const rules = getCampaignRules();
-    if (formula === "INT*5") return Math.max(Number(c.int), Number(rules.useEdu ? c.edu : 0)) * 5;
-    if (formula === "DEX*2") return Number(c.dex) * 2;
-    if (formula === "INT+POW") return Number(c.int) + Number(c.pow);
-    if (formula === "DEX*4") return Number(c.dex) * 4;
-    return Number(this.system.base ?? 0);
+    return calculateSkillBase(this,this.actor?.system?.derived?.effectiveCharacteristics,getCampaignRules(),this.actor?.items??[]);
   }
 }
 

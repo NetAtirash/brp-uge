@@ -1,3 +1,4 @@
+import {calculateSkillBase} from '../rules/skill-mechanics.mjs';
 import { applyBRPControlLanguage } from "../ui-controls.mjs";
 import { BRP_CONFIG, getCampaignRules, isPowerSystemEnabled } from "../config.mjs";
 import { getLibraryDocuments, documentToEmbeddedItem } from "../library-provider.mjs";
@@ -401,12 +402,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
   #computeDynamicBase(skillEntry) {
     const rules = getCampaignRules();
     const c = this.#getCreationCharacteristics(rules);
-    const f = skillEntry.system?.baseFormula || "";
-    if (f === "INT*5") return (rules.useEdu ? c.edu : c.int) * 5;
-    if (f === "DEX*2") return c.dex * 2;
-    if (f === "INT+POW") return c.int + c.pow;
-    if (f === "DEX*4") return c.dex * 4;
-    return Number(skillEntry.system?.base ?? 5);
+    return calculateSkillBase(skillEntry,c,rules,this.skillCatalog);
   }
 
   async _prepareContext(options) {

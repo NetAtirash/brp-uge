@@ -6,7 +6,7 @@
  */
 export function wizardSpecialtyFamilies(registry=[],language='th') {
   const isTh=language==='th';
-  return (registry||[]).map(group=>{
+  return (registry||[]).filter(group=>!group.fingerprintConflict).map(group=>{
     const specialties=(group.options||[]).filter(item=>!item.hidden).map(item=>({
       key:item.key,label:isTh?(item.th||item.en):item.en
     }));

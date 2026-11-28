@@ -86,7 +86,7 @@ export function readSpecialtyPresets(value) {
   return result;
 }
 
-export function composeSpecialtyItem(template, family, {en,th,base=null,baseFormula='',ruleNote=''}={}) {
+export function composeSpecialtyItem(template, family, {en,th,base=null,baseFormula='',ruleNote='',bookKey=''}={}) {
   const enSpecialty=text(en),thSpecialty=text(th||enSpecialty);
   if(!enSpecialty)throw new Error('The English specialty reference is required');
   if(/[()<>\r\n]/u.test(enSpecialty)||/[()<>\r\n]/u.test(thSpecialty))throw new Error('Invalid specialty name');
@@ -117,6 +117,8 @@ export function composeSpecialtyItem(template, family, {en,th,base=null,baseForm
   for(const key of ['sourceUuid','liveDocumentUuid','originalSourceUuid'])delete data.flags['brp-uge'][key];
   data.flags['brp-uge'].specialtyGenerated=true;
   data.flags['brp-uge'].specialtyTemplateUuid=template.uuid;
+  if(bookKey)data.flags['brp-uge'].specialtyBookKey=bookKey;
+  else delete data.flags['brp-uge'].specialtyBookKey;
   // Avoid publishing a copied source's specialized title as the new specialty's title.
   for(const [field,title] of [['descriptionEn',enName],['descriptionTh',thName]]){
     const html=String(data.system[field]??'');

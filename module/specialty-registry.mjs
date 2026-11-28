@@ -168,16 +168,18 @@ export function buildSpecialtyRegistry(documents=[],raw='{}',oldPresets='{}'){
   return result.sort((a,b)=>a.enFamily.localeCompare(b.enFamily));
 }
 export function eligibleSpecialtyOptions(registry,familyKey){
-  return (registry.find(g=>g.key===keyOf(familyKey))?.options||[]).filter(o=>!o.hidden);
+  const group=registry.find(g=>g.key===keyOf(familyKey));
+  return group?.fingerprintConflict?[]:(group?.options||[]).filter(o=>!o.hidden);
 }
 export function findSpecialtyCandidate(registry,identity){
   const [family,...parts]=str(identity).split('|');
   const group=registry.find(g=>g.key===keyOf(family));
-  const option=group?.options.find(o=>o.key===keyOf(parts.join('|'))&&!o.hidden);
+  const option=group?.fingerprintConflict?null:group?.options.find(o=>o.key===keyOf(parts.join('|'))&&!o.hidden);
   return group&&option?{family:group,option}:null;
 }
 export function specialtyTemplateFor(group,option,docs=[]){
   const sources=new Map(docs.map(doc=>[doc.uuid,doc]));
+  if(group?.fingerprintConflict)return null;
   const canonical=group?.canonicalTemplate;
   if(canonical && sources.has(canonical.uuid))return sources.get(canonical.uuid);
   // Transitional legacy options require an explicit, approved GM choice.

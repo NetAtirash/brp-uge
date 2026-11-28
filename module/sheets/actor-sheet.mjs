@@ -1,3 +1,4 @@
+import {canGainExperience,canRecordAdvancement} from '../rules/skill-mechanics.mjs';
 import { applyBRPControlLanguage } from "../ui-controls.mjs";
 import { buildShareEntryCard } from "../chat/share-entry.mjs";
 import { resolveWealthItem, wealthDisplayFromItem } from "../wealth-utils.mjs";
@@ -328,7 +329,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       englishName: item.system?.nameEn || item.name,
       showEnglishName: uiLang==='th' && !String(item.system?.flavorNameTh ?? '').trim() && !!(item.system?.nameEn || item.name) && getLocalizedName(item,'th') !== (item.system?.nameEn||item.name),
       resolvedMode: item.type === "power" ? powerMode(item.system) : "",
-      canCheckImprovement: item.type === "power" ? powerMode(item.system) === "skill" : false,
+      canCheckImprovement: item.type === "power" ? powerMode(item.system) === "skill" : item.type === "skill" && canGainExperience(item),
       previewChance: item.type === "power" ? powerChance(item, this.document) : 0
     });
 
@@ -336,7 +337,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       if (item.type === "skill") {
         const cat = item.system.category ?? "communication";
         if (skillsMap[cat]) skillsMap[cat].items.push(presentItem(item));
-        if (item.system.checked) checkedCount++;
+        if (item.system.checked && canGainExperience(item)) checkedCount++;
       } else if (item.type === "weapon" || item.type === "shield") {
         context.weapons.push(presentItem(item));
       } else if (item.type === "armor") {
@@ -1094,7 +1095,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     event.preventDefault();
     const itemId = target.closest("[data-item-id]")?.dataset.itemId;
     const item = this.document.items.get(itemId);
-    if (item && ["skill", "power"].includes(item.type)) await item.update({ "system.checked": !item.system.checked });
+    if (item && ["skill", "power"].includes(item.type) && canGainExperience(item)) await item.update({ "system.checked": !item.system.checked });
   }
 
   static async #onToggleEquipped(event, target) {
@@ -1223,7 +1224,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
   /** Add or revise entries without writing into the skill's manual training value. */
   async #openAdvancementDialog(id = null, defaultItemId = null) {
     const existing = (this.document.system.advancementLog ?? []).find(row => row.id === id);
-    const choices = this.document.items.filter(item => item.type === "skill" || item.type === "power");
+    const choices = this.document.items.filter(item => (item.type === "skill" || item.type === "power")&&canRecordAdvancement(item,existing?.method||"manual",game.user?.isGM));
     if (!choices.length) return ui.notifications.warn("กรุณาเพิ่มทักษะหรือพลังก่อนบันทึกการพัฒนา");
     const opts = choices.map(item => `<option value="${escapeForChat(item.id)}" ${item.id === (existing?.itemId || defaultItemId) ? "selected" : ""}>${escapeForChat(getDisplayItemName(item, getNameLanguage()))} (${item.type})</option>`).join("");
     await foundry.applications.api.DialogV2.wait({

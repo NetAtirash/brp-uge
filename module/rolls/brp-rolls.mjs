@@ -1,3 +1,4 @@
+import {canGainExperience} from '../rules/skill-mechanics.mjs';
 import { BRP_CONFIG } from "../config.mjs";
 import { escapeForChat, getDisplayItemName } from "../character-tools.mjs";
 import { majorWoundOutcome, majorWoundPatch } from "../rules/major-wounds.mjs";
@@ -151,7 +152,7 @@ export class BRPRolls {
 
     if (res.isSuccess && actor && skillId) {
       const item = actor.items.get(skillId);
-      if (item && (item.type === "skill" || item.type === "power" || item.type === "passion") && !item.system.checked) {
+      if (item && (item.type === "skill" || item.type === "power" || item.type === "passion") && !item.system.checked && canGainExperience(item)) {
         await item.update({ "system.checked": true });
       }
     }
