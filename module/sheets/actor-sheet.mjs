@@ -643,17 +643,17 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       window: { title: `${th ? "บันทึกบาดแผลใหม่" : "New wound"} — ${this.document.name}` },
       content: `
         <form class="brp-macro-form brp-wound-entry">
-          <div class="form-group"><label>${th ? "อาการบาดเจ็บ" : "Injury"}</label><span class="brp-wound-picker"><input type="text" name="title" list="brp-wound-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-wound-presets">${game.settings.get("brp-uge", "woundSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></div>
+          <div class="form-group"><label>${th ? "อาการบาดเจ็บ" : "Injury"}</label><input type="text" name="title" list="brp-wound-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-wound-presets">${game.settings.get("brp-uge", "woundSuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
           <div class="form-group">
             <label>${th ? "ความรุนแรง" : "Severity"}</label>
-            <span class="brp-wound-picker"><select name="severity">
+            <select name="severity">
               <option value="minor">${th ? "บาดแผลทั่วไป" : "Minor"}</option>
               <option value="major">${th ? "บาดแผลฉกรรจ์" : "Major wound"}</option>
               <option value="bleeding">${th ? "เลือดไหลต่อเนื่อง" : "Bleeding"}</option>
-            </select><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span>
+            </select>
           </div>
           <div class="form-group"><label>${th ? "HP ที่เสีย" : "HP lost"}</label><input type="number" name="hpLost" value="3" min="0" /></div>
-          <div class="form-group"><label>${th ? "ตำแหน่งร่างกาย" : "Body location"}</label><span class="brp-wound-picker"><input type="text" name="location" list="brp-body-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-body-presets">${game.settings.get("brp-uge", "bodySuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></div>
+          <div class="form-group"><label>${th ? "ตำแหน่งร่างกาย" : "Body location"}</label><input type="text" name="location" list="brp-body-presets" value="" placeholder="${th ? "เลือกหรือพิมพ์ใหม่" : "Select or enter"}" /><datalist id="brp-body-presets">${game.settings.get("brp-uge", "bodySuggestions").split("|").map(s=>s.trim()).filter(Boolean).map(s=>`<option value="${escapeForChat(s)}"></option>`).join("")}</datalist></div>
           <div class="form-group"><label>${th ? "หมายเหตุ" : "Notes"}</label><input type="text" name="notes" value="" /></div>
         </form>
       `,

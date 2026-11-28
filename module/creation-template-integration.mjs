@@ -212,6 +212,26 @@ export function creationGroupLabel(group,index,registry,library,lang='en'){
   if(sources.length&&categories.length===1&&categories[0])return categoryLabel(categories[0],lang);
   return lang==='th'?'กลุ่มตัวเลือก '+(index+1):'Choice group '+(index+1);
 }
+/** A shortage in a counted group is not permission to substitute a different skill.
+ * Report unavailable exact keys separately from campaign families lacking choices. */
+export function choiceShortageDetails(group,candidateCount,registry,lang='en'){
+  if(candidateCount>=group.count)return '';
+  const options=list(group.options),th=lang==='th';
+  const missing=[],empty=[];
+  for(const o of options){
+    if(!['family','specialty'].includes(o.kind))continue;
+    const f=registry.find(r=>r.key===specialtyFamilyKey(o.familyKey));
+    const name=(th?f?.thFamily:f?.enFamily)||o.familyKey;
+    if(o.kind==='specialty'){
+      const k=specialtyFamilyKey(o.specialtyKey);
+      if(!f?.options?.some(v=>!v.hidden&&(v.key===k||v.bookKey===k)))missing.push(name+' ('+o.specialtyKey+')');
+    }else if(!f?.options?.some(v=>!v.hidden))empty.push(name);
+  }
+  const parts=[];
+  if(missing.length)parts.push((th?'ไม่พบความเชี่ยวชาญที่ระบุในรายการที่เปิดใช้: ':'Specified specialties not enabled or available: ')+[...new Set(missing)].join(', '));
+  if(empty.length)parts.push((th?'ยังไม่มีความเชี่ยวชาญที่เปิดใช้ในกลุ่ม: ':'No enabled specialties in: ')+[...new Set(empty)].join(', '));
+  return parts.join(' · ');
+}
 function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library=[],lang='en'}){
   const fixedChoices=new Map(),errors=[],rawGroups=[...groups];
   for(const [i,r] of fixed.entries()){
@@ -239,7 +259,7 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
       if(!fixedChoices.has(c.key))candidates.set(c.key,c);
     }
     if(candidates.size<g.count)errors.push(lang==='th'?label+' — มีตัวเลือกที่ใช้ได้ '+candidates.size+'/'+g.count:label+' — insufficient eligible skills ('+candidates.size+'/'+g.count+')');
-    return {...g,label,candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
+    return {...g,label,shortageDetails:choiceShortageDetails(g,candidates.size,registry,lang),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
   });
   if(!unique(planned.map(g=>g.id)))errors.push(lang==='th'?'รหัสกลุ่มตัวเลือกซ้ำ':'Duplicate choice group IDs');
   const plan={fixed:[...fixedChoices.values()],groups:planned,errors,lang};

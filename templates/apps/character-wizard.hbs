@@ -171,9 +171,11 @@
                 </div>
               {{/if}}
               {{#each personalityIssues as |issue|}}<p role="alert">{{issue}}</p>{{/each}}
+              {{#if personalityHasShortage}}<button type="button" class="brp-btn" data-action="refreshWizardSpecialties">{{#if isTh}}โหลดตัวเลือกความเชี่ยวชาญใหม่{{else}}Reload specialty choices{{/if}}</button>{{/if}}
               {{#each personalityGroups as |g|}}
                 <fieldset class="brp-wiz-choice-group">
                   <legend>{{g.label}} · {{#if @root.isTh}}เลือก{{else}}Choose{{/if}} {{g.count}} ({{g.selectedCount}}/{{g.count}})</legend>
+                  {{#if g.shortageDetails}}<p role="status">{{g.shortageDetails}}</p>{{/if}}
                   <div class="brp-wiz-specialty-options">
                     {{#each g.candidates as |c|}}
                       <label class="brp-wiz-specialty-option"><input type="checkbox" data-personality-skill-checkbox data-group-id="{{g.id}}" data-key="{{c.key}}" {{#if c.selected}}checked{{/if}} {{#if c.disabled}}disabled{{/if}}> <span>{{c.label}}</span></label>
@@ -245,10 +247,12 @@
           </div>
         {{/if}}
         {{#each occupationIntegrationIssues as |issue|}}<p role="alert">{{issue}}</p>{{/each}}
+        {{#if occupationHasShortage}}<button type="button" class="brp-btn" data-action="refreshWizardSpecialties">{{#if isTh}}โหลดตัวเลือกความเชี่ยวชาญใหม่{{else}}Reload specialty choices{{/if}}</button>{{/if}}
         {{#if professionMissingSkillCount}}<p role="alert">{{#if isTh}}ทักษะที่ไม่พร้อม{{else}}Unavailable skills{{/if}}: {{professionMissingSkillCount}}</p>{{/if}}
         {{#each professionChoiceGroups as |g|}}
           <fieldset class="brp-wiz-choice-group">
             <legend>{{g.label}} · {{#if @root.isTh}}เลือก{{else}}Choose{{/if}} {{g.count}} ({{g.selectedCount}}/{{g.count}})</legend>
+                  {{#if g.shortageDetails}}<p role="status">{{g.shortageDetails}}</p>{{/if}}
             <div class="brp-wiz-specialty-options">
               {{#each g.candidates as |c|}}
                 <label class="brp-wiz-specialty-option">

@@ -512,6 +512,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       context.personalityFixed=plan.fixed;
       context.personalityGroups=choiceGroupView(plan,this.wizardData.personalitySelections);
       context.personalityIssues=plan.errors;
+      context.personalityHasShortage=plan.groups.some(g=>g.candidates.length<g.count);
       context.personalityValid=status.valid;
       context.personalityCount=status.keys.length;
     }
@@ -615,6 +616,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     const choiceGroups=occPlan.groups;
     context.professionChoiceGroups=choiceGroupView(occPlan,this.wizardData.choiceSelections);
     context.occupationIntegrationIssues=occPlan.errors;
+    context.occupationHasShortage=occPlan.groups.some(g=>g.candidates.length<g.count);
     const choiceStatus=this.#occupationChoiceStatus(prof);
     context.occupationChoicesValid=choiceStatus.valid;
     const occupationText=this.#plainRuleText((prof.description||'')+' '+(prof.descriptionTh||''));
@@ -887,6 +889,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   static async #onNextStep(event) {
     event.preventDefault();
+    this.#refreshSpecialtyRegistry();
     if(this.step===3&&!this.#personalityLocked()&&this.wizardData.personalityType!=='none'&&!validateChoicePlan(this.#personalityPlan(),this.wizardData.personalitySelections,this.skillCatalog).valid){this.render();return;}
     if(this.step===4&&this.occupationStage<3)return this.#setOccupationStage(this.occupationStage+1);
     this.step = Math.min(6, this.step + 1);

@@ -38,8 +38,3 @@ html[data-brp-theme] .brp-uge .brp-wound-state{font-size:10px;font-weight:700;bo
 html[data-brp-theme="light"] .brp-uge .brp-wound-state.treated{background:#e0ebd9;color:#284b2c!important;border-color:#587953}
 html[data-brp-theme="dark"] .brp-uge .brp-wound-state.treated{background:#20372a;color:#cbe9ce!important;border-color:#799e81}
 html[data-brp-theme] .brp-uge .brp-wound-state.resolved{background:var(--brp-highlight);color:var(--brp-muted)!important}
-.brp-wound-entry .brp-wound-picker{position:relative;display:block;min-width:0;width:100%}
-.brp-wound-entry .brp-wound-picker :is(input,select){width:100%;padding-inline-end:25px!important}
-.brp-macro-form.brp-wound-entry .brp-wound-picker select{appearance:none!important;-webkit-appearance:none!important;background-image:none!important}
-.brp-wound-entry .brp-wound-picker input::-webkit-calendar-picker-indicator{opacity:0}
-.brp-wound-entry .brp-wound-picker>i{position:absolute;inset-inline-end:9px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:11px;color:inherit}
