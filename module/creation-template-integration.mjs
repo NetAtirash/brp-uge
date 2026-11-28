@@ -1,4 +1,4 @@
-import {validSemanticRequirement,semanticMatches,semanticInstruction,readSemanticMetadata,validCampaignApprovalKey,campaignGuard} from './semantic-specialty.mjs';
+import {validSemanticRequirement,semanticMatches,semanticInstruction,readSemanticMetadata,validCampaignApprovalKey,campaignGuard,matchesCanonicalAllowlists} from './semantic-specialty.mjs';
 /** External creation content. No book-specific template records in this engine. */
 import {canonicalSkillKey} from './skill-foundation.mjs';
 import {categoryLabel} from './reference-utils.mjs';
@@ -173,19 +173,22 @@ function exactSkill(catalog,ref,key){
   return catalog.find(s=>concreteSkill(s)&&(!ref||linkedOccupationSkill(s,ref))&&(!key||canonicalSkillKey(s)===key));
 }
 function optionCandidates(option,catalog,registry,library,lang,guard={}){
+  if(!['skill','family','specialty','semantic-specialty'].includes(option?.kind))return [];
   const label=s=>lang==='th'?(s.system?.nameTh||s.system?.nameEn||s.name):(s.system?.nameEn||s.name);
   if(option.kind==='skill'){
     const s=exactSkill(catalog,option.ref,option.canonicalSkillKey);
     if(!s)return [];
     const key=canonicalSkillKey(s);
-    const info=analyzeSkillFamily(s);
+    const info=analyzeSkillFamily(s),identities=[key];
     if(info?.supportsSpecialty){
       const family=registry.find(f=>f.key===info.key);
       const approved=family?.options?.find(o=>!o.hidden&&o.key===specialtyFamilyKey(info.enSpecialty));
       if(!approved||family.fingerprintConflict||!specialtyTemplateFor(family,approved,library))return [];
+      if(approved.bookKey)identities.push(family.key+'|'+approved.bookKey);
     }
     if(guard.nonNative||guard.mustBeNonNative||guard.notBookDefault)return [];
-    if((guard.languageRole||Array.isArray(guard.allowedCanonicalKeys))&&!list(guard.allowedCanonicalKeys).includes(key))return [];
+    if(guard.languageRole)return [];
+    if(!matchesCanonicalAllowlists(guard,identities))return [];
     return [{key,label:label(s)}];
   }
   const family=registry.find(f=>f.key===specialtyFamilyKey(option.familyKey));
@@ -198,7 +201,7 @@ function optionCandidates(option,catalog,registry,library,lang,guard={}){
     if(guard.notBookDefault&&(o.bookKey===guard.notBookDefault||o.key===guard.notBookDefault))return false;
     const identityKeys=[family.key+'|'+o.key,...(o.bookKey?[family.key+'|'+o.bookKey]:[])];
     if(guard.languageRole==='programming_language'&&(family.key!=='language'||o.key==='own'||o.bookKey==='own'||(!Array.isArray(guard.allowedCanonicalKeys)&&readSemanticMetadata(o.semantic)?.type!=='programming-language')))return false;
-    if(Array.isArray(guard.allowedCanonicalKeys)&&!guard.allowedCanonicalKeys.some(k=>identityKeys.includes(k)))return false;
+    if(!matchesCanonicalAllowlists(guard,identityKeys))return false;
     return true;
   }).map(o=>({key:family.key+'|'+o.key,label:(lang==='th'?family.thFamily:family.enFamily)+' ('+(lang==='th'?(o.th||o.en):o.en)+')'}));
 }

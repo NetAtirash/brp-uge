@@ -46,5 +46,9 @@ export function campaignGuard(guard,approvals){
   if(!guard.campaignApprovalKey)return guard;
   const allowed=Object.hasOwn(approvals||{},guard.campaignApprovalKey)?approvals[guard.campaignApprovalKey]:[];
   const keys=Array.isArray(allowed)?allowed:[];
-  return {...guard,allowedCanonicalKeys:Array.isArray(guard.allowedCanonicalKeys)?guard.allowedCanonicalKeys.filter(k=>keys.includes(k)):keys};
+  return {...guard,campaignAllowedCanonicalKeys:keys};
+}
+
+export function matchesCanonicalAllowlists(guard,identities){
+  return [guard.allowedCanonicalKeys,guard.campaignAllowedCanonicalKeys].every(keys=>!Array.isArray(keys)||keys.some(k=>identities.includes(k)));
 }

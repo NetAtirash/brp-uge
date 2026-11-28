@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {campaignGuard,readCampaignApprovals} from '../module/semantic-specialty.mjs';
+import {campaignGuard,readCampaignApprovals,matchesCanonicalAllowlists} from '../module/semantic-specialty.mjs';
 import {readSpecialtyRegistry} from '../module/specialty-registry.mjs';
 import {occupationPlan,campaignApprovalGroups,validateChoicePlan} from '../module/creation-template-integration.mjs';
 const a={type:'skill',uuid:'Item.aaaaaaaaaaaaaaaa',name:'Course A',system:{nameEn:'Course A'}},b={type:'skill',uuid:'Item.bbbbbbbbbbbbbbbb',name:'Course B',system:{nameEn:'Course B'}},c={type:'skill',uuid:'Item.cccccccccccccccc',name:'Course C',system:{nameEn:'Course C'}};
@@ -14,7 +14,8 @@ assert.equal(validateChoicePlan(plan({courses:['course a|']}),{courses:['course 
 const approvals=readCampaignApprovals({courses:['course a|','course a|',42,'Invalid|'],constructor:['course a|']});
 assert.deepEqual(approvals,{courses:['course a|']});
 assert.deepEqual(readSpecialtyRegistry({campaignApprovals:approvals}).campaignApprovals,approvals);
-assert.deepEqual(campaignGuard({campaignApprovalKey:'courses',allowedCanonicalKeys:['course b|']},approvals).allowedCanonicalKeys,[]);
+assert.equal(matchesCanonicalAllowlists(campaignGuard({campaignApprovalKey:'courses',allowedCanonicalKeys:['course b|']},approvals),['course a|']),false);
+assert.equal(matchesCanonicalAllowlists(campaignGuard({campaignApprovalKey:'courses',allowedCanonicalKeys:['example|renamed']},{courses:['example|original']}),['example|renamed','example|original']),true);
 const data={occupations:{items:[{_id:'aaaaaaaaaaaaaaaa',stableKey:'example',patch:prof,extendedReview:{requirements:[]}}]}};
 const preview=campaignApprovalGroups(data,[a,b,c],[],[a,b,c]);
 assert.deepEqual(preview[0].candidates.map(x=>x.key),['course a|','course b|']);
