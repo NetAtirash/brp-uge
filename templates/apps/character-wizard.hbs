@@ -176,6 +176,7 @@
                 <fieldset class="brp-wiz-choice-group">
                   <legend>{{g.label}} · {{#if @root.isTh}}เลือก{{else}}Choose{{/if}} {{g.count}} ({{g.selectedCount}}/{{g.count}})</legend>
                   {{#if g.shortageDetails}}<p role="status">{{g.shortageDetails}}</p>{{/if}}
+                  {{#unless g.shortageDetails}}{{#if g.unavailableExactOptions.length}}<details class="brp-wiz-unavailable-options"><summary>{{#if @root.isTh}}ตัวเลือกเฉพาะที่ยังไม่พร้อม{{else}}Unavailable specific alternatives{{/if}}</summary><p>{{#if @root.isTh}}เลือกจากรายการที่พร้อมได้ตามจำนวนที่กำหนด{{else}}You may choose the required number from available alternatives.{{/if}}</p><ul>{{#each g.unavailableExactOptions as |o|}}<li>{{o.label}}</li>{{/each}}</ul></details>{{/if}}{{/unless}}
                   <div class="brp-wiz-specialty-options">
                     {{#each g.candidates as |c|}}
                       <label class="brp-wiz-specialty-option"><input type="checkbox" data-personality-skill-checkbox data-group-id="{{g.id}}" data-key="{{c.key}}" {{#if c.selected}}checked{{/if}} {{#if c.disabled}}disabled{{/if}}> <span>{{c.label}}</span></label>
@@ -253,6 +254,7 @@
           <fieldset class="brp-wiz-choice-group">
             <legend>{{g.label}} · {{#if @root.isTh}}เลือก{{else}}Choose{{/if}} {{g.count}} ({{g.selectedCount}}/{{g.count}})</legend>
                   {{#if g.shortageDetails}}<p role="status">{{g.shortageDetails}}</p>{{/if}}
+                  {{#unless g.shortageDetails}}{{#if g.unavailableExactOptions.length}}<details class="brp-wiz-unavailable-options"><summary>{{#if @root.isTh}}ตัวเลือกเฉพาะที่ยังไม่พร้อม{{else}}Unavailable specific alternatives{{/if}}</summary><p>{{#if @root.isTh}}เลือกจากรายการที่พร้อมได้ตามจำนวนที่กำหนด{{else}}You may choose the required number from available alternatives.{{/if}}</p><ul>{{#each g.unavailableExactOptions as |o|}}<li>{{o.label}}</li>{{/each}}</ul></details>{{/if}}{{/unless}}
             <div class="brp-wiz-specialty-options">
               {{#each g.candidates as |c|}}
                 <label class="brp-wiz-specialty-option">

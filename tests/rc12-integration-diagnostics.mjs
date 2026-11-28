@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {occupationPlan,validateChoicePlan} from '../module/creation-template-integration.mjs';
+const doc={type:'skill',uuid:'Item.aaaaaaaaaaaaaaaa',name:'Example (...)',system:{nameEn:'Example (...)',specialtyFamily:'Example',isSpecialtyTemplate:true}};
+const skill={type:'skill',uuid:'Item.bbbbbbbbbbbbbbbb',name:'Other Skill',system:{nameEn:'Other Skill'}};
+const registry=[{key:'example',enFamily:'Example',thFamily:'ตัวอย่าง',canonicalTemplate:doc,options:[{key:'unrelated',en:'Unrelated',state:'enabled'}]}];
+const group={id:'mixed',count:1,options:[{kind:'skill',ref:skill.uuid},{kind:'specialty',familyKey:'example',specialtyKey:'missing'}]};
+const plan=occupationPlan({skillRefs:[],skillChoiceGroups:[group]},[skill],registry,[doc,skill]);
+assert.deepEqual(plan.groups[0].candidates.map(c=>c.key),['other skill|']);
+assert.equal(plan.groups[0].unavailableExactOptions[0].specialtyKey,'missing');
+assert.equal(plan.groups[0].shortageDetails,'');
+assert.equal(validateChoicePlan(plan,{mixed:['other skill|']},[skill]).valid,true);
+assert.equal(validateChoicePlan(plan,{mixed:['example|unrelated']},[skill]).valid,false);
+const mandatory=occupationPlan({skillRefs:[],skillChoiceGroups:[{...group,options:[group.options[1]]}]},[skill],registry,[doc,skill]);
+assert.equal(mandatory.groups[0].candidates.length,0);
+assert.equal(validateChoicePlan(mandatory,{},[skill]).valid,false);
+console.log('PASS: unavailable exact alternatives visible without broadening allowed keys or blocking a satisfiable mixed group');

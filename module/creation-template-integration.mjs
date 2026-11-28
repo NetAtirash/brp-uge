@@ -254,12 +254,18 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
     try{validateGuard(guards);}catch(e){errors.push(g.id+': '+e.message);}
     if(review?.unresolvedTokens?.length)errors.push(label+(lang==='th'?' — ยังไม่พบข้อมูลอ้างอิง: ':' — unresolved source: ')+review.unresolvedTokens.map(t=>t.token).join(', '));
     if(guards.languageRole==='programming_language'&&!guards.allowedCanonicalKeys?.length)errors.push(label+(lang==='th'?' — ยังไม่ได้กำหนดภาษาคอมพิวเตอร์ที่อนุมัติ':' — GM-approved programming language keys required'));
-    const candidates=new Map();
-    for(const o of list(g.options))for(const c of optionCandidates(o,catalog,registry,library,lang,guards)){
-      if(!fixedChoices.has(c.key))candidates.set(c.key,c);
+    const candidates=new Map(),unavailableExactOptions=[];
+    for(const o of list(g.options)){
+      const available=optionCandidates(o,catalog,registry,library,lang,guards);
+      if(o.kind==='specialty'&&!available.length){
+        const family=registry.find(f=>f.key===specialtyFamilyKey(o.familyKey));
+        const familyLabel=(lang==='th'?family?.thFamily:family?.enFamily)||o.familyKey;
+        unavailableExactOptions.push({familyKey:o.familyKey,specialtyKey:o.specialtyKey,label:familyLabel+' ('+o.specialtyKey+')'});
+      }
+      for(const c of available)if(!fixedChoices.has(c.key))candidates.set(c.key,c);
     }
     if(candidates.size<g.count)errors.push(lang==='th'?label+' — มีตัวเลือกที่ใช้ได้ '+candidates.size+'/'+g.count:label+' — insufficient eligible skills ('+candidates.size+'/'+g.count+')');
-    return {...g,label,shortageDetails:choiceShortageDetails(g,candidates.size,registry,lang),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
+    return {...g,label,unavailableExactOptions,shortageDetails:choiceShortageDetails(g,candidates.size,registry,lang),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
   });
   if(!unique(planned.map(g=>g.id)))errors.push(lang==='th'?'รหัสกลุ่มตัวเลือกซ้ำ':'Duplicate choice group IDs');
   const plan={fixed:[...fixedChoices.values()],groups:planned,errors,lang};
@@ -341,7 +347,8 @@ export async function auditCreationTemplates(gameApi=globalThis.game){
   const registry=buildSpecialtyRegistry(catalog,gameApi.settings.get('brp-uge','specialtyRegistry'),gameApi.settings.get('brp-uge','specialtyPresets'));
   const lang=gameApi.settings.get('brp-uge','uiLanguage')||'en';
   const inspect=(id,plan)=>{const capacity=choicePlanCapacity(plan);return {id,ready:plan.errors.length===0&&capacity.possible,errors:plan.errors,
-    fixed:plan.fixed.length,groups:plan.groups.length,matched:capacity.matched,required:capacity.required};};
+    fixed:plan.fixed.length,groups:plan.groups.length,matched:capacity.matched,required:capacity.required,
+    unavailableExactOptions:plan.groups.flatMap(g=>list(g.unavailableExactOptions).map(o=>({...o,groupId:g.id,groupCount:g.count,available:g.candidates.length,shortage:g.candidates.length<g.count}))) };};
   const personalities=creationPersonalityTemplates(data).map(t=>inspect(t.typeKey,personalityPlan(t,catalog,registry,catalog,lang)));
   const occupations=list(data.occupations?.items).map(p=>{
     const source=library.find(i=>i.type==='occupation'&&externalOccupationPatch(i,data)?._id===p._id);
