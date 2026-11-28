@@ -572,6 +572,7 @@
                     </div>
                     <div class="comp-actions">
                       {{#if (eq w.severity "major")}}{{#unless w.majorDetermined}}<button type="button" class="brp-btn" data-action="rollMajorWound" data-wound-id="{{w.id}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i> Major Wound</button>{{/unless}}{{/if}}
+                      {{#if @root.isGM}}<button type="button" class="brp-btn" data-action="editWoundRecovery" data-wound-id="{{w.id}}"><i class="fa-solid fa-pen" aria-hidden="true"></i> {{#if @root.isTh}}แก้การรักษา{{else}}Edit recovery{{/if}}</button>{{/if}}
                       <button type="button" class="brp-btn {{#if w.healed}}is-active{{/if}}" data-action="toggleHealWound" data-wound-id="{{w.id}}">
                         {{#if w.healed}}{{#if @root.isTh}}ปิดบาดแผลแล้ว ✓{{else}}Resolved ✓{{/if}}{{else}}{{#if @root.isTh}}ทำเครื่องหมายหาย{{else}}Mark healed{{/if}}{{/if}}
                       </button>

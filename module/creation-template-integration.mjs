@@ -211,7 +211,7 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
     if(fixedChoices.has(c.key))errors.push('Duplicate fixed skill: '+c.key);
     fixedChoices.set(c.key,c);
   }
-  const planned=rawGroups.map(g=>{
+  const planned=rawGroups.map((g,index)=>{
     const review=reviews.find(r=>r.groupId===g.id);
     const guards={...(review?.semanticGuards||{}),...(g.semanticGuards||{})};
     try{validateGuard(guards);}catch(e){errors.push(g.id+': '+e.message);}
@@ -221,13 +221,14 @@ function buildPlan({fixed=[],groups=[],reviews=[],catalog=[],registry=[],library
     for(const o of list(g.options))for(const c of optionCandidates(o,catalog,registry,library,lang,guards)){
       if(!fixedChoices.has(c.key))candidates.set(c.key,c);
     }
-    if(candidates.size<g.count)errors.push(g.id+': insufficient eligible skills ('+candidates.size+'/'+g.count+')');
-    return {...g,label:lang==='th'?(g.labelTh||g.labelEn||g.id):(g.labelEn||g.labelTh||g.id),candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
+    const label=lang==='th'?(g.labelTh||'กลุ่มตัวเลือก '+(index+1)):(g.labelEn||'Choice group '+(index+1));
+    if(candidates.size<g.count)errors.push(lang==='th'?label+' — มีตัวเลือกที่ใช้ได้ '+candidates.size+'/'+g.count+' กรุณาให้ GM ตรวจสอบความเชี่ยวชาญที่เปิดใช้และข้อมูลต้นทาง':label+' — insufficient eligible skills ('+candidates.size+'/'+g.count+')');
+    return {...g,label,candidates:[...candidates.values()].sort((a,b)=>a.label.localeCompare(b.label,lang))};
   });
   if(!unique(planned.map(g=>g.id)))errors.push('Duplicate choice group IDs');
   const plan={fixed:[...fixedChoices.values()],groups:planned,errors};
   const capacity=choicePlanCapacity(plan);
-  if(!capacity.possible)errors.push('Choice groups cannot be satisfied without duplicate skills ('+capacity.matched+'/'+capacity.required+')');
+  if(!capacity.possible&&planned.every(g=>g.candidates.length>=g.count))errors.push(lang==='th'?'กลุ่มตัวเลือกไม่สามารถเลือกให้ครบโดยไม่ซ้ำกัน ('+capacity.matched+'/'+capacity.required+')':'Choice groups cannot be satisfied without duplicate skills ('+capacity.matched+'/'+capacity.required+')');
   return plan;
 }
 export function personalityPlan(template,catalog,registry,library,lang='en'){

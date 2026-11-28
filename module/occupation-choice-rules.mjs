@@ -40,7 +40,7 @@ export function resolveOccupationTemplateGroups(occupation={},librarySkills=[]) 
     if(known.has(id))continue;
     known.add(id);
     groups.push({
-      id,labelTh:info.thFamily+' — เลือก Specialty',
+      id,labelTh:info.thFamily+' — เลือกความเชี่ยวชาญ',
       labelEn:info.enFamily+' — choose a Specialty',
       count:1,distinct:true,
       options:[{kind:'family',familyKey:info.key,ref:''}]

@@ -19,3 +19,7 @@ html[data-brp-theme] .brp-uge .brp-wiz-specialty-option:has(input:checked){borde
 html[data-brp-theme] .brp-uge .brp-wiz-specialty-option:has(input:disabled){cursor:not-allowed}
 html[data-brp-theme] .brp-uge .brp-wiz-personal-specialty summary{color:var(--brp-text)!important;font-weight:700;cursor:pointer}
 html[data-brp-theme] .brp-uge .wiz-alloc-grp>span[aria-label]{color:var(--brp-muted)!important}
+/* RC7: contrast correction for installed-library tags and summary labels. */
+html[data-brp-theme="light"] .brp-uge .brp-compendium :is(.comp-folder-tag,.comp-era-tag,.comp-ref-tag){background:#e6d8c2!important;color:#342820!important;border:1px solid #a38b6c!important}
+html[data-brp-theme="light"] .brp-uge .brp-compendium :is(.comp-sub,.comp-filter-field>span,.comp-result-summary){color:#514437!important}
+html[data-brp-theme="dark"] .brp-uge .brp-compendium :is(.comp-folder-tag,.comp-era-tag,.comp-ref-tag){background:#303a46!important;color:#f1f3f5!important;border:1px solid #76828e!important}

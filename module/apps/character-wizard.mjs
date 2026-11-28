@@ -146,7 +146,8 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
 
   static PARTS = {
     wizard: {
-      template: "systems/brp-uge/templates/apps/character-wizard.hbs"
+      template: "systems/brp-uge/templates/apps/character-wizard.hbs",
+      scrollable: [".wiz-body", ".wiz-skill-list", ".brp-wiz-specialty-options"]
     }
   };
 
@@ -1073,7 +1074,7 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
     if(confirmed){this.wizardData.allowRebuild=true;this.render();}
   }
 
-  static #onAllocateSkill(event, target) {
+  static async #onAllocateSkill(event, target) {
     event.preventDefault();
     const idx = Number(target.dataset.index);
     const pool = target.dataset.pool; // "occ" | "pers"
@@ -1111,7 +1112,13 @@ export class BRPCharacterWizard extends HandlebarsApplicationMixin(ApplicationV2
       const next = Math.clamp(curPers + delta, 0, Math.min(maxByBudget, maxByCap));
       this.wizardData.persRanks[idx] = next;
     }
-    this.render();
+    const scroll=this.element.querySelector('.wiz-body')?.scrollTop;
+    const listScroll=this.element.querySelector('.wiz-skill-list')?.scrollTop;
+    await this.render();
+    const replacement=[...this.element.querySelectorAll('[data-action="allocateSkill"]')].find(el=>el.dataset.index===String(idx)&&el.dataset.pool===pool&&el.dataset.delta===String(delta));
+    replacement?.focus({preventScroll:true});
+    if(scroll!==undefined){const body=this.element.querySelector('.wiz-body');if(body)body.scrollTop=scroll;}
+    if(listScroll!==undefined){const list=this.element.querySelector('.wiz-skill-list');if(list)list.scrollTop=listScroll;}
   }
 
   static #onViewWizardPower(event,target) {

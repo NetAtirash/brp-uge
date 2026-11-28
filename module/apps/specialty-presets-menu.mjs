@@ -166,7 +166,18 @@ export class SpecialtyPresetsMenu extends App {
       const uuid=node.dataset.sourceUuid;
       const bookKey=node.dataset.bookKey;
       const k=specialtyFamilyKey(en);
-      if(!en||!k||/[()<>\r\n]/u.test(en)||/[()<>\r\n]/u.test(th))
+      // Untouched published rows may contain a disabled descriptive heading.
+      // Do not validate them as newly authored/selectable specialties.
+      const existing=bookKey?group.options.find(o=>o.source==='book'&&o.bookKey===bookKey):null;
+      if(existing&&en===existing.en&&th===existing.th&&state===(existing.review?'review':existing.hidden?'hidden':existing.state)){
+        if(cfg.bookOverrides?.[bookKey])bookOverrides[bookKey]=cfg.bookOverrides[bookKey];
+        if(state==='enabled'){
+          if(seen.has(k))throw new Error(this.#tr('ความเชี่ยวชาญเปิดใช้งานซ้ำ: ','Duplicate enabled Specialty: ')+en);
+          seen.add(k);
+        }
+        continue;
+      }
+      if(!en||!k||(state==='enabled'&&(/[()<>\r\n]/u.test(en)||/[()<>\r\n]/u.test(th))))
         throw new Error(this.#tr('กรอกชื่อความเชี่ยวชาญภาษาอังกฤษที่ถูกต้อง','A valid English Specialty name is required')+': '+en);
       if(state==='enabled'&&specialtyNeedsReview(en))
         throw new Error(this.#tr('ระบุชื่อความเชี่ยวชาญเดี่ยวก่อนเปิดให้เลือก: ','Resolve composite Specialty before enabling: ')+en);
@@ -175,8 +186,9 @@ export class SpecialtyPresetsMenu extends App {
       if(state==='enabled')seen.add(k);
       if(bookKey){
         const originalEn=node.dataset.originalEn,originalTh=node.dataset.originalTh;
-        const original=group.options.find(o=>o.source==='book'&&o.bookKey===bookKey);
-        const initial=original?.state==='hidden'?'hidden':'enabled';
+        
+        const seed=group.canonicalTemplate?.system?.specialtyDefaults?.find(o=>specialtyFamilyKey(o.key||o.en)===bookKey);
+        const initial=seed?.enabled===false?'hidden':'enabled';
         if(en!==originalEn||th!==originalTh||state!==initial)
           bookOverrides[bookKey]={en,th,state};
       }else if(uuid){

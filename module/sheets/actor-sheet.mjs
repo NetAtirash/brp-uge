@@ -60,6 +60,7 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
       treatCondition: BRPActorSheet.#onTreatCondition,
       addWound: BRPActorSheet.#onAddWound,
       toggleHealWound: BRPActorSheet.#onToggleHealWound,
+      editWoundRecovery: BRPActorSheet.#onEditWoundRecovery,
       deleteWound: BRPActorSheet.#onDeleteWound,
       rollMajorWound: BRPActorSheet.#onRollMajorWound,
       addInsanity: BRPActorSheet.#onAddInsanity,
@@ -102,7 +103,8 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
 
   static PARTS = {
     sheet: {
-      template: "systems/brp-uge/templates/actor/character-sheet.hbs"
+      template: "systems/brp-uge/templates/actor/character-sheet.hbs",
+      scrollable: [".sheet-body", ".compact-scroll"]
     }
   };
 
@@ -722,6 +724,28 @@ export class BRPActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
     }
     try { await actor.applyCare({method, healer, targetId, rollResult: result, choice: String(form.choice ?? "heal")}); }
     catch(err) { ui.notifications.error(err.message ?? String(err)); }
+  }
+
+  static async #onEditWoundRecovery(event,target){
+    event.preventDefault();
+    if(!game.user?.isGM)return;
+    const actor=this.document,id=target.dataset.woundId;
+    const wound=(actor.system.wounds??[]).find(w=>w.id===id);
+    if(!wound)return;
+    const th=getNameLanguage()!=='en';
+    const form=await foundry.applications.api.DialogV2.input({
+      window:{title:th?'แก้ไขการรักษาบาดแผล (GM)':'Edit wound recovery (GM)'},
+      modal:true,rejectClose:false,
+      content:`<div class="brp-macro-form">
+        <label><input type="checkbox" name="firstAidAttempted" ${wound.firstAidAttempted?'checked':''}> ${th?'เคยปฐมพยาบาลแล้ว':'First Aid attempted'}</label>
+        <label><input type="checkbox" name="treated" ${wound.treated?'checked':''}> ${th?'รักษาสำเร็จแล้ว':'Successfully treated'}</label>
+        <label>${th?'HP ที่ฟื้นไปแล้ว':'Recovered HP'} <input type="number" name="recoveryHp" min="0" step="1" value="${Number(wound.recoveryHp||0)}" required></label>
+        <p>${th?'แก้เฉพาะบันทึกบาดแผล ไม่เปลี่ยน HP ปัจจุบัน ให้ปรับ HP บนชีทแยกหากจำเป็น':'Edits the wound record only. Current HP is unchanged; adjust HP separately if needed.'}</p>
+      </div>`,ok:{label:th?'บันทึก':'Save'}
+    });
+    if(!form)return;
+    try{await actor.editWoundRecovery(id,{firstAidAttempted:form.firstAidAttempted===true||form.firstAidAttempted==='on',treated:form.treated===true||form.treated==='on',recoveryHp:form.recoveryHp});}
+    catch(error){ui.notifications.error(error.message);}
   }
 
   static async #onToggleHealWound(event, target) {

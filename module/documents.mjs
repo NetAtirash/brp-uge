@@ -1,3 +1,4 @@
+import {correctedWoundRecovery} from './rules/wound-correction.mjs';
 import {calculateSkillBase,canRecordAdvancement} from './rules/skill-mechanics.mjs';
 import {findActorSkill} from "./reference-utils.mjs";
 import { BRP_CONFIG, getCampaignRules } from "./config.mjs";
@@ -147,6 +148,11 @@ export class BRPActor extends Actor {
   }
 
   /** Mark clinically healed separately from any HP restored through treatment. */
+  async editWoundRecovery(woundId,values){
+    const wounds=foundry.utils.deepClone(this.system.wounds??[]);
+    return this.update({'system.wounds':correctedWoundRecovery(wounds,woundId,values,globalThis.game?.user?.isGM)});
+  }
+
   async toggleHealWound(woundId) {
     const wounds = foundry.utils.deepClone(this.system.wounds ?? []);
     const wound = wounds.find(w => w.id === woundId);
